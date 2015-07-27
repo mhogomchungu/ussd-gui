@@ -206,6 +206,8 @@ void MainWindow::pbSend()
 
 			m_ui->textEditResult->setText( QString( "ERROR 2: " ) + GSM_ErrorString( error ) ) ;
 		}else{
+			this->disableSending() ;
+
 			QString e( "waiting for a reply ..." ) ;
 
 			while( true ){
@@ -294,7 +296,7 @@ void MainWindow::processResponce( GSM_USSDMessage * ussd )
 
 	m_ui->textEditResult->setText( _response( ussd ) + buffer ) ;
 
-	m_ui->pbSend->setEnabled( true ) ;
+	this->enableSending() ;
 
 	if( ussd->Status == USSD_ActionNeeded ){
 
