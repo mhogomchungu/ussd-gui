@@ -37,6 +37,7 @@ static void _suspend( int time )
 	QObject::connect( &t,SIGNAL( timeout() ),&l,SLOT( quit() ) ) ;
 
 	t.start( 1000 * time ) ;
+
 	l.exec() ;
 }
 
@@ -75,6 +76,15 @@ static char * _convert_hex_to_char_buffer( char * buffer,const char * e,size_t s
 	*( buffer + r ) = '\0' ;
 
 	return buffer ;
+}
+
+static void _callback( GSM_StateMachine * gsm,GSM_USSDMessage * ussd,void * e )
+{
+	Q_UNUSED( gsm ) ;
+
+	auto f = reinterpret_cast< foo * >( e ) ;
+
+	( *f )( ussd ) ;
 }
 
 MainWindow::MainWindow( QWidget * parent ) : QMainWindow( parent ),
@@ -164,16 +174,7 @@ bool MainWindow::setConnection()
 
 		m_ui->pbSend->setEnabled( false ) ;
 
-		auto callback = []( GSM_StateMachine * gsm,GSM_USSDMessage * ussd,void * e ){
-
-			Q_UNUSED( gsm ) ;
-
-			auto f = reinterpret_cast< foo * >( e ) ;
-
-			( *f )( ussd ) ;
-		} ;
-
-		GSM_SetIncomingUSSDCallback( m_gsm,callback,reinterpret_cast< void * >( &m_foo ) ) ;
+		GSM_SetIncomingUSSDCallback( m_gsm,_callback,reinterpret_cast< void * >( &m_foo ) ) ;
 
 		auto error = GSM_SetIncomingUSSD( m_gsm,true ) ;
 
