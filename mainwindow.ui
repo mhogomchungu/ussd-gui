@@ -56,7 +56,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QLabel" name="_USSD_code">
+   <widget class="QLabel" name="labelInput">
     <property name="geometry">
      <rect>
       <x>0</x>

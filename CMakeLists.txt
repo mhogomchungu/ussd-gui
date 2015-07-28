@@ -35,7 +35,7 @@ add_definitions( -I${QT_HEADERS_DIR} )
 INCLUDE( ${QT_USE_FILE} )
 INCLUDE( ${QT_USE_FILE} )
 
-QT4_WRAP_CPP( MOC mainwindow.h )
+QT4_WRAP_CPP( MOC mainwindow.h task.h )
 QT4_WRAP_UI( UI mainwindow.ui )
 QT4_ADD_RESOURCES( ICON icon.qrc )
 

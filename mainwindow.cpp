@@ -26,6 +26,8 @@
 #include <QTimer>
 #include <QEventLoop>
 
+#include "task.h"
+
 static void _suspend( int time )
 {
 	QEventLoop l ;
@@ -37,6 +39,43 @@ static void _suspend( int time )
 	t.start( 1000 * time ) ;
 
 	l.exec() ;
+}
+
+static char * _convert_hex_to_char_buffer( char * buffer,const char * e,size_t skip,size_t block_size )
+{
+	auto _convert_base_16_to_base_10 = []( const char * e ){
+
+		auto _convert_hex_to_decimal = []( const char * e ){
+
+			char a = * e ;
+
+			if( a >= 'A' && a <= 'F' ){
+
+				return a - 'A' + 10 ;
+
+			}else if( a >= 'a' && a <= 'f' ){
+
+				return a - 'a' + 10 ;
+			}else{
+				return a - '0' ;
+			}
+		} ;
+
+		return _convert_hex_to_decimal( e ) * 16 + _convert_hex_to_decimal( e + 1 ) ;
+	} ;
+
+	size_t r = 0 ;
+
+	while( *e ){
+
+		*( buffer + r ) = _convert_base_16_to_base_10( e + skip ) ;
+		e += block_size ;
+		r++ ;
+	}
+
+	*( buffer + r ) = '\0' ;
+
+	return buffer ;
 }
 
 static void _callback( GSM_StateMachine * gsm,GSM_USSDMessage * ussd,void * e )
@@ -110,20 +149,33 @@ void MainWindow::setSetting( const QString& key, const QString& value )
 	m_settings.setValue( key,value ) ;
 }
 
+void MainWindow::ConnectStatus()
+{
+	m_connectingMsg += "..." ;
+	m_ui->textEditResult->setText( m_connectingMsg ) ;
+}
+
 bool MainWindow::setConnection()
 {
-	m_ui->textEditResult->setText( "status: connecting ..." ) ;
+	m_connectingMsg = "status: connecting " ;
+
+	QTimer timer ;
+
+	connect( &timer,SIGNAL( timeout() ),this,SLOT( ConnectStatus() ) ) ;
+
+	this->ConnectStatus() ;
 
 	this->disableSending() ;
+	m_ui->pbCancel->setEnabled( false ) ;
 
-	_suspend( 2 ) ;
+	timer.start( 1000 * 1 ) ;
 
-	/*
-	 * TODO: Below function hangs the GUI,look into running it from a back ground thread.
-	 */
-	auto error = GSM_InitConnection( m_gsm,1 ) ;
+	auto error = Task::await< GSM_Error >( [ this ](){ return GSM_InitConnection( m_gsm,1 ) ; } ) ;
+
+	timer.stop() ;
 
 	this->enableSending() ;
+	m_ui->pbCancel->setEnabled( true ) ;
 
 	if( error != ERR_NONE ){
 
@@ -166,23 +218,45 @@ void MainWindow::pbSend()
 		if( error != ERR_NONE ){
 
 			m_ui->textEditResult->setText( QString( "ERROR 3: " ) + GSM_ErrorString( error ) ) ;
+
+			this->enableSending() ;
 		}else{
 			this->disableSending() ;
 
 			QString e( "waiting for a reply ..." ) ;
 
+			m_ui->pbCancel->setEnabled( false ) ;
+
+			int r = 0 ;
+
 			while( true ){
 
-				if( GSM_ReadDevice( m_gsm,TRUE ) == 0 ){
+				if( r == 30 ){
 
-					m_ui->textEditResult->setText( e ) ;
-					e += "." ;
+					m_ui->textEditResult->setText( QString( "ERROR 6: no response within 30 seconds." ) ) ;
 
-					_suspend( 2 ) ;
-				}else{
+					this->enableSending() ;
+
+					GSM_SetIncomingUSSD( m_gsm,false ) ;
+
 					break ;
+				}else{
+					r++ ;
+
+					if( GSM_ReadDevice( m_gsm,false ) == 0 ){
+
+						m_ui->textEditResult->setText( e ) ;
+
+						e += "...." ;
+
+						_suspend( 1 ) ;
+					}else{
+						break ;
+					}
 				}
 			}
+
+			m_ui->pbCancel->setEnabled( true ) ;
 		}
 	} ;
 
@@ -205,11 +279,15 @@ void MainWindow::pbQuit()
 void MainWindow::disableSending()
 {
 	m_ui->pbSend->setEnabled( false ) ;
+	m_ui->lineEditUSSD_code->setEnabled( false ) ;
+	m_ui->labelInput->setEnabled( false ) ;
 }
 
 void MainWindow::enableSending()
 {
 	m_ui->pbSend->setEnabled( true ) ;
+	m_ui->lineEditUSSD_code->setEnabled( true ) ;
+	m_ui->labelInput->setEnabled( true ) ;
 }
 
 void MainWindow::processResponce( GSM_USSDMessage * ussd )
@@ -251,9 +329,11 @@ void MainWindow::processResponce( GSM_USSDMessage * ussd )
 		}
 	} ;
 
-	QString e = QString::fromUtf16( ( const ushort * )ussd->Text ) ;
+	char buffer[ 2 * GSM_MAX_USSD_LENGTH ] = { '\0' } ;
 
-	m_ui->textEditResult->setText( _response( ussd ) + e ) ;
+	_convert_hex_to_char_buffer( buffer,DecodeUnicodeString( ussd->Text ),2,4 ) ;
+
+	m_ui->textEditResult->setText( _response( ussd ) + buffer ) ;
 
 	this->enableSending() ;
 

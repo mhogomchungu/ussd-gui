@@ -61,6 +61,7 @@ private slots:
 	void pbQuit() ;
 	void disableSending() ;
 	void enableSending() ;
+	void ConnectStatus() ;
 private:
 	bool setConnection() ;
 	void processResponce( GSM_USSDMessage * ) ;
@@ -74,6 +75,7 @@ private:
 	GSM_StateMachine * m_gsm = nullptr ;
 	foo m_foo ;
 	QSettings m_settings ;
+	QString m_connectingMsg ;
 };
 
 #endif // MAINWINDOW_H
