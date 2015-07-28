@@ -23,8 +23,6 @@
 #include <QCoreApplication>
 #include <QDir>
 
-#include <QDebug>
-
 #include <QTimer>
 #include <QEventLoop>
 
@@ -41,29 +39,29 @@ static void _suspend( int time )
 	l.exec() ;
 }
 
-static char _convert( const char * e )
-{
-	char a = * e ;
-
-	if( a >= 'A' && a <= 'F' ){
-
-		return a - 'A' + 10 ;
-
-	}else if( a >= 'a' && a <= 'f' ){
-
-		return a - 'a' + 10 ;
-	}else{
-		return a - '0' ;
-	}
-}
-
-static char _convert_base_16_to_base_10( const char * e )
-{
-	return _convert( e ) * 16 + _convert( e + 1 ) ;
-}
-
 static char * _convert_hex_to_char_buffer( char * buffer,const char * e,size_t skip,size_t block_size )
 {
+	auto _convert_base_16_to_base_10 = []( const char * e ){
+
+		auto _convert_hex_to_decimal = []( const char * e ){
+
+			char a = * e ;
+
+			if( a >= 'A' && a <= 'F' ){
+
+				return a - 'A' + 10 ;
+
+			}else if( a >= 'a' && a <= 'f' ){
+
+				return a - 'a' + 10 ;
+			}else{
+				return a - '0' ;
+			}
+		} ;
+
+		return _convert_hex_to_decimal( e ) * 16 + _convert_hex_to_decimal( e + 1 ) ;
+	} ;
+
 	size_t r = 0 ;
 
 	while( *e ){
