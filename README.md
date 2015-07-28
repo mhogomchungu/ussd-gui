@@ -8,3 +8,5 @@ A screenshot of the application can be seen from the following link:
 https://github.com/mhogomchungu/ussd-gui/blob/master/ussd-gui.jpeg
 
 [1] http://wammu.eu/gammu/
+
+useful documentation: http://wammu.eu/docs/manual/c/hints.html

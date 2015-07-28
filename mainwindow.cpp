@@ -39,43 +39,6 @@ static void _suspend( int time )
 	l.exec() ;
 }
 
-static char * _convert_hex_to_char_buffer( char * buffer,const char * e,size_t skip,size_t block_size )
-{
-	auto _convert_base_16_to_base_10 = []( const char * e ){
-
-		auto _convert_hex_to_decimal = []( const char * e ){
-
-			char a = * e ;
-
-			if( a >= 'A' && a <= 'F' ){
-
-				return a - 'A' + 10 ;
-
-			}else if( a >= 'a' && a <= 'f' ){
-
-				return a - 'a' + 10 ;
-			}else{
-				return a - '0' ;
-			}
-		} ;
-
-		return _convert_hex_to_decimal( e ) * 16 + _convert_hex_to_decimal( e + 1 ) ;
-	} ;
-
-	size_t r = 0 ;
-
-	while( *e ){
-
-		*( buffer + r ) = _convert_base_16_to_base_10( e + skip ) ;
-		e += block_size ;
-		r++ ;
-	}
-
-	*( buffer + r ) = '\0' ;
-
-	return buffer ;
-}
-
 static void _callback( GSM_StateMachine * gsm,GSM_USSDMessage * ussd,void * e )
 {
 	Q_UNUSED( gsm ) ;
@@ -164,7 +127,7 @@ bool MainWindow::setConnection()
 
 	if( error != ERR_NONE ){
 
-		m_ui->textEditResult->setText( QString( "ERROR 5: " ) + GSM_ErrorString( error ) ) ;
+		m_ui->textEditResult->setText( QString( "ERROR 1: " ) + GSM_ErrorString( error ) ) ;
 
 		return false ;
 	}else{
@@ -174,11 +137,11 @@ bool MainWindow::setConnection()
 
 		GSM_SetIncomingUSSDCallback( m_gsm,_callback,reinterpret_cast< void * >( &m_foo ) ) ;
 
-		auto error = GSM_SetIncomingUSSD( m_gsm,true ) ;
+		error = GSM_SetIncomingUSSD( m_gsm,true ) ;
 
 		if( error != ERR_NONE ){
 
-			m_ui->textEditResult->setText( QString( "ERROR 1: " ) + GSM_ErrorString( error ) ) ;
+			m_ui->textEditResult->setText( QString( "ERROR 2: " ) + GSM_ErrorString( error ) ) ;
 
 			return false ;
 		}else{
@@ -202,7 +165,7 @@ void MainWindow::pbSend()
 
 		if( error != ERR_NONE ){
 
-			m_ui->textEditResult->setText( QString( "ERROR 2: " ) + GSM_ErrorString( error ) ) ;
+			m_ui->textEditResult->setText( QString( "ERROR 3: " ) + GSM_ErrorString( error ) ) ;
 		}else{
 			this->disableSending() ;
 
@@ -288,11 +251,9 @@ void MainWindow::processResponce( GSM_USSDMessage * ussd )
 		}
 	} ;
 
-	char buffer[ GSM_MAX_USSD_LENGTH ] = { '\0' } ;
+	QString e = QString::fromUtf16( ( const ushort * )ussd->Text ) ;
 
-	_convert_hex_to_char_buffer( buffer,DecodeUnicodeString( ussd->Text ),2,4 ) ;
-
-	m_ui->textEditResult->setText( _response( ussd ) + buffer ) ;
+	m_ui->textEditResult->setText( _response( ussd ) + e ) ;
 
 	this->enableSending() ;
 
@@ -302,109 +263,34 @@ void MainWindow::processResponce( GSM_USSDMessage * ussd )
 	}
 }
 
-/*
- * I have no idea what is going on in this function,i just took all of it from
- * "GetUSSD" function in gammu sources
- */
 void MainWindow::setUpDevice()
 {
-	GSM_Config * smcfg ;
-	GSM_Config * smcfg0 ;
-	GSM_Debug_Info * di ;
-
-	INI_Section * cfg ;
-	GSM_Error error ;
-
-	gboolean debug_level_set = false ;
-	gboolean debug_file_set = false ;
-
-	int only_config = -1 ;
-
-	di = GSM_GetGlobalDebug() ;
-
-	auto a = ( const unsigned char * )"gammu" ;
-
-	auto b = ( const unsigned char * )"gammucoding" ;
-
-	error = GSM_FindGammuRC( &cfg,nullptr ) ;
-
-	if( error != ERR_NONE ){
-
-		m_ui->textEditResult->setText( QString( "ERROR 3: " ) + GSM_ErrorString( error ) ) ;
-		this->disableSending() ;
-		return ;
-	}
-
-	auto cp = INI_GetValue( cfg,a,b,false ) ;
-
-	if( cp ){
-
-		GSM_SetDebugCoding( (const char * )cp,di ) ;
-	}
+	GSM_InitLocales( nullptr ) ;
 
 	m_gsm = GSM_AllocStateMachine() ;
 
-	smcfg0 = GSM_GetConfig( m_gsm,0 ) ;
+	INI_Section * cfg = nullptr ;
 
-	for( auto i = 0 ; ( smcfg = GSM_GetConfig( m_gsm,i ) ) != nullptr ; i++ ){
+	auto error = GSM_FindGammuRC( &cfg,nullptr ) ;
 
-		if( only_config != -1 ){
+	if( error != ERR_NONE  ){
 
-			smcfg = smcfg0;
-			error = GSM_ReadConfig( cfg,smcfg,only_config ) ;
+		m_ui->textEditResult->setText( QString( "ERROR 4: " ) + GSM_ErrorString( error ) ) ;
 
-			if( error != ERR_NONE ){
+		this->disableSending() ;
+	}else{
+		error = GSM_ReadConfig( cfg,GSM_GetConfig( m_gsm,0 ),0 ) ;
 
-				GSM_ReadConfig( nullptr,smcfg,0 ) ;
-			}
-		}else{
-			error = GSM_ReadConfig( cfg,smcfg,i ) ;
+		if( error != ERR_NONE  ){
 
-			if( error != ERR_NONE ){
+			m_ui->textEditResult->setText( QString( "ERROR 5: " ) + GSM_ErrorString( error ) ) ;
 
-				if( i != 0 ){
-
-					break;
-				}
-			}
+			this->disableSending() ;
 		}
 
-		GSM_SetConfigNum( m_gsm,GSM_GetConfigNum( m_gsm ) + 1 ) ;
+		INI_Free( cfg ) ;
 
-		smcfg->UseGlobalDebugFile = true ;
-
-		if( i == 0 ) {
-
-			if( !debug_level_set ){
-
-				GSM_SetDebugLevel( smcfg->DebugLevel,di ) ;
-			}
-
-			if( !debug_file_set ){
-
-				error = GSM_SetDebugFile( smcfg->DebugFile,di ) ;
-
-				if( error != ERR_NONE ){
-
-					m_ui->textEditResult->setText( QString( "ERROR 4: " ) + GSM_ErrorString( error ) ) ;
-					this->disableSending() ;
-					return ;
-				}
-			}
-		}
-
-		if( i == 0 ){
-
-			a = ( const unsigned char * )"gammu" ;
-			b = ( const unsigned char * )"rsslevel" ;
-
-			INI_GetValue( cfg,a,b,false ) ;
-		}
-
-		if( only_config != -1 ){
-
-			break ;
-		}
+		GSM_SetConfigNum( m_gsm,1 ) ;
 	}
 }
 
