@@ -41,43 +41,6 @@ static void _suspend( int time )
 	l.exec() ;
 }
 
-static char * _convert_hex_to_char_buffer( char * buffer,const char * e,size_t skip,size_t block_size )
-{
-	auto _convert_base_16_to_base_10 = []( const char * e ){
-
-		auto _convert_hex_to_decimal = []( const char * e ){
-
-			char a = * e ;
-
-			if( a >= 'A' && a <= 'F' ){
-
-				return a - 'A' + 10 ;
-
-			}else if( a >= 'a' && a <= 'f' ){
-
-				return a - 'a' + 10 ;
-			}else{
-				return a - '0' ;
-			}
-		} ;
-
-		return _convert_hex_to_decimal( e ) * 16 + _convert_hex_to_decimal( e + 1 ) ;
-	} ;
-
-	size_t r = 0 ;
-
-	while( *e ){
-
-		*( buffer + r ) = _convert_base_16_to_base_10( e + skip ) ;
-		e += block_size ;
-		r++ ;
-	}
-
-	*( buffer + r ) = '\0' ;
-
-	return buffer ;
-}
-
 static void _callback( GSM_StateMachine * gsm,GSM_USSDMessage * ussd,void * e )
 {
 	Q_UNUSED( gsm ) ;
@@ -329,11 +292,46 @@ void MainWindow::processResponce( GSM_USSDMessage * ussd )
 		}
 	} ;
 
-	char buffer[ 2 * GSM_MAX_USSD_LENGTH ] = { '\0' } ;
+	/*
+	 * DecodeUnicodeString() seems to return a unicode string as a C string like "004F004D00470021"
+	 * and below routine converts it to a QString
+	 */
+	auto _convert_unicode_C_string_to_qstring = []( GSM_USSDMessage * ussd ){
 
-	_convert_hex_to_char_buffer( buffer,DecodeUnicodeString( ussd->Text ),2,4 ) ;
+		auto _convert_base_16_to_base_10 = []( const char * e ){
 
-	m_ui->textEditResult->setText( _response( ussd ) + buffer ) ;
+			auto _convert_hex_to_decimal = []( const char * e ){
+
+				char a = *e ;
+
+				if( a >= 'A' && a <= 'F' ){
+
+					return a - 'A' + 10 ;
+
+				}else if( a >= 'a' && a <= 'f' ){
+
+					return a - 'a' + 10 ;
+				}else{
+					return a - '0' ;
+				}
+			} ;
+
+			return _convert_hex_to_decimal( e ) * 16 + _convert_hex_to_decimal( e + 1 ) ;
+		} ;
+
+		unsigned short buffer[ GSM_MAX_USSD_LENGTH + 1 ] = { 0 } ;
+
+		const char * e = DecodeUnicodeString( ussd->Text ) ;
+
+		for( int i = 0 ; *e ; e += 4,i++ ){
+
+			*( buffer + i ) = _convert_base_16_to_base_10( e ) + _convert_base_16_to_base_10( e + 2 ) ;
+		}
+
+		return QString::fromUtf16( buffer ) ;
+	} ;
+
+	m_ui->textEditResult->setText( _response( ussd ) + _convert_unicode_C_string_to_qstring( ussd ) ) ;
 
 	this->enableSending() ;
 
