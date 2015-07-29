@@ -63,11 +63,10 @@ private slots:
 	void enableSending() ;
 	void ConnectStatus() ;
 private:
-	bool setConnection() ;
+	bool initConnection() ;
 	void processResponce( GSM_USSDMessage * ) ;
 	void setUpDevice() ;
 	void closeEvent( QCloseEvent * ) ;
-	bool deviceIsNotConnected() ;
 	bool deviceIsConnected() ;
 	QString getSetting( const QString& ) ;
 	void setSetting( const QString&,const QString& ) ;

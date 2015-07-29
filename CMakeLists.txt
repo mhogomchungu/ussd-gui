@@ -4,7 +4,7 @@ cmake_policy(SET CMP0017 OLD)
 SET( QT_USE_QTCORE TRUE )
 SET( QT_USE_QTGUI TRUE )
 
-add_definitions( -Wextra -Wall -pedantic -std=c++11 -I${PROJECT_BINARY_DIR})
+add_definitions( -Wextra -Wall -pedantic -std=c++11 -I${PROJECT_BINARY_DIR} )
 
 # uninstall target
 configure_file(
@@ -12,39 +12,53 @@ configure_file(
 	"${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
 	IMMEDIATE @ONLY )
 
-add_custom_target( uninstall
-COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake )
+add_custom_target( uninstall COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake )
 
-INCLUDE(CMakeDependentOption)
-INCLUDE(FindPkgConfig)
+INCLUDE( CMakeDependentOption )
+INCLUDE( FindPkgConfig )
 
 pkg_check_modules( GAMMU gammu )
 
 if( NOT GAMMU_FOUND )
-	message ( FATAL_ERROR "ERROR: could not find gammu development files" )
+	message( FATAL_ERROR "ERROR: could not find gammu development files" )
 endif( NOT GAMMU_FOUND )
 
-add_definitions( -I${GAMMU_INCLUDE_DIR})
+add_definitions( -I${GAMMU_INCLUDE_DIR} )
 include_directories( ${GAMMU_INCLUDE_DIRS} )
 
-find_package( Qt4 REQUIRED QtCore QtGui )
+if( QT5 )
+	find_package( Qt5Widgets REQUIRED )
+	find_package( Qt5Core REQUIRED )
 
-add_definitions( -I${Qt4_INCLUDE_DIR} )
-add_definitions( -I${QT_HEADERS_DIR} )
+	include_directories( ${Qt5Widgets_INCLUDE_DIRS} )
+	add_definitions( ${Qt5Widgets_DEFINITIONS} )
+	QT5_WRAP_CPP( MOC mainwindow.h task.h )
+	QT5_WRAP_UI( UI mainwindow.ui )
+	QT5_ADD_RESOURCES( ICON icon.qrc )
+else()
+	find_package( Qt4 REQUIRED QtCore QtGui )
 
-INCLUDE( ${QT_USE_FILE} )
-INCLUDE( ${QT_USE_FILE} )
+	add_definitions( -I${Qt4_INCLUDE_DIR} )
+	add_definitions( -I${QT_HEADERS_DIR} )
 
-QT4_WRAP_CPP( MOC mainwindow.h task.h )
-QT4_WRAP_UI( UI mainwindow.ui )
-QT4_ADD_RESOURCES( ICON icon.qrc )
+	INCLUDE( ${QT_USE_FILE} )
+	INCLUDE( ${QT_USE_FILE} )
+
+	QT4_WRAP_CPP( MOC mainwindow.h task.h )
+	QT4_WRAP_UI( UI mainwindow.ui )
+	QT4_ADD_RESOURCES( ICON icon.qrc )
+endif()
 
 add_executable( ussd-gui main.cpp mainwindow.cpp ${MOC} ${UI} ${ICON} )
 
-set_target_properties( ussd-gui PROPERTIES COMPILE_FLAGS "-D_FILE_OFFSET_BITS=64 -Wextra -Wall -s -fPIE -pthread  -pedantic " )
+set_target_properties( ussd-gui PROPERTIES COMPILE_FLAGS "-Wextra -Wall -s -fPIE -pthread  -pedantic" )
 set_target_properties( ussd-gui PROPERTIES LINK_FLAGS "-pie" )
 
-target_link_libraries( ussd-gui ${QT_LIBRARIES} ${GAMMU_LIBRARIES} )
+if( QT5 )
+	target_link_libraries( ussd-gui ${Qt5Widgets_LIBRARIES} ${Qt5Core_LIBRARIES} ${GAMMU_LIBRARIES} )
+else()
+	target_link_libraries( ussd-gui ${QT_LIBRARIES} ${GAMMU_LIBRARIES} )
+endif()
 
 install( TARGETS ussd-gui RUNTIME DESTINATION bin )
 
@@ -76,4 +90,4 @@ X-DBUS-ServiceName=
 X-DBUS-StartupType=Unique
 X-KDE-SubstituteUID=false
 X-KDE-Username=
-Categories=Network;X-MandrivaLinux-Internet;\n")
+Categories=Network;X-MandrivaLinux-Internet;\n" )

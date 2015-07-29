@@ -66,13 +66,16 @@
      </rect>
     </property>
     <property name="text">
-     <string>input: </string>
+     <string>Input: </string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
    <widget class="QGroupBox" name="groupBox">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -82,15 +85,18 @@
      </rect>
     </property>
     <property name="title">
-     <string/>
+     <string>USSD server response</string>
+    </property>
+    <property name="flat">
+     <bool>false</bool>
     </property>
     <widget class="QTextEdit" name="textEditResult">
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>10</y>
+       <y>30</y>
        <width>561</width>
-       <height>241</height>
+       <height>221</height>
       </rect>
      </property>
      <property name="readOnly">

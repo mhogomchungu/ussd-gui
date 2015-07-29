@@ -87,11 +87,6 @@ MainWindow::~MainWindow()
 	}
 }
 
-bool MainWindow::deviceIsNotConnected()
-{
-	return !this->deviceIsConnected() ;
-}
-
 bool MainWindow::deviceIsConnected()
 {
 	return GSM_IsConnected( m_gsm ) ;
@@ -118,7 +113,7 @@ void MainWindow::ConnectStatus()
 	m_ui->textEditResult->setText( m_connectingMsg ) ;
 }
 
-bool MainWindow::setConnection()
+bool MainWindow::initConnection()
 {
 	m_connectingMsg = "status: connecting " ;
 
@@ -227,7 +222,7 @@ void MainWindow::pbSend()
 
 		_send() ;
 	}else{
-		if( this->setConnection() ){
+		if( this->initConnection() ){
 
 			_send() ;
 		}
@@ -255,40 +250,40 @@ void MainWindow::enableSending()
 
 void MainWindow::processResponce( GSM_USSDMessage * ussd )
 {
-	auto _response = []( GSM_USSDMessage * ussd )->QString{
+	auto _error = []( GSM_USSDMessage * ussd ){
 
 		switch( ussd->Status ){
 
 		case USSD_NoActionNeeded:
 
-			return "Status: No action needed\n\nServer response below:\n\n" ;
+			return "Status: No action needed" ;
 
 		case USSD_ActionNeeded:
 
-			return "Status: Action needed\n\nServer response below:\n\n" ;
+			return "Status: Action needed" ;
 
 		case USSD_Terminated:
 
-			return "Status: Terminated\n\nServer response below:\n\n" ;
+			return "ERROR 7: connection was terminated" ;
 
 		case USSD_AnotherClient:
 
-			return "Status: Another client replied\n\nServer response below:\n\n" ;
+			return "ERROR 7: another client replied" ;
 
 		case USSD_NotSupported:
 
-			return "Status: Not supported\n\nServer response below:\n\n" ;
+			return "ERROR 7: ussd code is not supported" ;
 
 		case USSD_Timeout:
 
-			return "Status: Timeout\n\nServer response below:\n\n" ;
+			return "ERROR 7: connection timeout" ;
 
 		case USSD_Unknown:
 
-			return "Status: Unknown\n\nServer response below:\n\n" ;
+			return "ERROR 7: unknown error has occured" ;
 
 		default:
-			return "Status: Unknown\n\nServer response below:\n\n" ;
+			return "ERROR 7: unknown error has occured" ;
 		}
 	} ;
 
@@ -331,13 +326,17 @@ void MainWindow::processResponce( GSM_USSDMessage * ussd )
 		return QString::fromUtf16( buffer ) ;
 	} ;
 
-	m_ui->textEditResult->setText( _response( ussd ) + _convert_unicode_C_string_to_qstring( ussd ) ) ;
-
 	this->enableSending() ;
 
 	if( ussd->Status == USSD_ActionNeeded ){
 
 		m_ui->lineEditUSSD_code->setText( QString() ) ;
+	}
+	if( ussd->Status == USSD_ActionNeeded || ussd->Status == USSD_NoActionNeeded ){
+
+		m_ui->textEditResult->setText( _convert_unicode_C_string_to_qstring( ussd ) ) ;
+	}else{
+		m_ui->textEditResult->setText( _error( ussd ) ) ;
 	}
 }
 
