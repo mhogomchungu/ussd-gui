@@ -25,4 +25,5 @@ LIBS += -lGammu
 
 INCLUDEPATH += /usr/include/gammu
 
-RESOURCES += /home/mtz/projects/ussd-gui/icon.qrc
+RESOURCES   += /home/mtz/projects/ussd-gui/icon.qrc
+INCLUDEPATH +=/home/mtz/projects/build/ussd

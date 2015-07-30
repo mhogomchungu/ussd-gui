@@ -26,9 +26,13 @@
 #include <QTimer>
 #include <QEventLoop>
 
+#include <QTranslator>
+
 #include <QDebug>
 
 #include "task.h"
+
+#include "language_path.h"
 
 static void _suspend( int time )
 {
@@ -41,6 +45,11 @@ static void _suspend( int time )
 	t.start( 1000 * time ) ;
 
 	l.exec() ;
+}
+
+static void _suspend_for_one_second()
+{
+	_suspend( 1 ) ;
 }
 
 static void _callback( GSM_StateMachine * gsm,GSM_USSDMessage * ussd,void * e )
@@ -57,7 +66,11 @@ MainWindow::MainWindow( QWidget * parent ) : QMainWindow( parent ),
 	m_foo( [ this ]( GSM_USSDMessage * ussd ){ this->processResponce( ussd ) ; } ),
 	m_settings( "ussd-gui","ussd-gui" )
 {
+	this->setLocalLanguage() ;
+
 	m_ui->setupUi( this ) ;
+
+	QCoreApplication::setApplicationName( "ussd-gui" ) ;
 
 	this->setWindowIcon( QIcon( ":/ussd-gui" ) ) ;
 
@@ -80,8 +93,13 @@ MainWindow::MainWindow( QWidget * parent ) : QMainWindow( parent ),
 	if( !m_history.isEmpty() ){
 
 		m_ui->lineEditUSSD_code->setText( m_history.split( "\n",QString::SkipEmptyParts ).first() ) ;
-		m_ui->pbHistory->setToolTip( "history:\n" + m_history ) ;
+		m_ui->pbHistory->setToolTip( this->setHistoryToolTip() ) ;
 	}
+}
+
+QString MainWindow::setHistoryToolTip()
+{
+	return tr( "history:" ) + "\n" + m_history ;
 }
 
 MainWindow::~MainWindow()
@@ -123,7 +141,7 @@ void MainWindow::ConnectStatus()
 
 bool MainWindow::initConnection()
 {
-	m_connectingMsg = "status: connecting " ;
+	m_connectingMsg = tr( "status: connecting " ) ;
 
 	QTimer timer ;
 
@@ -140,18 +158,20 @@ bool MainWindow::initConnection()
 
 	timer.stop() ;
 
-	this->enableSending() ;
-	m_ui->pbCancel->setEnabled( true ) ;
-
 	if( error != ERR_NONE ){
 
-		m_ui->textEditResult->setText( QString( "ERROR 1: " ) + GSM_ErrorString( error ) ) ;
+		m_ui->textEditResult->setText( tr( "ERROR 1: " ) + GSM_ErrorString( error ) ) ;
+
+		this->enableSending() ;
+		m_ui->pbCancel->setEnabled( true ) ;
 
 		return false ;
 	}else{
-		m_ui->textEditResult->setText( "status: connected" ) ;
+		m_ui->textEditResult->setText( tr( "status: connected" ) ) ;
 
 		m_ui->pbSend->setEnabled( false ) ;
+
+		_suspend_for_one_second() ;
 
 		GSM_SetIncomingUSSDCallback( m_gsm,_callback,reinterpret_cast< void * >( &m_foo ) ) ;
 
@@ -159,7 +179,7 @@ bool MainWindow::initConnection()
 
 		if( error != ERR_NONE ){
 
-			m_ui->textEditResult->setText( QString( "ERROR 2: " ) + GSM_ErrorString( error ) ) ;
+			m_ui->textEditResult->setText( tr( "ERROR 2: " ) + GSM_ErrorString( error ) ) ;
 
 			return false ;
 		}else{
@@ -197,6 +217,15 @@ void MainWindow::updateHistory( const QByteArray& e )
 
 			m_history += "\n" + it ;
 		}
+	}else{
+		l.removeOne( e ) ;
+
+		m_history = e ;
+
+		for( const auto& it : l ){
+
+			m_history += "\n" + it ;
+		}
 	}
 }
 
@@ -212,20 +241,26 @@ void MainWindow::pbSend()
 
 			this->setSetting( "history",m_history ) ;
 
-			m_ui->pbHistory->setToolTip( m_history ) ;
+			m_ui->pbHistory->setToolTip( this->setHistoryToolTip() ) ;
 		}
+
+		this->disableSending() ;
+
+		m_ui->textEditResult->setText( tr( "status: sending a request" ) ) ;
+
+		_suspend_for_one_second() ;
 
 		auto error = GSM_DialService( m_gsm,ussd.data() ) ;
 
 		if( error != ERR_NONE ){
 
-			m_ui->textEditResult->setText( QString( "ERROR 3: " ) + GSM_ErrorString( error ) ) ;
+			m_ui->textEditResult->setText( tr( "ERROR 3: " ) + GSM_ErrorString( error ) ) ;
 
 			this->enableSending() ;
 		}else{
-			this->disableSending() ;
 
-			QString e( "waiting for a reply ..." ) ;
+
+			QString e( tr( "waiting for a reply ..." ) ) ;
 
 			m_ui->pbCancel->setEnabled( false ) ;
 
@@ -233,9 +268,9 @@ void MainWindow::pbSend()
 
 			while( true ){
 
-				if( r == 30 ){
+				if( r == 60 ){
 
-					m_ui->textEditResult->setText( QString( "ERROR 6: no response within 30 seconds." ) ) ;
+					m_ui->textEditResult->setText( tr( "ERROR 6: no response within 1 minute." ) ) ;
 
 					this->enableSending() ;
 
@@ -251,7 +286,7 @@ void MainWindow::pbSend()
 
 						e += "...." ;
 
-						_suspend( 1 ) ;
+						_suspend_for_one_second() ;
 					}else{
 						break ;
 					}
@@ -300,42 +335,42 @@ void MainWindow::processResponce( GSM_USSDMessage * ussd )
 
 		case USSD_NoActionNeeded:
 
-			return "Status: No action needed" ;
+			return tr( "Status: No action needed" ) ;
 
 		case USSD_ActionNeeded:
 
-			return "Status: Action needed" ;
+			return tr( "Status: Action needed" ) ;
 
 		case USSD_Terminated:
 
-			return "ERROR 7: connection was terminated" ;
+			return tr( "ERROR 7: connection was terminated" ) ;
 
 		case USSD_AnotherClient:
 
-			return "ERROR 7: another client replied" ;
+			return tr( "ERROR 7: another client replied" ) ;
 
 		case USSD_NotSupported:
 
-			return "ERROR 7: ussd code is not supported" ;
+			return tr( "ERROR 7: ussd code is not supported" ) ;
 
 		case USSD_Timeout:
 
-			return "ERROR 7: connection timeout" ;
+			return tr( "ERROR 7: connection timeout" ) ;
 
 		case USSD_Unknown:
 
-			return "ERROR 7: unknown error has occured" ;
+			return tr( "ERROR 7: unknown error has occured" ) ;
 
 		default:
-			return "ERROR 7: unknown error has occured" ;
+			return tr( "ERROR 7: unknown error has occured" ) ;
 		}
 	} ;
 
 	/*
-	 * DecodeUnicodeString() seems to return a unicode string as a C string like "004F004D00470021"
-	 * and below routine converts it to a QString
+	 * this routine converts a unicode C string like "004F004D00470021"
+	 * into a presentable string.
 	 */
-	auto _convert_unicode_C_string_to_qstring = []( GSM_USSDMessage * ussd ){
+	auto _convert_unicode_C_string_to_qstring = []( const char * e ){
 
 		auto _convert_base_16_to_base_10 = []( const char * e ){
 
@@ -360,8 +395,6 @@ void MainWindow::processResponce( GSM_USSDMessage * ussd )
 
 		unsigned short buffer[ GSM_MAX_USSD_LENGTH + 1 ] = { 0 } ;
 
-		const char * e = DecodeUnicodeString( ussd->Text ) ;
-
 		for( int i = 0 ; *e ; e += 4,i++ ){
 
 			*( buffer + i ) = _convert_base_16_to_base_10( e ) + _convert_base_16_to_base_10( e + 2 ) ;
@@ -378,7 +411,18 @@ void MainWindow::processResponce( GSM_USSDMessage * ussd )
 	}
 	if( ussd->Status == USSD_ActionNeeded || ussd->Status == USSD_NoActionNeeded ){
 
-		m_ui->textEditResult->setText( _convert_unicode_C_string_to_qstring( ussd ) ) ;
+		const char * e = DecodeUnicodeString( ussd->Text ) ;
+
+		/*
+		 * different network operators seem to return the result in different formats,
+		 * just going with what works for me for now until i know more about this.
+		 */
+		if( false ){
+
+			m_ui->textEditResult->setText( e ) ;
+		}else{
+			m_ui->textEditResult->setText( _convert_unicode_C_string_to_qstring( e ) ) ;
+		}
 	}else{
 		m_ui->textEditResult->setText( _error( ussd ) ) ;
 	}
@@ -396,7 +440,7 @@ void MainWindow::setUpDevice()
 
 	if( error != ERR_NONE  ){
 
-		m_ui->textEditResult->setText( QString( "ERROR 4: " ) + GSM_ErrorString( error ) ) ;
+		m_ui->textEditResult->setText( tr( "ERROR 4: " ) + GSM_ErrorString( error ) ) ;
 
 		this->disableSending() ;
 	}else{
@@ -404,7 +448,7 @@ void MainWindow::setUpDevice()
 
 		if( error != ERR_NONE  ){
 
-			m_ui->textEditResult->setText( QString( "ERROR 5: " ) + GSM_ErrorString( error ) ) ;
+			m_ui->textEditResult->setText( tr( "ERROR 5: " ) + GSM_ErrorString( error ) ) ;
 
 			this->disableSending() ;
 		}
@@ -419,4 +463,25 @@ void MainWindow::closeEvent( QCloseEvent * e )
 {
 	e->ignore() ;
 	this->pbQuit() ;
+}
+
+void MainWindow::setLocalLanguage()
+{
+	QString lang = this->getSetting( "language" ) ;
+
+	if( !lang.isEmpty() ){
+
+		QByteArray r = lang.toLatin1() ;
+
+		if( r == "english_US" ){
+			/*
+			 * english_US language,its the default and hence dont load anything
+			 */
+		}else{
+			auto translator = new QTranslator( this ) ;
+
+			translator->load( r.constData(),LANGUAGE_FILE_PATH ) ;
+			QCoreApplication::installTranslator( translator ) ;
+		}
+	}
 }

@@ -73,6 +73,8 @@ private:
 	void setUpDevice() ;
 	void closeEvent( QCloseEvent * ) ;
 	bool deviceIsConnected() ;
+	void setLocalLanguage() ;
+	QString setHistoryToolTip() ;
 	QString getSetting( const QString& ) ;
 	void setSetting( const QString&,const QString& ) ;
 	Ui::MainWindow * m_ui ;

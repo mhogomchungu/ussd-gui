@@ -60,6 +60,12 @@ else()
 	target_link_libraries( ussd-gui ${QT_LIBRARIES} ${GAMMU_LIBRARIES} )
 endif()
 
+if( "${DATA_INSTALL_DIR}" STREQUAL "" )
+	set( DATA_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/share" )
+endif()
+
+file( WRITE "${PROJECT_BINARY_DIR}/language_path.h" "\n#define LANGUAGE_FILE_PATH \"${DATA_INSTALL_DIR}/ussd-gui/translations.qm/\"" )
+
 install( TARGETS ussd-gui RUNTIME DESTINATION bin )
 
 install( FILES ${PROJECT_BINARY_DIR}/ussd-gui.desktop DESTINATION share/applications
@@ -67,6 +73,8 @@ install( FILES ${PROJECT_BINARY_DIR}/ussd-gui.desktop DESTINATION share/applicat
         )
 install( FILES ussd-gui.png DESTINATION /usr/share/icons/hicolor/48x48/apps/ )
 install( FILES ussd-gui.png DESTINATION /usr/share/pixmaps )
+
+#install( FILES translations.qm/swahili.qm   DESTINATION "${DATA_INSTALL_DIR}/ussd-gui/translations.qm/" )
 
 file( WRITE "${PROJECT_BINARY_DIR}/ussd-gui.desktop"
 "#!/usr/bin/env xdg-open
