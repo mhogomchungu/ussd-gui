@@ -32,6 +32,10 @@
 
 #include <memory>
 
+#include <QStringList>
+
+#include <QString>
+
 namespace Ui {
 class MainWindow ;
 }
@@ -63,6 +67,7 @@ private slots:
 	void enableSending() ;
 	void ConnectStatus() ;
 private:
+	void updateHistory( const QByteArray& ) ;
 	bool initConnection() ;
 	void processResponce( GSM_USSDMessage * ) ;
 	void setUpDevice() ;
@@ -75,6 +80,7 @@ private:
 	foo m_foo ;
 	QSettings m_settings ;
 	QString m_connectingMsg ;
+	QString m_history ;
 };
 
 #endif // MAINWINDOW_H

@@ -26,6 +26,8 @@
 #include <QTimer>
 #include <QEventLoop>
 
+#include <QDebug>
+
 #include "task.h"
 
 static void _suspend( int time )
@@ -71,9 +73,15 @@ MainWindow::MainWindow( QWidget * parent ) : QMainWindow( parent ),
 
 	m_settings.setPath( QSettings::IniFormat,QSettings::UserScope,e ) ;
 
-	m_ui->lineEditUSSD_code->setText( this->getSetting( "last_cmd" ) ) ;
-
 	this->setUpDevice() ;
+
+	m_history = this->getSetting( "history" ) ;
+
+	if( !m_history.isEmpty() ){
+
+		m_ui->lineEditUSSD_code->setText( m_history.split( "\n",QString::SkipEmptyParts ).first() ) ;
+		m_ui->pbHistory->setToolTip( "history:\n" + m_history ) ;
+	}
 }
 
 MainWindow::~MainWindow()
@@ -160,6 +168,38 @@ bool MainWindow::initConnection()
 	}
 }
 
+void MainWindow::updateHistory( const QByteArray& e )
+{
+	QStringList l = m_history.split( "\n",QString::SkipEmptyParts ) ;
+
+	if( !l.contains( e ) ){
+
+		QStringList q = this->getSetting( "no_history" ).split( "\n",QString::SkipEmptyParts ) ;
+
+		for( const auto& it : q ){
+
+			if( e.startsWith( it.toLatin1() ) ){
+
+				return ;
+			}
+		}
+
+		if( l.size() >= 10 ){
+
+			l.removeLast() ;
+
+			l.append( e ) ;
+		}
+
+		m_history = e ;
+
+		for( const auto& it : l ){
+
+			m_history += "\n" + it ;
+		}
+	}
+}
+
 void MainWindow::pbSend()
 {
 	auto _send = [ this ](){
@@ -168,7 +208,11 @@ void MainWindow::pbSend()
 
 		if( ussd.startsWith( "*" ) ){
 
-			this->setSetting( "last_cmd",ussd ) ;
+			this->updateHistory( ussd ) ;
+
+			this->setSetting( "history",m_history ) ;
+
+			m_ui->pbHistory->setToolTip( m_history ) ;
 		}
 
 		auto error = GSM_DialService( m_gsm,ussd.data() ) ;
