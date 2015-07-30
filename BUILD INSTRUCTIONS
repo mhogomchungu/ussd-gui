@@ -1,0 +1,29 @@
+
+Before you build,make sure you have libgammu development package installed.
+
+To build "ussd-gui" with default options,run these 5 commands from inside the "ussd-gui" source folder.
+
+*****************************************************************************************************
+
+mkdir build
+
+cd build
+
+cmake -DCMAKE_INSTALL_PREFIX=/usr -DQT5=false -DCMAKE_BUILD_TYPE=RELEASE . ..
+
+make
+
+su -c "make install" ( or sudo make install )
+
+*****************************************************************************************************
+
+meaning of different options:
+
+-DCMAKE_INSTALL_PREFIX=/usr/
+This option tells the build process to install project's files in "/usr/".
+
+-DCMAKE_BUILD_TYPE=RELEASE
+This option tells the build process to build the project in release mode.This mode is most suitable for end users.
+
+-DQT5=false
+This option tells the build process to depend on Qt4.Set the option to "true" if you want to depend on Qt5.
