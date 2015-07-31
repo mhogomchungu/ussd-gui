@@ -36,6 +36,8 @@
 
 #include <QString>
 
+#include <QMenu>
+
 namespace Ui {
 class MainWindow ;
 }
@@ -66,8 +68,10 @@ private slots:
 	void pbConvert() ;
 	void disableSending() ;
 	void enableSending() ;
-	void ConnectStatus() ;
+	void connectStatus() ;
+	void setHistoryItem( QAction * ) ;
 private:
+	QStringList historyList() ;
 	bool gsm7Encoded() ;
 	void displayResult() ;
 	void updateHistory( const QByteArray& ) ;
@@ -77,7 +81,8 @@ private:
 	void closeEvent( QCloseEvent * ) ;
 	bool deviceIsConnected() ;
 	void setLocalLanguage() ;
-	QString setHistoryToolTip() ;
+	void setHistoryMenu( const QStringList& ) ;
+	void setHistoryMenu() ;
 	QString getSetting( const QString& ) ;
 	bool getBoolSetting( const QString& ) ;
 	void setSetting( const QString&,const QString& ) ;
@@ -89,6 +94,7 @@ private:
 	QString m_connectingMsg ;
 	QString m_history ;
 	GSM_USSDMessage * m_ussd = nullptr ;
+	QMenu m_menu ;
 };
 
 #endif // MAINWINDOW_H

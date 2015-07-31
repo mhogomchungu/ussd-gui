@@ -81,6 +81,7 @@ MainWindow::MainWindow( QWidget * parent ) : QMainWindow( parent ),
 	connect( m_ui->pbCancel,SIGNAL( pressed() ),this,SLOT( pbQuit() ) ) ;
 	connect( m_ui->pbSend,SIGNAL( pressed() ),this,SLOT( pbSend() ) ) ;
 	connect( m_ui->pbConvert,SIGNAL( pressed() ),this,SLOT( pbConvert() ) ) ;
+	connect( &m_menu,SIGNAL( triggered( QAction * ) ),this,SLOT( setHistoryItem( QAction * ) ) ) ;
 
 	m_ui->pbConvert->setEnabled( false ) ;
 
@@ -97,14 +98,29 @@ MainWindow::MainWindow( QWidget * parent ) : QMainWindow( parent ),
 
 	if( !m_history.isEmpty() ){
 
-		m_ui->lineEditUSSD_code->setText( m_history.split( "\n",QString::SkipEmptyParts ).first() ) ;
-		m_ui->pbHistory->setToolTip( this->setHistoryToolTip() ) ;
-	}
+		auto l = this->historyList() ;
+
+		m_ui->lineEditUSSD_code->setText( l.first() ) ;
+
+		this->setHistoryMenu( l ) ;
+	}	
 }
 
-QString MainWindow::setHistoryToolTip()
+void MainWindow::setHistoryMenu( const QStringList& l )
 {
-	return tr( "history:" ) + "\n" + m_history ;
+	m_menu.clear() ;
+
+	for( const auto& it : l ){
+
+		m_menu.addAction( it ) ;
+	}
+
+	m_ui->pbHistory->setMenu( &m_menu ) ;
+}
+
+void MainWindow::setHistoryMenu()
+{
+	this->setHistoryMenu( this->historyList() ) ;
 }
 
 MainWindow::~MainWindow()
@@ -153,10 +169,20 @@ void MainWindow::setSetting(const QString& key,bool value )
 	m_settings.setValue( key,value ) ;
 }
 
-void MainWindow::ConnectStatus()
+void MainWindow::connectStatus()
 {
 	m_connectingMsg += "..." ;
 	m_ui->textEditResult->setText( m_connectingMsg ) ;
+}
+
+void MainWindow::setHistoryItem( QAction * ac )
+{
+	m_ui->lineEditUSSD_code->setText( ac->text() ) ;
+}
+
+QStringList MainWindow::historyList()
+{
+	return m_history.split( "\n",QString::SkipEmptyParts ) ;
 }
 
 bool MainWindow::initConnection()
@@ -165,9 +191,9 @@ bool MainWindow::initConnection()
 
 	QTimer timer ;
 
-	connect( &timer,SIGNAL( timeout() ),this,SLOT( ConnectStatus() ) ) ;
+	connect( &timer,SIGNAL( timeout() ),this,SLOT( connectStatus() ) ) ;
 
-	this->ConnectStatus() ;
+	this->connectStatus() ;
 
 	this->disableSending() ;
 	m_ui->pbCancel->setEnabled( false ) ;
@@ -210,7 +236,7 @@ bool MainWindow::initConnection()
 
 void MainWindow::updateHistory( const QByteArray& e )
 {
-	QStringList l = m_history.split( "\n",QString::SkipEmptyParts ) ;
+	QStringList l = this->historyList() ;
 
 	if( !l.contains( e ) ){
 
@@ -247,6 +273,8 @@ void MainWindow::updateHistory( const QByteArray& e )
 			m_history += "\n" + it ;
 		}
 	}
+
+	this->setHistoryMenu() ;
 }
 
 void MainWindow::pbSend()
@@ -260,8 +288,6 @@ void MainWindow::pbSend()
 			this->updateHistory( ussd ) ;
 
 			this->setSetting( "history",m_history ) ;
-
-			m_ui->pbHistory->setToolTip( this->setHistoryToolTip() ) ;
 		}
 
 		this->disableSending() ;
