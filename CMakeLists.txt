@@ -23,7 +23,8 @@ if( NOT GAMMU_FOUND )
 	message( FATAL_ERROR "ERROR: could not find gammu development files" )
 endif( NOT GAMMU_FOUND )
 
-add_definitions( -I${GAMMU_INCLUDE_DIR} )
+include_directories( ${GAMMU_INCLUDE_DIR} )
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/3rd_party )
 include_directories( ${GAMMU_INCLUDE_DIRS} )
 
 if( QT5 )
@@ -49,7 +50,7 @@ else()
 	QT4_ADD_RESOURCES( ICON icon.qrc )
 endif()
 
-add_executable( ussd-gui main.cpp mainwindow.cpp ${MOC} ${UI} ${ICON} )
+add_executable( ussd-gui main.cpp mainwindow.cpp 3rd_party/qgsmcodec.cpp ${MOC} ${UI} ${ICON} )
 
 set_target_properties( ussd-gui PROPERTIES COMPILE_FLAGS "-Wextra -Wall -s -fPIE -pthread  -pedantic" )
 set_target_properties( ussd-gui PROPERTIES LINK_FLAGS "-pie" )

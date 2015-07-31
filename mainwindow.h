@@ -63,10 +63,13 @@ public:
 private slots:
 	void pbSend() ;
 	void pbQuit() ;
+	void pbConvert() ;
 	void disableSending() ;
 	void enableSending() ;
 	void ConnectStatus() ;
 private:
+	bool gsm7Encoded() ;
+	void displayResult() ;
 	void updateHistory( const QByteArray& ) ;
 	bool initConnection() ;
 	void processResponce( GSM_USSDMessage * ) ;
@@ -76,13 +79,16 @@ private:
 	void setLocalLanguage() ;
 	QString setHistoryToolTip() ;
 	QString getSetting( const QString& ) ;
+	bool getBoolSetting( const QString& ) ;
 	void setSetting( const QString&,const QString& ) ;
+	void setSetting( const QString&,bool ) ;
 	Ui::MainWindow * m_ui ;
 	GSM_StateMachine * m_gsm = nullptr ;
 	foo m_foo ;
 	QSettings m_settings ;
 	QString m_connectingMsg ;
 	QString m_history ;
+	GSM_USSDMessage * m_ussd = nullptr ;
 };
 
 #endif // MAINWINDOW_H

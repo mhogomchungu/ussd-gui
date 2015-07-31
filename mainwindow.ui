@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>600</width>
-    <height>331</height>
+    <height>332</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,9 +17,9 @@
    <widget class="QPushButton" name="pbSend">
     <property name="geometry">
      <rect>
-      <x>200</x>
+      <x>240</x>
       <y>300</y>
-      <width>111</width>
+      <width>121</width>
       <height>31</height>
      </rect>
     </property>
@@ -36,9 +36,9 @@
    <widget class="QPushButton" name="pbCancel">
     <property name="geometry">
      <rect>
-      <x>310</x>
+      <x>360</x>
       <y>300</y>
-      <width>101</width>
+      <width>111</width>
       <height>31</height>
      </rect>
     </property>
@@ -51,7 +51,7 @@
      <rect>
       <x>120</x>
       <y>270</y>
-      <width>371</width>
+      <width>361</width>
       <height>31</height>
      </rect>
     </property>
@@ -110,7 +110,7 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>490</x>
+      <x>480</x>
       <y>270</y>
       <width>31</width>
       <height>31</height>
@@ -118,6 +118,19 @@
     </property>
     <property name="text">
      <string/>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pbConvert">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>300</y>
+      <width>111</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>&amp;Convert</string>
     </property>
    </widget>
   </widget>

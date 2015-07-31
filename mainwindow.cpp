@@ -34,6 +34,8 @@
 
 #include "language_path.h"
 
+#include "3rd_party/qgsmcodec.h"
+
 static void _suspend( int time )
 {
 	QEventLoop l ;
@@ -78,6 +80,9 @@ MainWindow::MainWindow( QWidget * parent ) : QMainWindow( parent ),
 
 	connect( m_ui->pbCancel,SIGNAL( pressed() ),this,SLOT( pbQuit() ) ) ;
 	connect( m_ui->pbSend,SIGNAL( pressed() ),this,SLOT( pbSend() ) ) ;
+	connect( m_ui->pbConvert,SIGNAL( pressed() ),this,SLOT( pbConvert() ) ) ;
+
+	m_ui->pbConvert->setEnabled( false ) ;
 
 	QString e = QDir::homePath() + "/.config/ussd-gui" ;
 
@@ -128,7 +133,22 @@ QString MainWindow::getSetting( const QString& opt )
 	}
 }
 
+bool MainWindow::getBoolSetting( const QString& opt )
+{
+	if( m_settings.contains( opt ) ){
+
+		return m_settings.value( opt ).toBool() ;
+	}else{
+		return false ;
+	}
+}
+
 void MainWindow::setSetting( const QString& key, const QString& value )
+{
+	m_settings.setValue( key,value ) ;
+}
+
+void MainWindow::setSetting(const QString& key,bool value )
 {
 	m_settings.setValue( key,value ) ;
 }
@@ -297,6 +317,8 @@ void MainWindow::pbSend()
 		}
 	} ;
 
+	m_ui->pbConvert->setEnabled( false ) ;
+
 	if( this->deviceIsConnected() ){
 
 		_send() ;
@@ -366,43 +388,6 @@ void MainWindow::processResponce( GSM_USSDMessage * ussd )
 		}
 	} ;
 
-	/*
-	 * this routine converts a unicode C string like "004F004D00470021"
-	 * into a presentable string.
-	 */
-	auto _convert_unicode_C_string_to_qstring = []( const char * e ){
-
-		auto _convert_base_16_to_base_10 = []( const char * e ){
-
-			auto _convert_hex_to_decimal = []( const char * e ){
-
-				char a = *e ;
-
-				if( a >= 'A' && a <= 'F' ){
-
-					return a - 'A' + 10 ;
-
-				}else if( a >= 'a' && a <= 'f' ){
-
-					return a - 'a' + 10 ;
-				}else{
-					return a - '0' ;
-				}
-			} ;
-
-			return _convert_hex_to_decimal( e ) * 16 + _convert_hex_to_decimal( e + 1 ) ;
-		} ;
-
-		unsigned short buffer[ GSM_MAX_USSD_LENGTH + 1 ] = { 0 } ;
-
-		for( int i = 0 ; *e ; e += 4,i++ ){
-
-			*( buffer + i ) = _convert_base_16_to_base_10( e ) + _convert_base_16_to_base_10( e + 2 ) ;
-		}
-
-		return QString::fromUtf16( buffer ) ;
-	} ;
-
 	this->enableSending() ;
 
 	if( ussd->Status == USSD_ActionNeeded ){
@@ -411,20 +396,58 @@ void MainWindow::processResponce( GSM_USSDMessage * ussd )
 	}
 	if( ussd->Status == USSD_ActionNeeded || ussd->Status == USSD_NoActionNeeded ){
 
-		const char * e = DecodeUnicodeString( ussd->Text ) ;
+		m_ussd = ussd ;
 
-		/*
-		 * different network operators seem to return the result in different formats,
-		 * just going with what works for me for now until i know more about this.
-		 */
-		if( false ){
+		m_ui->pbConvert->setEnabled( true ) ;
 
-			m_ui->textEditResult->setText( e ) ;
-		}else{
-			m_ui->textEditResult->setText( _convert_unicode_C_string_to_qstring( e ) ) ;
-		}
+		this->displayResult() ;
 	}else{
 		m_ui->textEditResult->setText( _error( ussd ) ) ;
+	}
+}
+
+/*
+ * Different operators seems to return data in different formats and trying to predict data
+ * was returned in what format is something i do not want to do and instead,i give the user
+ * a button to switch between formats i currently know.
+ *
+ * currently known formats are:
+ * 1. gsm 7 bit encoded string.
+ * 2. a string of big endian short values in hex representation. example: "004F004D004700210021"
+ */
+void MainWindow::pbConvert()
+{
+	this->setSetting( "gsm7Encoded",!this->gsm7Encoded() ) ;
+	this->displayResult() ;
+}
+
+bool MainWindow::gsm7Encoded()
+{
+	QString opt = "gsm7Encoded" ;
+
+	if( m_settings.contains( opt ) ){
+
+		return m_settings.value( opt ).toBool() ;
+	}else{
+		m_settings.setValue( opt,true ) ;
+		return true ;
+	}
+}
+
+void MainWindow::displayResult()
+{
+	if( m_ussd ){
+		/*
+		 * DecodeUnicodeString() is provided by libgammu
+		 */
+		const char * e = DecodeUnicodeString( m_ussd->Text ) ;
+
+		if( this->gsm7Encoded() ){
+
+			m_ui->textEditResult->setText( QGsmCodec::fromGsm7BitEncodedtoUnicode( e ) ) ;
+		}else{
+			m_ui->textEditResult->setText( QGsmCodec::fromUnicodeStringInHexToUnicode( e ) ) ;
+		}
 	}
 }
 

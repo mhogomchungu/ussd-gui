@@ -12,10 +12,9 @@ TARGET = ussd-gui
 TEMPLATE = app
 
 
-SOURCES += main.cpp\
-        mainwindow.cpp
+SOURCES += main.cpp mainwindow.cpp 3rd_party/qgsmcodec.cpp
 
-HEADERS  += mainwindow.h task.h
+HEADERS  += mainwindow.h task.h 3rd_party/qgsmcodec.h
 
 FORMS    += mainwindow.ui
 
