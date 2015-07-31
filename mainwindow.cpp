@@ -304,7 +304,7 @@ void MainWindow::pbSend()
 
 			this->enableSending() ;
 		}else{
-			QString e( tr( "waiting for a reply ..." ) ) ;
+			QString e( tr( "status: waiting for a reply ..." ) ) ;
 
 			m_ui->pbCancel->setEnabled( false ) ;
 
