@@ -25,7 +25,7 @@
     </message>
     <message>
         <location filename="../mainwindow.ui" line="88"/>
-        <source>USSD server response</source>
+        <source>USSD Server Response</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -34,89 +34,103 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="190"/>
-        <source>status: connecting </source>
+        <location filename="../mainwindow.cpp" line="115"/>
+        <location filename="../mainwindow.cpp" line="187"/>
+        <source>Empty History</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="209"/>
-        <source>ERROR 1: </source>
+        <location filename="../mainwindow.cpp" line="200"/>
+        <source>Status: Connecting </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="216"/>
-        <source>status: connected</source>
+        <location filename="../mainwindow.cpp" line="219"/>
+        <source>Status: ERROR 1: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="228"/>
-        <source>ERROR 2: </source>
+        <location filename="../mainwindow.cpp" line="226"/>
+        <source>Status: Connected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="295"/>
-        <source>status: sending a request</source>
+        <location filename="../mainwindow.cpp" line="238"/>
+        <source>Status: ERROR 2: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="303"/>
-        <source>ERROR 3: </source>
+        <location filename="../mainwindow.cpp" line="305"/>
+        <source>Status: Sending A Request</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="307"/>
-        <source>status: waiting for a reply ...</source>
+        <location filename="../mainwindow.cpp" line="313"/>
+        <source>Status: ERROR 3: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="317"/>
-        <source>ERROR 6: no response within 1 minute.</source>
+        <source>Status: Waiting For A Reply ...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="384"/>
-        <source>Status: No action needed</source>
+        <location filename="../mainwindow.cpp" line="327"/>
+        <source>Status: ERROR 6: no response within 1 minute.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="388"/>
-        <source>Status: Action needed</source>
+        <location filename="../mainwindow.cpp" line="394"/>
+        <source>Status: No Action Needed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="392"/>
-        <source>ERROR 7: connection was terminated</source>
+        <location filename="../mainwindow.cpp" line="398"/>
+        <source>Status: Action Needed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="396"/>
-        <source>ERROR 7: another client replied</source>
+        <location filename="../mainwindow.cpp" line="402"/>
+        <source>Status: ERROR 7: Connection Was Terminated</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="400"/>
-        <source>ERROR 7: ussd code is not supported</source>
+        <location filename="../mainwindow.cpp" line="406"/>
+        <source>Status: ERROR 7: Another Client Replied</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="404"/>
-        <source>ERROR 7: connection timeout</source>
+        <location filename="../mainwindow.cpp" line="410"/>
+        <source>Status: ERROR 7: USSD Code Is Not Supported</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="408"/>
-        <location filename="../mainwindow.cpp" line="411"/>
-        <source>ERROR 7: unknown error has occured</source>
+        <location filename="../mainwindow.cpp" line="414"/>
+        <source>Status: ERROR 7: Connection Timeout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="490"/>
-        <source>ERROR 4: </source>
+        <location filename="../mainwindow.cpp" line="418"/>
+        <location filename="../mainwindow.cpp" line="421"/>
+        <source>Status: ERROR 7: Unknown Error Has Occured</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="498"/>
-        <source>ERROR 5: </source>
+        <location filename="../mainwindow.cpp" line="500"/>
+        <source>Status: ERROR 4: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="508"/>
+        <source>Status: ERROR 5: </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QObject</name>
+    <message>
+        <location filename="../3rd_party/qgsmcodec.cpp" line="461"/>
+        <source>Status: ERROR 100: Failed To Parse Response</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
