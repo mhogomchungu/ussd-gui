@@ -420,32 +420,37 @@ QString QGsmCodec::fromGsm7BitEncodedtoUnicode( const char * e )
 
 QString QGsmCodec::fromUnicodeStringInHexToUnicode( const char * e )
 {
-	auto _convert_base_16_to_base_10 = []( const char * e ){
+	auto _convert_string_unicode_to_binary_unicode = []( const char * e ){
 
-		auto _convert_hex_to_decimal = []( const char * e ){
+		auto _convert_base_16_to_base_10 = []( const char * e ){
 
-			char a = *e ;
+			auto _convert_hex_to_decimal = []( const char * e ){
 
-			if( a >= 'A' && a <= 'F' ){
+				char a = *e ;
 
-				return a - 'A' + 10 ;
+				if( a >= 'A' && a <= 'F' ){
 
-			}else if( a >= 'a' && a <= 'f' ){
+					return a - 'A' + 10 ;
 
-				return a - 'a' + 10 ;
-			}else{
-				return a - '0' ;
-			}
+				}else if( a >= 'a' && a <= 'f' ){
+
+					return a - 'a' + 10 ;
+				}else{
+					return a - '0' ;
+				}
+			} ;
+
+			return _convert_hex_to_decimal( e ) * 16 + _convert_hex_to_decimal( e + 1 ) ;
 		} ;
 
-		return _convert_hex_to_decimal( e ) * 16 + _convert_hex_to_decimal( e + 1 ) ;
+		return _convert_base_16_to_base_10( e ) * 256 + _convert_base_16_to_base_10( e + 2 ) ;
 	} ;
 
 	unsigned short buffer[ GSM_MAX_USSD_LENGTH + 1 ] = { 0 } ;
 
 	for( int i = 0 ; *e ; e += 4,i++ ){
 
-		*( buffer + i ) = _convert_base_16_to_base_10( e ) + _convert_base_16_to_base_10( e + 2 ) ;
+		*( buffer + i ) = _convert_string_unicode_to_binary_unicode( e ) ;
 	}
 
 	return QString::fromUtf16( buffer ) ;

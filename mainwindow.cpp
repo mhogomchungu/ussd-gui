@@ -96,23 +96,28 @@ MainWindow::MainWindow( QWidget * parent ) : QMainWindow( parent ),
 
 	m_history = this->getSetting( "history" ) ;
 
-	if( !m_history.isEmpty() ){
+	QStringList l = this->historyList() ;
 
-		auto l = this->historyList() ;
+	if( !l.isEmpty() ){
 
-		m_ui->lineEditUSSD_code->setText( l.first() ) ;
+		m_ui->lineEditUSSD_code->setText( l.first() ) ;		
+	}
 
-		this->setHistoryMenu( l ) ;
-	}	
+	this->setHistoryMenu( l ) ;
 }
 
 void MainWindow::setHistoryMenu( const QStringList& l )
 {
 	m_menu.clear() ;
 
-	for( const auto& it : l ){
+	if( l.isEmpty() ){
 
-		m_menu.addAction( it ) ;
+		m_menu.addAction( tr( "Empty History" ) ) ;
+	}else{
+		for( const auto& it : l ){
+
+			m_menu.addAction( it ) ;
+		}
 	}
 
 	m_ui->pbHistory->setMenu( &m_menu ) ;
@@ -177,7 +182,12 @@ void MainWindow::connectStatus()
 
 void MainWindow::setHistoryItem( QAction * ac )
 {
-	m_ui->lineEditUSSD_code->setText( ac->text() ) ;
+	auto e = ac->text() ;
+
+	if( e != tr( "Empty History" ) ){
+
+		m_ui->lineEditUSSD_code->setText( e ) ;
+	}
 }
 
 QStringList MainWindow::historyList()
@@ -187,7 +197,7 @@ QStringList MainWindow::historyList()
 
 bool MainWindow::initConnection()
 {
-	m_connectingMsg = tr( "status: connecting " ) ;
+	m_connectingMsg = tr( "Status: Connecting " ) ;
 
 	QTimer timer ;
 
@@ -206,14 +216,14 @@ bool MainWindow::initConnection()
 
 	if( error != ERR_NONE ){
 
-		m_ui->textEditResult->setText( tr( "ERROR 1: " ) + GSM_ErrorString( error ) ) ;
+		m_ui->textEditResult->setText( tr( "Status: ERROR 1: " ) + GSM_ErrorString( error ) ) ;
 
 		this->enableSending() ;
 		m_ui->pbCancel->setEnabled( true ) ;
 
 		return false ;
 	}else{
-		m_ui->textEditResult->setText( tr( "status: connected" ) ) ;
+		m_ui->textEditResult->setText( tr( "Status: Connected" ) ) ;
 
 		m_ui->pbSend->setEnabled( false ) ;
 
@@ -225,7 +235,7 @@ bool MainWindow::initConnection()
 
 		if( error != ERR_NONE ){
 
-			m_ui->textEditResult->setText( tr( "ERROR 2: " ) + GSM_ErrorString( error ) ) ;
+			m_ui->textEditResult->setText( tr( "Status: ERROR 2: " ) + GSM_ErrorString( error ) ) ;
 
 			return false ;
 		}else{
@@ -292,7 +302,7 @@ void MainWindow::pbSend()
 
 		this->disableSending() ;
 
-		m_ui->textEditResult->setText( tr( "status: sending a request" ) ) ;
+		m_ui->textEditResult->setText( tr( "Status: Sending A Request" ) ) ;
 
 		_suspend_for_one_second() ;
 
@@ -300,11 +310,11 @@ void MainWindow::pbSend()
 
 		if( error != ERR_NONE ){
 
-			m_ui->textEditResult->setText( tr( "ERROR 3: " ) + GSM_ErrorString( error ) ) ;
+			m_ui->textEditResult->setText( tr( "Status: ERROR 3: " ) + GSM_ErrorString( error ) ) ;
 
 			this->enableSending() ;
 		}else{
-			QString e( tr( "status: waiting for a reply ..." ) ) ;
+			QString e( tr( "Status: Waiting For A Reply ..." ) ) ;
 
 			m_ui->pbCancel->setEnabled( false ) ;
 
@@ -314,7 +324,7 @@ void MainWindow::pbSend()
 
 				if( r == 60 ){
 
-					m_ui->textEditResult->setText( tr( "ERROR 6: no response within 1 minute." ) ) ;
+					m_ui->textEditResult->setText( tr( "Status: ERROR 6: no response within 1 minute." ) ) ;
 
 					this->enableSending() ;
 
@@ -381,34 +391,34 @@ void MainWindow::processResponce( GSM_USSDMessage * ussd )
 
 		case USSD_NoActionNeeded:
 
-			return tr( "Status: No action needed" ) ;
+			return tr( "Status: No Action Needed" ) ;
 
 		case USSD_ActionNeeded:
 
-			return tr( "Status: Action needed" ) ;
+			return tr( "Status: Action Needed" ) ;
 
 		case USSD_Terminated:
 
-			return tr( "ERROR 7: connection was terminated" ) ;
+			return tr( "Status: ERROR 7: Connection Was Terminated" ) ;
 
 		case USSD_AnotherClient:
 
-			return tr( "ERROR 7: another client replied" ) ;
+			return tr( "Status: ERROR 7: Another Client Replied" ) ;
 
 		case USSD_NotSupported:
 
-			return tr( "ERROR 7: ussd code is not supported" ) ;
+			return tr( "Status: ERROR 7: USSD Code Is Not Supported" ) ;
 
 		case USSD_Timeout:
 
-			return tr( "ERROR 7: connection timeout" ) ;
+			return tr( "Status: ERROR 7: Connection Timeout" ) ;
 
 		case USSD_Unknown:
 
-			return tr( "ERROR 7: unknown error has occured" ) ;
+			return tr( "Status: ERROR 7: Unknown Error Has Occured" ) ;
 
 		default:
-			return tr( "ERROR 7: unknown error has occured" ) ;
+			return tr( "Status: ERROR 7: Unknown Error Has Occured" ) ;
 		}
 	} ;
 
@@ -487,7 +497,7 @@ void MainWindow::setUpDevice()
 
 	if( error != ERR_NONE  ){
 
-		m_ui->textEditResult->setText( tr( "ERROR 4: " ) + GSM_ErrorString( error ) ) ;
+		m_ui->textEditResult->setText( tr( "Status: ERROR 4: " ) + GSM_ErrorString( error ) ) ;
 
 		this->disableSending() ;
 	}else{
@@ -495,7 +505,7 @@ void MainWindow::setUpDevice()
 
 		if( error != ERR_NONE  ){
 
-			m_ui->textEditResult->setText( tr( "ERROR 5: " ) + GSM_ErrorString( error ) ) ;
+			m_ui->textEditResult->setText( tr( "Status: ERROR 5: " ) + GSM_ErrorString( error ) ) ;
 
 			this->disableSending() ;
 		}
