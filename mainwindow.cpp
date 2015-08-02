@@ -112,7 +112,7 @@ void MainWindow::setHistoryMenu( const QStringList& l )
 
 	if( l.isEmpty() ){
 
-		m_menu.addAction( tr( "Empty History" ) ) ;
+		m_menu.addAction( tr( "Empty History." ) ) ;
 	}else{
 		for( const auto& it : l ){
 
@@ -184,7 +184,7 @@ void MainWindow::setHistoryItem( QAction * ac )
 {
 	auto e = ac->text() ;
 
-	if( e != tr( "Empty History" ) ){
+	if( e != tr( "Empty History." ) ){
 
 		m_ui->lineEditUSSD_code->setText( e ) ;
 	}
@@ -197,7 +197,7 @@ QStringList MainWindow::historyList()
 
 bool MainWindow::initConnection()
 {
-	m_connectingMsg = tr( "Status: Connecting " ) ;
+	m_connectingMsg = tr( "Status: Connecting. " ) ;
 
 	QTimer timer ;
 
@@ -223,7 +223,7 @@ bool MainWindow::initConnection()
 
 		return false ;
 	}else{
-		m_ui->textEditResult->setText( tr( "Status: Connected" ) ) ;
+		m_ui->textEditResult->setText( tr( "Status: Connected." ) ) ;
 
 		m_ui->pbSend->setEnabled( false ) ;
 
@@ -302,7 +302,7 @@ void MainWindow::pbSend()
 
 		this->disableSending() ;
 
-		m_ui->textEditResult->setText( tr( "Status: Sending A Request" ) ) ;
+		m_ui->textEditResult->setText( tr( "Status: Sending A Request." ) ) ;
 
 		_suspend_for_one_second() ;
 
@@ -391,34 +391,34 @@ void MainWindow::processResponce( GSM_USSDMessage * ussd )
 
 		case USSD_NoActionNeeded:
 
-			return tr( "Status: No Action Needed" ) ;
+			return tr( "Status: No Action Needed." ) ;
 
 		case USSD_ActionNeeded:
 
-			return tr( "Status: Action Needed" ) ;
+			return tr( "Status: Action Needed." ) ;
 
 		case USSD_Terminated:
 
-			return tr( "Status: ERROR 7: Connection Was Terminated" ) ;
+			return tr( "Status: ERROR 7: Connection Was Terminated." ) ;
 
 		case USSD_AnotherClient:
 
-			return tr( "Status: ERROR 7: Another Client Replied" ) ;
+			return tr( "Status: ERROR 7: Another Client Replied." ) ;
 
 		case USSD_NotSupported:
 
-			return tr( "Status: ERROR 7: USSD Code Is Not Supported" ) ;
+			return tr( "Status: ERROR 7: USSD Code Is Not Supported." ) ;
 
 		case USSD_Timeout:
 
-			return tr( "Status: ERROR 7: Connection Timeout" ) ;
+			return tr( "Status: ERROR 7: Connection Timeout." ) ;
 
 		case USSD_Unknown:
 
-			return tr( "Status: ERROR 7: Unknown Error Has Occured" ) ;
+			return tr( "Status: ERROR 7: Unknown Error Has Occured." ) ;
 
 		default:
-			return tr( "Status: ERROR 7: Unknown Error Has Occured" ) ;
+			return tr( "Status: ERROR 7: Unknown Error Has Occured." ) ;
 		}
 	} ;
 

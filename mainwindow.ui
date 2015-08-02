@@ -85,7 +85,7 @@
      </rect>
     </property>
     <property name="title">
-     <string>USSD Server Response</string>
+     <string>USSD Server Response.</string>
     </property>
     <property name="flat">
      <bool>false</bool>

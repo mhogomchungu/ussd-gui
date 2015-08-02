@@ -458,7 +458,7 @@ QString QGsmCodec::fromUnicodeStringInHexToUnicode( const char * e )
 
 		return QString::fromUtf16( buffer ) ;
 	}else{
-		return QObject::tr( "Status: ERROR 100: Failed To Parse Response" ) ;
+		return QObject::tr( "Status: ERROR 100: Failed To Parse Response." ) ;
 	}
 }
 

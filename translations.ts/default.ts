@@ -25,7 +25,7 @@
     </message>
     <message>
         <location filename="../mainwindow.ui" line="88"/>
-        <source>USSD Server Response</source>
+        <source>USSD Server Response.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -34,24 +34,8 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="115"/>
-        <location filename="../mainwindow.cpp" line="187"/>
-        <source>Empty History</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="200"/>
-        <source>Status: Connecting </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../mainwindow.cpp" line="219"/>
         <source>Status: ERROR 1: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="226"/>
-        <source>Status: Connected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -60,8 +44,24 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../mainwindow.cpp" line="115"/>
+        <location filename="../mainwindow.cpp" line="187"/>
+        <source>Empty History.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="200"/>
+        <source>Status: Connecting. </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="226"/>
+        <source>Status: Connected.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../mainwindow.cpp" line="305"/>
-        <source>Status: Sending A Request</source>
+        <source>Status: Sending A Request.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -81,38 +81,38 @@
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="394"/>
-        <source>Status: No Action Needed</source>
+        <source>Status: No Action Needed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="398"/>
-        <source>Status: Action Needed</source>
+        <source>Status: Action Needed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="402"/>
-        <source>Status: ERROR 7: Connection Was Terminated</source>
+        <source>Status: ERROR 7: Connection Was Terminated.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="406"/>
-        <source>Status: ERROR 7: Another Client Replied</source>
+        <source>Status: ERROR 7: Another Client Replied.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="410"/>
-        <source>Status: ERROR 7: USSD Code Is Not Supported</source>
+        <source>Status: ERROR 7: USSD Code Is Not Supported.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="414"/>
-        <source>Status: ERROR 7: Connection Timeout</source>
+        <source>Status: ERROR 7: Connection Timeout.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="418"/>
         <location filename="../mainwindow.cpp" line="421"/>
-        <source>Status: ERROR 7: Unknown Error Has Occured</source>
+        <source>Status: ERROR 7: Unknown Error Has Occured.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -130,7 +130,7 @@
     <name>QObject</name>
     <message>
         <location filename="../3rd_party/qgsmcodec.cpp" line="461"/>
-        <source>Status: ERROR 100: Failed To Parse Response</source>
+        <source>Status: ERROR 100: Failed To Parse Response.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
