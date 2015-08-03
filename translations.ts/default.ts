@@ -50,11 +50,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="200"/>
-        <source>Status: Connecting. </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../mainwindow.cpp" line="226"/>
         <source>Status: Connected.</source>
         <translation type="unfinished"></translation>
@@ -75,8 +70,13 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../mainwindow.cpp" line="200"/>
+        <source>Status: Connecting </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../mainwindow.cpp" line="327"/>
-        <source>Status: ERROR 6: no response within 1 minute.</source>
+        <source>Status: ERROR 6: no response within 30 seconds.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

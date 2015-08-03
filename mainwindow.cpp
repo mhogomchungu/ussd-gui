@@ -197,7 +197,7 @@ QStringList MainWindow::historyList()
 
 bool MainWindow::initConnection()
 {
-	m_connectingMsg = tr( "Status: Connecting. " ) ;
+	m_connectingMsg = tr( "Status: Connecting " ) ;
 
 	QTimer timer ;
 
@@ -322,9 +322,9 @@ void MainWindow::pbSend()
 
 			while( true ){
 
-				if( r == 60 ){
+				if( r == 30 ){
 
-					m_ui->textEditResult->setText( tr( "Status: ERROR 6: no response within 1 minute." ) ) ;
+					m_ui->textEditResult->setText( tr( "Status: ERROR 6: no response within 30 seconds." ) ) ;
 
 					this->enableSending() ;
 
