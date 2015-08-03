@@ -36,6 +36,8 @@
 
 #include "3rd_party/qgsmcodec.h"
 
+#include <cstring>
+
 static void _suspend( int time )
 {
 	QEventLoop l ;
@@ -430,7 +432,7 @@ void MainWindow::processResponce( GSM_USSDMessage * ussd )
 	}
 	if( ussd->Status == USSD_ActionNeeded || ussd->Status == USSD_NoActionNeeded ){
 
-		m_ussd = ussd ;
+		std::memcpy( &m_ussd,ussd,sizeof( m_ussd ) ) ;
 
 		m_ui->pbConvert->setEnabled( true ) ;
 
@@ -470,18 +472,16 @@ bool MainWindow::gsm7Encoded()
 
 void MainWindow::displayResult()
 {
-	if( m_ussd ){
-		/*
-		 * DecodeUnicodeString() is provided by libgammu
-		 */
-		const char * e = DecodeUnicodeString( m_ussd->Text ) ;
+	/*
+	 * DecodeUnicodeString() is provided by libgammu
+	 */
+	const char * e = DecodeUnicodeString( m_ussd.Text ) ;
 
-		if( this->gsm7Encoded() ){
+	if( this->gsm7Encoded() ){
 
-			m_ui->textEditResult->setText( QGsmCodec::fromGsm7BitEncodedtoUnicode( e ) ) ;
-		}else{
-			m_ui->textEditResult->setText( QGsmCodec::fromUnicodeStringInHexToUnicode( e ) ) ;
-		}
+		m_ui->textEditResult->setText( QGsmCodec::fromGsm7BitEncodedtoUnicode( e ) ) ;
+	}else{
+		m_ui->textEditResult->setText( QGsmCodec::fromUnicodeStringInHexToUnicode( e ) ) ;
 	}
 }
 

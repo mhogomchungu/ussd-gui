@@ -93,7 +93,7 @@ private:
 	QSettings m_settings ;
 	QString m_connectingMsg ;
 	QString m_history ;
-	GSM_USSDMessage * m_ussd = nullptr ;
+	GSM_USSDMessage m_ussd ;
 	QMenu m_menu ;
 };
 
