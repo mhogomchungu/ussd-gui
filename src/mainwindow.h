@@ -22,8 +22,6 @@
 
 #include <QMainWindow>
 
-#include <gammu.h>
-
 #include <QCloseEvent>
 
 #include <QSettings>
@@ -38,22 +36,11 @@
 
 #include <QMenu>
 
+#include "gsm.h"
+
 namespace Ui {
 class MainWindow ;
 }
-
-class foo{
-public:
-	explicit foo( std::function< void( GSM_USSDMessage * ) > f ) : m_function( std::move( f ) )
-	{
-	}
-	void operator()( GSM_USSDMessage * ussd )
-	{
-		m_function( ussd ) ;
-	}
-private:
-	std::function< void( GSM_USSDMessage * ussd ) > m_function ;
-} ;
 
 class MainWindow : public QMainWindow
 {
@@ -75,11 +62,9 @@ private:
 	bool gsm7Encoded() ;
 	void displayResult() ;
 	void updateHistory( const QByteArray& ) ;
-	bool initConnection() ;
-	void processResponce( GSM_USSDMessage * ) ;
-	void setUpDevice() ;
+	bool Connect() ;
+	void processResponce( const gsm_USSDMessage& ) ;
 	void closeEvent( QCloseEvent * ) ;
-	bool deviceIsConnected() ;
 	void setLocalLanguage() ;
 	void setHistoryMenu( const QStringList& ) ;
 	void setHistoryMenu() ;
@@ -88,13 +73,12 @@ private:
 	void setSetting( const QString&,const QString& ) ;
 	void setSetting( const QString&,bool ) ;
 	Ui::MainWindow * m_ui ;
-	GSM_StateMachine * m_gsm = nullptr ;
-	foo m_foo ;
-	QSettings m_settings ;
 	QString m_connectingMsg ;
 	QString m_history ;
-	GSM_USSDMessage m_ussd ;
+	gsm_USSDMessage m_ussd ;
+	gsm m_gsm ;
 	QMenu m_menu ;
+	QSettings m_settings ;
 };
 
 #endif // MAINWINDOW_H

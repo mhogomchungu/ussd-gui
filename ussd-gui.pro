@@ -12,11 +12,13 @@ TARGET = ussd-gui
 TEMPLATE = app
 
 
-SOURCES += main.cpp mainwindow.cpp 3rd_party/qgsmcodec.cpp
+SOURCES += src/main.cpp src/mainwindow.cpp 3rd_party/qgsmcodec.cpp \
+    src/gsm.cpp
 
-HEADERS  += mainwindow.h task.h 3rd_party/qgsmcodec.h
+HEADERS  += src/mainwindow.h src/task.h 3rd_party/qgsmcodec.h \
+    src/gsm.h
 
-FORMS    += mainwindow.ui
+FORMS    += src/mainwindow.ui
 
 QMAKE_CXXFLAGS += -std=c++11
 
@@ -24,5 +26,5 @@ LIBS += -lGammu
 
 INCLUDEPATH += /usr/include/gammu
 
-RESOURCES   += /home/mtz/projects/ussd-gui/icon.qrc
+RESOURCES   += /home/mtz/projects/ussd-gui/icons/icons.qrc
 INCLUDEPATH +=/home/mtz/projects/build/ussd

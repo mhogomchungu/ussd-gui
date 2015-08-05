@@ -30,11 +30,9 @@
 
 #include <QDebug>
 
-#include "task.h"
-
 #include "language_path.h"
 
-#include "3rd_party/qgsmcodec.h"
+#include "../3rd_party/qgsmcodec.h"
 
 #include <cstring>
 
@@ -56,18 +54,9 @@ static void _suspend_for_one_second()
 	_suspend( 1 ) ;
 }
 
-static void _callback( GSM_StateMachine * gsm,GSM_USSDMessage * ussd,void * e )
-{
-	Q_UNUSED( gsm ) ;
-
-	auto f = reinterpret_cast< foo * >( e ) ;
-
-	( *f )( ussd ) ;
-}
-
 MainWindow::MainWindow( QWidget * parent ) : QMainWindow( parent ),
 	m_ui( new Ui::MainWindow ),
-	m_foo( [ this ]( GSM_USSDMessage * ussd ){ this->processResponce( ussd ) ; } ),
+	m_gsm( [ this ]( const gsm_USSDMessage& ussd ){ this->processResponce( ussd ) ; } ),
 	m_settings( "ussd-gui","ussd-gui" )
 {
 	this->setLocalLanguage() ;
@@ -94,18 +83,23 @@ MainWindow::MainWindow( QWidget * parent ) : QMainWindow( parent ),
 
 	m_settings.setPath( QSettings::IniFormat,QSettings::UserScope,e ) ;
 
-	this->setUpDevice() ;
-
 	m_history = this->getSetting( "history" ) ;
 
 	QStringList l = this->historyList() ;
 
 	if( !l.isEmpty() ){
 
-		m_ui->lineEditUSSD_code->setText( l.first() ) ;		
+		m_ui->lineEditUSSD_code->setText( l.first() ) ;
 	}
 
 	this->setHistoryMenu( l ) ;
+
+	if( !m_gsm.init() ){
+
+		m_ui->textEditResult->setText( tr( "Status: ERROR 1: " ) + m_gsm.lastError() ) ;
+
+		this->disableSending() ;
+	}
 }
 
 void MainWindow::setHistoryMenu( const QStringList& l )
@@ -133,17 +127,6 @@ void MainWindow::setHistoryMenu()
 MainWindow::~MainWindow()
 {
 	delete m_ui ;
-
-	if( m_gsm ){
-
-		GSM_TerminateConnection( m_gsm ) ;
-		GSM_FreeStateMachine( m_gsm ) ;
-	}
-}
-
-bool MainWindow::deviceIsConnected()
-{
-	return GSM_IsConnected( m_gsm ) ;
 }
 
 QString MainWindow::getSetting( const QString& opt )
@@ -197,7 +180,7 @@ QStringList MainWindow::historyList()
 	return m_history.split( "\n",QString::SkipEmptyParts ) ;
 }
 
-bool MainWindow::initConnection()
+bool MainWindow::Connect()
 {
 	m_connectingMsg = tr( "Status: Connecting " ) ;
 
@@ -212,38 +195,25 @@ bool MainWindow::initConnection()
 
 	timer.start( 1000 * 1 ) ;
 
-	auto error = Task::await< GSM_Error >( [ this ](){ return GSM_InitConnection( m_gsm,1 ) ; } ) ;
+	bool connected = m_gsm.connect().await() ;
 
 	timer.stop() ;
 
-	if( error != ERR_NONE ){
+	if( connected ){
 
-		m_ui->textEditResult->setText( tr( "Status: ERROR 1: " ) + GSM_ErrorString( error ) ) ;
-
-		this->enableSending() ;
-		m_ui->pbCancel->setEnabled( true ) ;
-
-		return false ;
-	}else{
 		m_ui->textEditResult->setText( tr( "Status: Connected." ) ) ;
 
 		m_ui->pbSend->setEnabled( false ) ;
 
 		_suspend_for_one_second() ;
+	}else{
+		m_ui->textEditResult->setText( tr( "Status: ERROR 2: " ) + m_gsm.lastError() ) ;
 
-		GSM_SetIncomingUSSDCallback( m_gsm,_callback,reinterpret_cast< void * >( &m_foo ) ) ;
-
-		error = GSM_SetIncomingUSSD( m_gsm,true ) ;
-
-		if( error != ERR_NONE ){
-
-			m_ui->textEditResult->setText( tr( "Status: ERROR 2: " ) + GSM_ErrorString( error ) ) ;
-
-			return false ;
-		}else{
-			return true ;
-		}
+		this->enableSending() ;
+		m_ui->pbCancel->setEnabled( true ) ;
 	}
+
+	return connected ;
 }
 
 void MainWindow::updateHistory( const QByteArray& e )
@@ -308,14 +278,8 @@ void MainWindow::pbSend()
 
 		_suspend_for_one_second() ;
 
-		auto error = GSM_DialService( m_gsm,ussd.data() ) ;
+		if( m_gsm.dial( ussd ) ){
 
-		if( error != ERR_NONE ){
-
-			m_ui->textEditResult->setText( tr( "Status: ERROR 3: " ) + GSM_ErrorString( error ) ) ;
-
-			this->enableSending() ;
-		}else{
 			QString e( tr( "Status: Waiting For A Reply ..." ) ) ;
 
 			m_ui->pbCancel->setEnabled( false ) ;
@@ -326,40 +290,44 @@ void MainWindow::pbSend()
 
 				if( r == 30 ){
 
-					m_ui->textEditResult->setText( tr( "Status: ERROR 6: no response within 30 seconds." ) ) ;
+					m_ui->textEditResult->setText( tr( "Status: ERROR 3: no response within 30 seconds." ) ) ;
 
 					this->enableSending() ;
 
-					GSM_SetIncomingUSSD( m_gsm,false ) ;
+					m_gsm.listenForEvents( false ) ;
 
 					break ;
 				}else{
 					r++ ;
 
-					if( GSM_ReadDevice( m_gsm,false ) == 0 ){
+					if( m_gsm.hasData() ){
 
+						break ;
+					}else{
 						m_ui->textEditResult->setText( e ) ;
 
 						e += "...." ;
 
 						_suspend_for_one_second() ;
-					}else{
-						break ;
 					}
 				}
 			}
 
 			m_ui->pbCancel->setEnabled( true ) ;
+		}else{			
+			m_ui->textEditResult->setText( tr( "Status: ERROR 4: " ) + m_gsm.lastError() ) ;
+
+			this->enableSending() ;
 		}
 	} ;
 
 	m_ui->pbConvert->setEnabled( false ) ;
 
-	if( this->deviceIsConnected() ){
+	if( m_gsm.connected() ){
 
 		_send() ;
 	}else{
-		if( this->initConnection() ){
+		if( this->Connect() ){
 
 			_send() ;
 		}
@@ -385,56 +353,56 @@ void MainWindow::enableSending()
 	m_ui->labelInput->setEnabled( true ) ;
 }
 
-void MainWindow::processResponce( GSM_USSDMessage * ussd )
+void MainWindow::processResponce( const gsm_USSDMessage& ussd )
 {
-	auto _error = []( GSM_USSDMessage * ussd ){
+	auto _error = []( const gsm_USSDMessage& ussd ){
 
-		switch( ussd->Status ){
+		switch( ussd.Status ){
 
-		case USSD_NoActionNeeded:
+		case gsm_USSDMessage::NoActionNeeded:
 
 			return tr( "Status: No Action Needed." ) ;
 
-		case USSD_ActionNeeded:
+		case gsm_USSDMessage::ActionNeeded:
 
 			return tr( "Status: Action Needed." ) ;
 
-		case USSD_Terminated:
+		case gsm_USSDMessage::Terminated:
 
-			return tr( "Status: ERROR 7: Connection Was Terminated." ) ;
+			return tr( "Status: ERROR 5: Connection Was Terminated." ) ;
 
-		case USSD_AnotherClient:
+		case gsm_USSDMessage::AnotherClient:
 
-			return tr( "Status: ERROR 7: Another Client Replied." ) ;
+			return tr( "Status: ERROR 5: Another Client Replied." ) ;
 
-		case USSD_NotSupported:
+		case gsm_USSDMessage::NotSupported:
 
-			return tr( "Status: ERROR 7: USSD Code Is Not Supported." ) ;
+			return tr( "Status: ERROR 5: USSD Code Is Not Supported." ) ;
 
-		case USSD_Timeout:
+		case gsm_USSDMessage::Timeout:
 
-			return tr( "Status: ERROR 7: Connection Timeout." ) ;
+			return tr( "Status: ERROR 5: Connection Timeout." ) ;
 
-		case USSD_Unknown:
+		case gsm_USSDMessage::Unknown:
 
-			return tr( "Status: ERROR 7: Unknown Error Has Occured." ) ;
+			return tr( "Status: ERROR 5: Unknown Error Has Occured." ) ;
 
 		default:
-			return tr( "Status: ERROR 7: Unknown Error Has Occured." ) ;
+			return tr( "Status: ERROR 5: Unknown Error Has Occured." ) ;
 		}
 	} ;
 
 	this->enableSending() ;
 
-	if( ussd->Status == USSD_ActionNeeded ){
+	if( ussd.Status == gsm_USSDMessage::ActionNeeded ){
 
 		m_ui->lineEditUSSD_code->setText( QString() ) ;
 	}
-	if( ussd->Status == USSD_ActionNeeded || ussd->Status == USSD_NoActionNeeded ){
-
-		std::memcpy( &m_ussd,ussd,sizeof( m_ussd ) ) ;
+	if( ussd.Status == gsm_USSDMessage::ActionNeeded || ussd.Status == gsm_USSDMessage::NoActionNeeded ){
 
 		m_ui->pbConvert->setEnabled( true ) ;
+
+		std::memcpy( m_ussd.Text,ussd.Text,sizeof( m_ussd.Text ) ) ;
 
 		this->displayResult() ;
 	}else{
@@ -475,44 +443,13 @@ void MainWindow::displayResult()
 	/*
 	 * DecodeUnicodeString() is provided by libgammu
 	 */
-	const char * e = DecodeUnicodeString( m_ussd.Text ) ;
+	auto e = DecodeUnicodeString( m_ussd.Text ) ;
 
 	if( this->gsm7Encoded() ){
 
 		m_ui->textEditResult->setText( QGsmCodec::fromGsm7BitEncodedtoUnicode( e ) ) ;
 	}else{
 		m_ui->textEditResult->setText( QGsmCodec::fromUnicodeStringInHexToUnicode( e ) ) ;
-	}
-}
-
-void MainWindow::setUpDevice()
-{
-	GSM_InitLocales( nullptr ) ;
-
-	m_gsm = GSM_AllocStateMachine() ;
-
-	INI_Section * cfg = nullptr ;
-
-	auto error = GSM_FindGammuRC( &cfg,nullptr ) ;
-
-	if( error != ERR_NONE  ){
-
-		m_ui->textEditResult->setText( tr( "Status: ERROR 4: " ) + GSM_ErrorString( error ) ) ;
-
-		this->disableSending() ;
-	}else{
-		error = GSM_ReadConfig( cfg,GSM_GetConfig( m_gsm,0 ),0 ) ;
-
-		if( error != ERR_NONE  ){
-
-			m_ui->textEditResult->setText( tr( "Status: ERROR 5: " ) + GSM_ErrorString( error ) ) ;
-
-			this->disableSending() ;
-		}
-
-		INI_Free( cfg ) ;
-
-		GSM_SetConfigNum( m_gsm,1 ) ;
 	}
 }
 

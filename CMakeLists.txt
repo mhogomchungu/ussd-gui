@@ -33,9 +33,9 @@ if( QT5 )
 
 	include_directories( ${Qt5Widgets_INCLUDE_DIRS} )
 	add_definitions( ${Qt5Widgets_DEFINITIONS} )
-	QT5_WRAP_CPP( MOC mainwindow.h task.h )
-	QT5_WRAP_UI( UI mainwindow.ui )
-	QT5_ADD_RESOURCES( ICON icon.qrc )
+	QT5_WRAP_CPP( MOC src/mainwindow.h src/task.h )
+	QT5_WRAP_UI( UI src/mainwindow.ui )
+	QT5_ADD_RESOURCES( ICON icons/icons.qrc )
 else()
 	find_package( Qt4 REQUIRED QtCore QtGui )
 
@@ -45,12 +45,12 @@ else()
 	INCLUDE( ${QT_USE_FILE} )
 	INCLUDE( ${QT_USE_FILE} )
 
-	QT4_WRAP_CPP( MOC mainwindow.h task.h )
-	QT4_WRAP_UI( UI mainwindow.ui )
-	QT4_ADD_RESOURCES( ICON icon.qrc )
+	QT4_WRAP_CPP( MOC src/mainwindow.h src/task.h )
+	QT4_WRAP_UI( UI src/mainwindow.ui )
+	QT4_ADD_RESOURCES( ICON icons/icons.qrc )
 endif()
 
-add_executable( ussd-gui main.cpp mainwindow.cpp 3rd_party/qgsmcodec.cpp ${MOC} ${UI} ${ICON} )
+add_executable( ussd-gui src/main.cpp src/gsm.cpp src/mainwindow.cpp 3rd_party/qgsmcodec.cpp ${MOC} ${UI} ${ICON} )
 
 set_target_properties( ussd-gui PROPERTIES COMPILE_FLAGS "-Wextra -Wall -s -fPIE -pthread  -pedantic" )
 set_target_properties( ussd-gui PROPERTIES LINK_FLAGS "-pie" )
@@ -72,8 +72,8 @@ install( TARGETS ussd-gui RUNTIME DESTINATION bin )
 install( FILES ${PROJECT_BINARY_DIR}/ussd-gui.desktop DESTINATION share/applications
                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
         )
-install( FILES ussd-gui.png DESTINATION /usr/share/icons/hicolor/48x48/apps/ )
-install( FILES ussd-gui.png DESTINATION /usr/share/pixmaps )
+install( FILES icons/ussd-gui.png DESTINATION /usr/share/icons/hicolor/48x48/apps/ )
+install( FILES icons/ussd-gui.png DESTINATION /usr/share/pixmaps )
 
 #install( FILES translations.qm/swahili.qm   DESTINATION "${DATA_INSTALL_DIR}/ussd-gui/translations.qm/" )
 
