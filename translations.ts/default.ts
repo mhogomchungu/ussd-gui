@@ -4,125 +4,110 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../mainwindow.ui" line="14"/>
+        <location filename="../src/mainwindow.ui" line="14"/>
         <source>ussd-gui</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="27"/>
+        <location filename="../src/mainwindow.ui" line="27"/>
         <source>&amp;Send</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="46"/>
+        <location filename="../src/mainwindow.ui" line="46"/>
         <source>&amp;Quit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="69"/>
+        <location filename="../src/mainwindow.ui" line="69"/>
         <source>Input: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="88"/>
+        <location filename="../src/mainwindow.ui" line="88"/>
         <source>USSD Server Response.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="133"/>
+        <location filename="../src/mainwindow.ui" line="133"/>
         <source>&amp;Convert</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="219"/>
-        <source>Status: ERROR 1: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="238"/>
+        <location filename="../src/mainwindow.cpp" line="210"/>
         <source>Status: ERROR 2: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="115"/>
-        <location filename="../mainwindow.cpp" line="187"/>
+        <location filename="../src/mainwindow.cpp" line="111"/>
+        <location filename="../src/mainwindow.cpp" line="172"/>
         <source>Empty History.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="226"/>
+        <location filename="../src/mainwindow.cpp" line="204"/>
         <source>Status: Connected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="305"/>
+        <location filename="../src/mainwindow.cpp" line="277"/>
         <source>Status: Sending A Request.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="313"/>
-        <source>Status: ERROR 3: </source>
+        <location filename="../src/mainwindow.cpp" line="293"/>
+        <source>Status: ERROR 3: no response within 30 seconds.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="317"/>
+        <location filename="../src/mainwindow.cpp" line="387"/>
+        <source>Status: ERROR 5: Connection Was Terminated.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp" line="391"/>
+        <source>Status: ERROR 5: Another Client Replied.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp" line="395"/>
+        <source>Status: ERROR 5: USSD Code Is Not Supported.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp" line="399"/>
+        <source>Status: ERROR 5: Connection Timeout.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp" line="403"/>
+        <location filename="../src/mainwindow.cpp" line="406"/>
+        <source>Status: ERROR 5: Unknown Error Has Occured.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp" line="283"/>
         <source>Status: Waiting For A Reply ...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="200"/>
+        <location filename="../src/mainwindow.cpp" line="185"/>
         <source>Status: Connecting </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="327"/>
-        <source>Status: ERROR 6: no response within 30 seconds.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="394"/>
+        <location filename="../src/mainwindow.cpp" line="379"/>
         <source>Status: No Action Needed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="398"/>
+        <location filename="../src/mainwindow.cpp" line="383"/>
         <source>Status: Action Needed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="402"/>
-        <source>Status: ERROR 7: Connection Was Terminated.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="406"/>
-        <source>Status: ERROR 7: Another Client Replied.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="410"/>
-        <source>Status: ERROR 7: USSD Code Is Not Supported.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="414"/>
-        <source>Status: ERROR 7: Connection Timeout.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="418"/>
-        <location filename="../mainwindow.cpp" line="421"/>
-        <source>Status: ERROR 7: Unknown Error Has Occured.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="500"/>
+        <location filename="../src/mainwindow.cpp" line="318"/>
         <source>Status: ERROR 4: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="508"/>
-        <source>Status: ERROR 5: </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -131,6 +116,11 @@
     <message>
         <location filename="../3rd_party/qgsmcodec.cpp" line="461"/>
         <source>Status: ERROR 100: Failed To Parse Response.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp" line="99"/>
+        <source>Status: ERROR 1: </source>
         <translation type="unfinished"></translation>
     </message>
 </context>

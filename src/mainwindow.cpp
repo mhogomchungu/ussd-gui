@@ -96,7 +96,7 @@ MainWindow::MainWindow( QWidget * parent ) : QMainWindow( parent ),
 
 	if( !m_gsm.init() ){
 
-		m_ui->textEditResult->setText( tr( "Status: ERROR 1: " ) + m_gsm.lastError() ) ;
+		m_ui->textEditResult->setText( QObject::tr( "Status: ERROR 1: " ) + m_gsm.lastError() ) ;
 
 		this->disableSending() ;
 	}
