@@ -19,7 +19,7 @@
 
 #include "gsm.h"
 
-#include <qdebug.h>
+#include <QDebug>
 
 #include <cstring>
 
@@ -66,33 +66,17 @@ gsm::gsm( std::function< void( const gsm_USSDMessage& ussd ) > f ) :
 
 bool gsm::init()
 {
-	class INI_section{
-	public:
-		INI_Section * operator *()
-		{
-			return m_cfg ;
-		}
-		INI_Section ** operator &()
-		{
-			return &m_cfg ;
-		}
-		~INI_section()
-		{
-			if( m_cfg ){
-				INI_Free( m_cfg ) ;
-			}
-		}
-	private:
-		INI_Section * m_cfg = nullptr ;
-	};
+	struct INI_config
+	{
+		~INI_config(){ INI_Free( cfg ) ; }
+		INI_Section * cfg = nullptr ;
+	} config ;
 
-	INI_section config ;
-
-	m_status = GSM_FindGammuRC( &config,nullptr ) ;
+	m_status = GSM_FindGammuRC( &config.cfg,nullptr ) ;
 
 	if( m_status ){
 
-		m_status = GSM_ReadConfig( *config,GSM_GetConfig( m_gsm,0 ),0 ) ;
+		m_status = GSM_ReadConfig( config.cfg,GSM_GetConfig( m_gsm,0 ),0 ) ;
 
 		if( m_status ){
 
