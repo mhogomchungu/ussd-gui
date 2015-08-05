@@ -355,50 +355,14 @@ void MainWindow::enableSending()
 
 void MainWindow::processResponce( const gsm_USSDMessage& ussd )
 {
-	auto _error = []( const gsm_USSDMessage& ussd ){
-
-		switch( ussd.Status ){
-
-		case gsm_USSDMessage::NoActionNeeded:
-
-			return tr( "Status: No Action Needed." ) ;
-
-		case gsm_USSDMessage::ActionNeeded:
-
-			return tr( "Status: Action Needed." ) ;
-
-		case gsm_USSDMessage::Terminated:
-
-			return tr( "Status: ERROR 5: Connection Was Terminated." ) ;
-
-		case gsm_USSDMessage::AnotherClient:
-
-			return tr( "Status: ERROR 5: Another Client Replied." ) ;
-
-		case gsm_USSDMessage::NotSupported:
-
-			return tr( "Status: ERROR 5: USSD Code Is Not Supported." ) ;
-
-		case gsm_USSDMessage::Timeout:
-
-			return tr( "Status: ERROR 5: Connection Timeout." ) ;
-
-		case gsm_USSDMessage::Unknown:
-
-			return tr( "Status: ERROR 5: Unknown Error Has Occured." ) ;
-
-		default:
-			return tr( "Status: ERROR 5: Unknown Error Has Occured." ) ;
-		}
-	} ;
-
 	this->enableSending() ;
 
-	if( ussd.Status == gsm_USSDMessage::ActionNeeded ){
-
-		m_ui->lineEditUSSD_code->setText( QString() ) ;
-	}
 	if( ussd.Status == gsm_USSDMessage::ActionNeeded || ussd.Status == gsm_USSDMessage::NoActionNeeded ){
+
+		if( ussd.Status == gsm_USSDMessage::ActionNeeded ){
+
+			m_ui->lineEditUSSD_code->setText( QString() ) ;
+		}
 
 		m_ui->pbConvert->setEnabled( true ) ;
 
@@ -406,6 +370,43 @@ void MainWindow::processResponce( const gsm_USSDMessage& ussd )
 
 		this->displayResult() ;
 	}else{
+		auto _error = []( const gsm_USSDMessage& ussd ){
+
+			switch( ussd.Status ){
+
+			case gsm_USSDMessage::NoActionNeeded:
+
+				return tr( "Status: No Action Needed." ) ;
+
+			case gsm_USSDMessage::ActionNeeded:
+
+				return tr( "Status: Action Needed." ) ;
+
+			case gsm_USSDMessage::Terminated:
+
+				return tr( "Status: ERROR 5: Connection Was Terminated." ) ;
+
+			case gsm_USSDMessage::AnotherClient:
+
+				return tr( "Status: ERROR 5: Another Client Replied." ) ;
+
+			case gsm_USSDMessage::NotSupported:
+
+				return tr( "Status: ERROR 5: USSD Code Is Not Supported." ) ;
+
+			case gsm_USSDMessage::Timeout:
+
+				return tr( "Status: ERROR 5: Connection Timeout." ) ;
+
+			case gsm_USSDMessage::Unknown:
+
+				return tr( "Status: ERROR 5: Unknown Error Has Occured." ) ;
+
+			default:
+				return tr( "Status: ERROR 5: Unknown Error Has Occured." ) ;
+			}
+		} ;
+
 		m_ui->textEditResult->setText( _error( ussd ) ) ;
 	}
 }
