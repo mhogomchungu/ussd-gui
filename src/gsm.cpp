@@ -66,20 +66,38 @@ gsm::gsm( std::function< void( const gsm_USSDMessage& ussd ) > f ) :
 
 bool gsm::init()
 {
-	INI_Section * cfg = nullptr ;
+	class INI_section{
+	public:
+		INI_Section * operator *()
+		{
+			return m_cfg ;
+		}
+		INI_Section ** operator &()
+		{
+			return &m_cfg ;
+		}
+		~INI_section()
+		{
+			if( m_cfg ){
+				INI_Free( m_cfg ) ;
+			}
+		}
+	private:
+		INI_Section * m_cfg = nullptr ;
+	};
 
-	m_status = GSM_FindGammuRC( &cfg,nullptr ) ;
+	INI_section config ;
+
+	m_status = GSM_FindGammuRC( &config,nullptr ) ;
 
 	if( m_status ){
 
-		m_status = GSM_ReadConfig( cfg,GSM_GetConfig( m_gsm,0 ),0 ) ;
+		m_status = GSM_ReadConfig( *config,GSM_GetConfig( m_gsm,0 ),0 ) ;
 
 		if( m_status ){
 
-			INI_Free( cfg ) ;
-
 			GSM_SetConfigNum( m_gsm,1 ) ;
-		}
+		}		
 	}
 
 	return m_status ;
