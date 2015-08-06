@@ -23,9 +23,33 @@
 
 #include <cstring>
 
+#include <gammu.h>
+
 class gsm::pimpl{
-public:
-	explicit pimpl( std::function< void( const gsm_USSDMessage& ) > f ) : m_function( std::move( f ) )
+public:	
+	class gsm_error{
+	public:
+		gsm_error& operator =( GSM_Error err )
+		{
+			m_error = err ;
+			return *this ;
+		}
+		operator bool()
+		{
+			return m_error == ERR_NONE ;
+		}
+		GSM_Error error()
+		{
+			return m_error ;
+		}
+	private:
+		GSM_Error m_error = ERR_UNKNOWN ;
+	} status ;
+
+	GSM_StateMachine * gsm ;
+
+	pimpl( GSM_StateMachine * g,std::function< void( const gsm_USSDMessage& ) > f ) :
+		gsm( g ),m_function( std::move( f ) )
 	{
 	}
 	void operator()( GSM_USSDMessage * ussd )
@@ -42,7 +66,7 @@ public:
 			default                  : m_ussd.Status = gsm_USSDMessage::Unknown        ; break ;
 		}
 
-		std::memcpy( m_ussd.Text,ussd->Text,sizeof( m_ussd.Text ) ) ;
+		m_ussd.Text = QByteArray( ( const char * )ussd->Text,sizeof( ussd->Text ) ) ;
 		m_function( m_ussd ) ;
 	}
 private:
@@ -54,13 +78,21 @@ static void _callback( GSM_StateMachine * gsm,GSM_USSDMessage * ussd,void * e )
 {
 	Q_UNUSED( gsm ) ;
 
-	auto f = reinterpret_cast< gsm::pimpl * >( e ) ;
+	auto call = reinterpret_cast< gsm::pimpl * >( e ) ;
 
-	( *f )( ussd ) ;
+	( *call )( ussd ) ;
+}
+
+const char * gsm::decodeUnicodeString( const QByteArray& e )
+{
+	/*
+	 * DecodeUnicodeString() is provided by libgammu
+	 */
+	return DecodeUnicodeString( ( const unsigned char * )e.constData() ) ;
 }
 
 gsm::gsm( std::function< void( const gsm_USSDMessage& ussd ) > f ) :
-	m_pimpl( new gsm::pimpl( std::move( f ) ) ),m_gsm( GSM_AllocStateMachine() )
+	m_pimpl( new gsm::pimpl( GSM_AllocStateMachine(),std::move( f ) ) )
 {
 }
 
@@ -72,57 +104,57 @@ bool gsm::init()
 		INI_Section * cfg = nullptr ;
 	} config ;
 
-	m_status = GSM_FindGammuRC( &config.cfg,nullptr ) ;
+	m_pimpl->status = GSM_FindGammuRC( &config.cfg,nullptr ) ;
 
-	if( m_status ){
+	if( m_pimpl->status ){
 
-		m_status = GSM_ReadConfig( config.cfg,GSM_GetConfig( m_gsm,0 ),0 ) ;
+		m_pimpl->status = GSM_ReadConfig( config.cfg,GSM_GetConfig( m_pimpl->gsm,0 ),0 ) ;
 
-		if( m_status ){
+		if( m_pimpl->status ){
 
-			GSM_SetConfigNum( m_gsm,1 ) ;
+			GSM_SetConfigNum( m_pimpl->gsm,1 ) ;
 		}		
 	}
 
-	return m_status ;
+	return m_pimpl->status ;
 }
 
 gsm::~gsm()
 {
-	GSM_TerminateConnection( m_gsm ) ;
-	GSM_FreeStateMachine( m_gsm ) ;
+	GSM_TerminateConnection( m_pimpl->gsm ) ;
+	GSM_FreeStateMachine( m_pimpl->gsm ) ;
 }
 
 Task::future<bool>& gsm::connect()
 {
 	return Task::run< bool >( [ this ](){
 
-		m_status = GSM_InitConnection( m_gsm,1 ) ;
+		m_pimpl->status = GSM_InitConnection( m_pimpl->gsm,1 ) ;
 
-		if( m_status ){
+		if( m_pimpl->status ){
 
 			auto _cast = []( std::unique_ptr< gsm::pimpl >& pimpl ){
 
 				return reinterpret_cast< void * >( pimpl.get() ) ;
 			} ;
 
-			GSM_SetIncomingUSSDCallback( m_gsm,_callback,_cast( m_pimpl ) ) ;
+			GSM_SetIncomingUSSDCallback( m_pimpl->gsm,_callback,_cast( m_pimpl ) ) ;
 
 			this->listenForEvents( true ) ;
 		}
 
-		return m_status ;
+		return m_pimpl->status ;
 	} ) ;
 }
 
 bool gsm::connected()
 {
-	return GSM_IsConnected( m_gsm ) ;
+	return GSM_IsConnected( m_pimpl->gsm ) ;
 }
 
 bool gsm::hasData( bool waitForData )
 {
-	return GSM_ReadDevice( m_gsm,waitForData ) != 0 ;
+	return GSM_ReadDevice( m_pimpl->gsm,waitForData ) != 0 ;
 }
 
 void gsm::setlocale( const char * e )
@@ -132,16 +164,16 @@ void gsm::setlocale( const char * e )
 
 const char * gsm::lastError()
 {
-	return  GSM_ErrorString( m_status.error() ) ;
+	return  GSM_ErrorString( m_pimpl->status.error() ) ;
 }
 
 bool gsm::dial( const QByteArray& code )
 {
-	m_status = GSM_DialService( m_gsm,const_cast< char * >( code.data() ) ) ;
-	return m_status ;
+	m_pimpl->status = GSM_DialService( m_pimpl->gsm,const_cast< char * >( code.data() ) ) ;
+	return m_pimpl->status ;
 }
 
 void gsm::listenForEvents( bool e )
 {
-	m_status = GSM_SetIncomingUSSD( m_gsm,e ) ;
+	m_pimpl->status = GSM_SetIncomingUSSD( m_pimpl->gsm,e ) ;
 }

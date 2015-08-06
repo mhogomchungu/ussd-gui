@@ -21,24 +21,23 @@
 #ifndef GSM_H
 #define GSM_H
 
-#include <gammu.h>
-
 #include "task.h"
 
 #include <QByteArray>
 
 #include <memory>
 
-struct gsm_USSDMessage{
-
+struct gsm_USSDMessage
+{
 	enum { NoActionNeeded,ActionNeeded,Terminated,AnotherClient,NotSupported,Timeout,Unknown } Status ;
-	unsigned char Text[ sizeof( GSM_USSDMessage::Text ) ] ;
+	QByteArray Text ;
 } ;
 
 class gsm
 {
 public:
 	class pimpl ;
+	static const char * decodeUnicodeString( const QByteArray& ) ;
 	explicit gsm( std::function< void( const gsm_USSDMessage& ussd ) > ) ;
 	~gsm() ;
 	bool init() ;
@@ -51,26 +50,6 @@ public:
 	const char * lastError() ;
 private:
 	std::unique_ptr< gsm::pimpl > m_pimpl ;
-	GSM_StateMachine * m_gsm = nullptr ;
-
-	class gsm_error{
-	public:
-		gsm_error& operator =( GSM_Error err )
-		{
-			m_error = err ;
-			return *this ;
-		}
-		operator bool()
-		{
-			return m_error == ERR_NONE ;
-		}
-		GSM_Error error()
-		{
-			return m_error ;
-		}
-	private:
-		GSM_Error m_error = ERR_UNKNOWN ;
-	} m_status ;
 };
 
 #endif // GSM_H

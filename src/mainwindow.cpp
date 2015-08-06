@@ -366,7 +366,7 @@ void MainWindow::processResponce( const gsm_USSDMessage& ussd )
 
 		m_ui->pbConvert->setEnabled( true ) ;
 
-		std::memcpy( m_ussd.Text,ussd.Text,sizeof( m_ussd.Text ) ) ;
+		m_ussd.Text = ussd.Text ;
 
 		this->displayResult() ;
 	}else{
@@ -441,10 +441,7 @@ bool MainWindow::gsm7Encoded()
 
 void MainWindow::displayResult()
 {
-	/*
-	 * DecodeUnicodeString() is provided by libgammu
-	 */
-	auto e = DecodeUnicodeString( m_ussd.Text ) ;
+	auto e = gsm::decodeUnicodeString( m_ussd.Text ) ;
 
 	if( this->gsm7Encoded() ){
 
