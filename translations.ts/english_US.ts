@@ -34,14 +34,14 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="210"/>
-        <source>Status: ERROR 2: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.cpp" line="111"/>
         <location filename="../src/mainwindow.cpp" line="172"/>
         <source>Empty History.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp" line="185"/>
+        <source>Status: Connecting ...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -50,13 +50,38 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../src/mainwindow.cpp" line="210"/>
+        <source>Status: ERROR 2: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../src/mainwindow.cpp" line="277"/>
         <source>Status: Sending A Request.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../src/mainwindow.cpp" line="283"/>
+        <source>Status: Waiting For A Reply ...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../src/mainwindow.cpp" line="293"/>
         <source>Status: ERROR 3: no response within 30 seconds.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp" line="318"/>
+        <source>Status: ERROR 4: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp" line="379"/>
+        <source>Status: No Action Needed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp" line="383"/>
+        <source>Status: Action Needed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -83,31 +108,6 @@
         <location filename="../src/mainwindow.cpp" line="403"/>
         <location filename="../src/mainwindow.cpp" line="406"/>
         <source>Status: ERROR 5: Unknown Error Has Occured.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp" line="283"/>
-        <source>Status: Waiting For A Reply ...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp" line="185"/>
-        <source>Status: Connecting </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp" line="379"/>
-        <source>Status: No Action Needed.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp" line="383"/>
-        <source>Status: Action Needed.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp" line="318"/>
-        <source>Status: ERROR 4: </source>
         <translation type="unfinished"></translation>
     </message>
 </context>

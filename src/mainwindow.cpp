@@ -161,8 +161,8 @@ void MainWindow::setSetting(const QString& key,bool value )
 
 void MainWindow::connectStatus()
 {
-	m_connectingMsg += "..." ;
 	m_ui->textEditResult->setText( m_connectingMsg ) ;
+	m_connectingMsg += "..." ;
 }
 
 void MainWindow::setHistoryItem( QAction * ac )
@@ -182,7 +182,7 @@ QStringList MainWindow::historyList()
 
 bool MainWindow::Connect()
 {
-	m_connectingMsg = tr( "Status: Connecting " ) ;
+	m_connectingMsg = tr( "Status: Connecting ..." ) ;
 
 	QTimer timer ;
 

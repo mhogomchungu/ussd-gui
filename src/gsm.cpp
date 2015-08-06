@@ -20,14 +20,13 @@
 #include "gsm.h"
 
 #include <QDebug>
-
-#include <cstring>
-
 #include <gammu.h>
 
-class gsm::pimpl{
-public:	
-	class gsm_error{
+class gsm::pimpl
+{
+public:
+	class gsm_error
+	{
 	public:
 		gsm_error& operator =( GSM_Error err )
 		{
@@ -113,7 +112,7 @@ bool gsm::init()
 		if( m_pimpl->status ){
 
 			GSM_SetConfigNum( m_pimpl->gsm,1 ) ;
-		}		
+		}
 	}
 
 	return m_pimpl->status ;

@@ -21,19 +21,12 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-
 #include <QCloseEvent>
-
 #include <QSettings>
-
 #include <functional>
-
 #include <memory>
-
 #include <QStringList>
-
 #include <QString>
-
 #include <QMenu>
 
 #include "gsm.h"
