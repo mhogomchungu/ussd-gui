@@ -21,32 +21,44 @@
 #ifndef GSM_H
 #define GSM_H
 
-#include "task.h"
-
 #include <QByteArray>
-
 #include <memory>
 
-struct gsm_USSDMessage
-{
-	enum { NoActionNeeded,ActionNeeded,Terminated,AnotherClient,NotSupported,Timeout,Unknown } Status ;
-	QByteArray Text ;
-} ;
+#include "task.h"
 
 class gsm
 {
 public:
+	struct USSDMessage
+	{
+		QByteArray Text ;
+
+		enum { NoActionNeeded,
+			ActionNeeded,
+			Terminated,
+			AnotherClient,
+			NotSupported,
+			Timeout,
+			Unknown } Status ;
+	} ;
+
 	class pimpl ;
+
 	static const char * decodeUnicodeString( const QByteArray& ) ;
-	explicit gsm( std::function< void( const gsm_USSDMessage& ussd ) > ) ;
+
+	gsm( std::function< void( const gsm::USSDMessage& ussd ) > ) ;
 	~gsm() ;
-	bool init() ;
+
 	Task::future<bool>& connect() ;
+
+	bool init() ;
 	bool connected() ;
 	bool dial( const QByteArray& ) ;
 	bool hasData( bool waitForData = false ) ;
+	bool listenForEvents( bool = true ) ;
+
 	void setlocale( const char * = nullptr ) ;
-	void listenForEvents( bool = true ) ;
+
 	const char * lastError() ;
 private:
 	std::unique_ptr< gsm::pimpl > m_pimpl ;

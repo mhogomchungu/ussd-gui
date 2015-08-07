@@ -56,7 +56,7 @@ private:
 	void displayResult() ;
 	void updateHistory( const QByteArray& ) ;
 	bool Connect() ;
-	void processResponce( const gsm_USSDMessage& ) ;
+	void processResponce( const gsm::USSDMessage& ) ;
 	void closeEvent( QCloseEvent * ) ;
 	void setLocalLanguage() ;
 	void setHistoryMenu( const QStringList& ) ;
@@ -68,7 +68,7 @@ private:
 	Ui::MainWindow * m_ui ;
 	QString m_connectingMsg ;
 	QString m_history ;
-	gsm_USSDMessage m_ussd ;
+	gsm::USSDMessage m_ussd ;
 	gsm m_gsm ;
 	QMenu m_menu ;
 	QSettings m_settings ;

@@ -47,7 +47,7 @@ public:
 
 	GSM_StateMachine * gsm ;
 
-	pimpl( GSM_StateMachine * g,std::function< void( const gsm_USSDMessage& ) > f ) :
+	pimpl( GSM_StateMachine * g,std::function< void( const gsm::USSDMessage& ) > f ) :
 		gsm( g ),m_function( std::move( f ) )
 	{
 	}
@@ -55,22 +55,22 @@ public:
 	{
 		switch( ussd->Status ){
 
-			case USSD_NoActionNeeded : m_ussd.Status = gsm_USSDMessage::NoActionNeeded ; break ;
-			case USSD_ActionNeeded   : m_ussd.Status = gsm_USSDMessage::ActionNeeded   ; break ;
-			case USSD_AnotherClient  : m_ussd.Status = gsm_USSDMessage::AnotherClient  ; break ;
-			case USSD_NotSupported   : m_ussd.Status = gsm_USSDMessage::NotSupported   ; break ;
-			case USSD_Timeout        : m_ussd.Status = gsm_USSDMessage::Timeout        ; break ;
-			case USSD_Terminated     : m_ussd.Status = gsm_USSDMessage::Terminated     ; break ;
-			case USSD_Unknown        : m_ussd.Status = gsm_USSDMessage::Unknown        ; break ;
-			default                  : m_ussd.Status = gsm_USSDMessage::Unknown        ; break ;
+			case USSD_NoActionNeeded : m_ussd.Status = gsm::USSDMessage::NoActionNeeded ; break ;
+			case USSD_ActionNeeded   : m_ussd.Status = gsm::USSDMessage::ActionNeeded   ; break ;
+			case USSD_AnotherClient  : m_ussd.Status = gsm::USSDMessage::AnotherClient  ; break ;
+			case USSD_NotSupported   : m_ussd.Status = gsm::USSDMessage::NotSupported   ; break ;
+			case USSD_Timeout        : m_ussd.Status = gsm::USSDMessage::Timeout        ; break ;
+			case USSD_Terminated     : m_ussd.Status = gsm::USSDMessage::Terminated     ; break ;
+			case USSD_Unknown        : m_ussd.Status = gsm::USSDMessage::Unknown        ; break ;
+			default                  : m_ussd.Status = gsm::USSDMessage::Unknown        ; break ;
 		}
 
 		m_ussd.Text = QByteArray( ( const char * )ussd->Text,sizeof( ussd->Text ) ) ;
 		m_function( m_ussd ) ;
 	}
 private:
-	std::function< void( const gsm_USSDMessage& ussd ) > m_function ;
-	gsm_USSDMessage m_ussd ;
+	std::function< void( const gsm::USSDMessage& ussd ) > m_function ;
+	gsm::USSDMessage m_ussd ;
 } ;
 
 static void _callback( GSM_StateMachine * gsm,GSM_USSDMessage * ussd,void * e )
@@ -90,7 +90,7 @@ const char * gsm::decodeUnicodeString( const QByteArray& e )
 	return DecodeUnicodeString( ( const unsigned char * )e.constData() ) ;
 }
 
-gsm::gsm( std::function< void( const gsm_USSDMessage& ussd ) > f ) :
+gsm::gsm( std::function< void( const gsm::USSDMessage& ussd ) > f ) :
 	m_pimpl( new gsm::pimpl( GSM_AllocStateMachine(),std::move( f ) ) )
 {
 }
@@ -172,7 +172,8 @@ bool gsm::dial( const QByteArray& code )
 	return m_pimpl->status ;
 }
 
-void gsm::listenForEvents( bool e )
+bool gsm::listenForEvents( bool e )
 {
 	m_pimpl->status = GSM_SetIncomingUSSD( m_pimpl->gsm,e ) ;
+	return m_pimpl->status ;
 }
