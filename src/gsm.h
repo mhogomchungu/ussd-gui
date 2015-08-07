@@ -33,7 +33,7 @@ public:
 	{
 		QByteArray Text ;
 
-		enum { NoActionNeeded,
+		enum {  NoActionNeeded,
 			ActionNeeded,
 			Terminated,
 			AnotherClient,
@@ -51,6 +51,7 @@ public:
 
 	Task::future<bool>& connect() ;
 
+	bool disconnect() ;
 	bool init() ;
 	bool connected() ;
 	bool dial( const QByteArray& ) ;

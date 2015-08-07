@@ -22,34 +22,47 @@
 #include <QDebug>
 #include <gammu.h>
 
+static void _callback( GSM_StateMachine *,GSM_USSDMessage *,void * ) ;
+
 class gsm::pimpl
 {
 public:
-	class gsm_error
-	{
-	public:
-		gsm_error& operator =( GSM_Error err )
-		{
-			m_error = err ;
-			return *this ;
-		}
-		operator bool()
-		{
-			return m_error == ERR_NONE ;
-		}
-		GSM_Error error()
-		{
-			return m_error ;
-		}
-	private:
-		GSM_Error m_error = ERR_UNKNOWN ;
-	} status ;
-
-	GSM_StateMachine * gsm ;
-
 	pimpl( GSM_StateMachine * g,std::function< void( const gsm::USSDMessage& ) > f ) :
-		gsm( g ),m_function( std::move( f ) )
+		m_gsm( g ),m_function( std::move( f ) )
 	{
+	}
+	~pimpl()
+	{
+		GSM_TerminateConnection( m_gsm ) ;
+		GSM_FreeStateMachine( m_gsm ) ;
+	}
+	bool disconnect()
+	{
+		return m_status = GSM_TerminateConnection( m_gsm ) ;
+	}
+	bool connected()
+	{
+		return GSM_IsConnected( m_gsm ) ;
+	}
+	bool hasData( bool waitForData )
+	{
+		return GSM_ReadDevice( m_gsm,waitForData ) != 0 ;
+	}
+	bool dial( const QByteArray& code )
+	{
+		return m_status = GSM_DialService( m_gsm,const_cast< char * >( code.data() ) ) ;
+	}
+	bool listenForEvents( bool e )
+	{
+		return m_status = GSM_SetIncomingUSSD( m_gsm,e ) ;
+	}
+	const char * lastError()
+	{
+		return GSM_ErrorString( m_status.error() ) ;
+	}
+	void setlocale( const char * e )
+	{
+		GSM_InitLocales( e ) ;
 	}
 	void operator()( GSM_USSDMessage * ussd )
 	{
@@ -68,9 +81,70 @@ public:
 		m_ussd.Text = QByteArray( ( const char * )ussd->Text,sizeof( ussd->Text ) ) ;
 		m_function( m_ussd ) ;
 	}
+	bool init()
+	{
+		struct INI_config
+		{
+			~INI_config(){ INI_Free( cfg ) ; }
+			INI_Section * cfg = nullptr ;
+		} config ;
+
+		m_status = GSM_FindGammuRC( &config.cfg,nullptr ) ;
+
+		if( m_status ){
+
+			m_status = GSM_ReadConfig( config.cfg,GSM_GetConfig( m_gsm,0 ),0 ) ;
+
+			if( m_status ){
+
+				GSM_SetConfigNum( m_gsm,1 ) ;
+			}
+		}
+
+		return m_status ;
+	}
+	Task::future<bool>& connect()
+	{
+		return Task::run< bool >( [ this ](){
+
+			m_status = GSM_InitConnection( m_gsm,1 ) ;
+
+			if( m_status ){
+
+				auto mimi = reinterpret_cast< void * >( this ) ;
+
+				GSM_SetIncomingUSSDCallback( m_gsm,_callback,mimi ) ;
+
+				this->listenForEvents( true ) ;
+			}
+
+			return m_status ;
+		} ) ;
+	}
 private:
-	std::function< void( const gsm::USSDMessage& ussd ) > m_function ;
+	class gsm_error
+	{
+	public:
+		gsm_error& operator =( GSM_Error err )
+		{
+			m_error = err ;
+			return *this ;
+		}
+		operator bool()
+		{
+			return m_error == ERR_NONE ;
+		}
+		GSM_Error error()
+		{
+			return m_error ;
+		}
+	private:
+		GSM_Error m_error = ERR_UNKNOWN ;
+	} m_status ;
+
+	GSM_StateMachine * m_gsm ;
 	gsm::USSDMessage m_ussd ;
+	std::function< void( const gsm::USSDMessage& ussd ) > m_function ;
 } ;
 
 static void _callback( GSM_StateMachine * gsm,GSM_USSDMessage * ussd,void * e )
@@ -81,6 +155,7 @@ static void _callback( GSM_StateMachine * gsm,GSM_USSDMessage * ussd,void * e )
 
 	( *call )( ussd ) ;
 }
+
 
 const char * gsm::decodeUnicodeString( const QByteArray& e )
 {
@@ -97,83 +172,49 @@ gsm::gsm( std::function< void( const gsm::USSDMessage& ussd ) > f ) :
 
 bool gsm::init()
 {
-	struct INI_config
-	{
-		~INI_config(){ INI_Free( cfg ) ; }
-		INI_Section * cfg = nullptr ;
-	} config ;
-
-	m_pimpl->status = GSM_FindGammuRC( &config.cfg,nullptr ) ;
-
-	if( m_pimpl->status ){
-
-		m_pimpl->status = GSM_ReadConfig( config.cfg,GSM_GetConfig( m_pimpl->gsm,0 ),0 ) ;
-
-		if( m_pimpl->status ){
-
-			GSM_SetConfigNum( m_pimpl->gsm,1 ) ;
-		}
-	}
-
-	return m_pimpl->status ;
+	return m_pimpl->init() ;
 }
 
 gsm::~gsm()
 {
-	GSM_TerminateConnection( m_pimpl->gsm ) ;
-	GSM_FreeStateMachine( m_pimpl->gsm ) ;
 }
 
 Task::future<bool>& gsm::connect()
 {
-	return Task::run< bool >( [ this ](){
-
-		m_pimpl->status = GSM_InitConnection( m_pimpl->gsm,1 ) ;
-
-		if( m_pimpl->status ){
-
-			auto _cast = []( std::unique_ptr< gsm::pimpl >& pimpl ){
-
-				return reinterpret_cast< void * >( pimpl.get() ) ;
-			} ;
-
-			GSM_SetIncomingUSSDCallback( m_pimpl->gsm,_callback,_cast( m_pimpl ) ) ;
-
-			this->listenForEvents( true ) ;
-		}
-
-		return m_pimpl->status ;
-	} ) ;
+	return m_pimpl->connect() ;
 }
 
 bool gsm::connected()
 {
-	return GSM_IsConnected( m_pimpl->gsm ) ;
+	return m_pimpl->connected() ;
+}
+
+bool gsm::disconnect()
+{
+	return m_pimpl->disconnect() ;
 }
 
 bool gsm::hasData( bool waitForData )
 {
-	return GSM_ReadDevice( m_pimpl->gsm,waitForData ) != 0 ;
+	return m_pimpl->hasData( waitForData ) ;
 }
 
 void gsm::setlocale( const char * e )
 {
-	GSM_InitLocales( e ) ;
+	m_pimpl->setlocale( e ) ;
 }
 
 const char * gsm::lastError()
 {
-	return  GSM_ErrorString( m_pimpl->status.error() ) ;
+	return m_pimpl->lastError() ;
 }
 
 bool gsm::dial( const QByteArray& code )
 {
-	m_pimpl->status = GSM_DialService( m_pimpl->gsm,const_cast< char * >( code.data() ) ) ;
-	return m_pimpl->status ;
+	return m_pimpl->dial( code ) ;
 }
 
 bool gsm::listenForEvents( bool e )
 {
-	m_pimpl->status = GSM_SetIncomingUSSD( m_pimpl->gsm,e ) ;
-	return m_pimpl->status ;
+	return m_pimpl->listenForEvents( e ) ;
 }
