@@ -103,23 +103,20 @@ public:
 
 		return m_status ;
 	}
-	Task::future<bool>& connect()
+	bool connect()
 	{
-		return Task::run< bool >( [ this ](){
+		m_status = GSM_InitConnection( m_gsm,1 ) ;
 
-			m_status = GSM_InitConnection( m_gsm,1 ) ;
+		if( m_status ){
 
-			if( m_status ){
+			auto mimi = reinterpret_cast< void * >( this ) ;
 
-				auto mimi = reinterpret_cast< void * >( this ) ;
+			GSM_SetIncomingUSSDCallback( m_gsm,_callback,mimi ) ;
 
-				GSM_SetIncomingUSSDCallback( m_gsm,_callback,mimi ) ;
+			this->listenForEvents( true ) ;
+		}
 
-				this->listenForEvents( true ) ;
-			}
-
-			return m_status ;
-		} ) ;
+		return m_status ;
 	}
 private:
 	class gsm_error
@@ -179,7 +176,7 @@ gsm::~gsm()
 {
 }
 
-Task::future<bool>& gsm::connect()
+bool gsm::connect()
 {
 	return m_pimpl->connect() ;
 }

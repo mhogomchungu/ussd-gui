@@ -24,8 +24,6 @@
 #include <QByteArray>
 #include <memory>
 
-#include "task.h"
-
 class gsm
 {
 public:
@@ -49,8 +47,7 @@ public:
 	gsm( std::function< void( const gsm::USSDMessage& ussd ) > ) ;
 	~gsm() ;
 
-	Task::future<bool>& connect() ;
-
+	bool connect() ;
 	bool disconnect() ;
 	bool init() ;
 	bool connected() ;

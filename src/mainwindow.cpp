@@ -34,7 +34,7 @@
 
 #include "../3rd_party/qgsmcodec.h"
 
-#include <cstring>
+#include "task.h"
 
 static void _suspend( int time )
 {
@@ -195,7 +195,7 @@ bool MainWindow::Connect()
 
 	timer.start( 1000 * 1 ) ;
 
-	bool connected = m_gsm.connect().await() ;
+	bool connected = Task::await< bool >( [ this ]{ return m_gsm.connect() ; } ) ;
 
 	timer.stop() ;
 
