@@ -69,12 +69,15 @@ MainWindow::MainWindow( QWidget * parent ) : QMainWindow( parent ),
 
 	this->setFixedSize( this->size() ) ;
 
+	connect( m_ui->pbConnect,SIGNAL( pressed() ),this,SLOT( pbConnect() ) ) ;
 	connect( m_ui->pbCancel,SIGNAL( pressed() ),this,SLOT( pbQuit() ) ) ;
 	connect( m_ui->pbSend,SIGNAL( pressed() ),this,SLOT( pbSend() ) ) ;
 	connect( m_ui->pbConvert,SIGNAL( pressed() ),this,SLOT( pbConvert() ) ) ;
 	connect( &m_menu,SIGNAL( triggered( QAction * ) ),this,SLOT( setHistoryItem( QAction * ) ) ) ;
 
 	m_ui->pbConvert->setEnabled( false ) ;
+
+	this->disableSending() ;
 
 	QString e = QDir::homePath() + "/.config/ussd-gui" ;
 
@@ -127,6 +130,37 @@ void MainWindow::setHistoryMenu()
 MainWindow::~MainWindow()
 {
 	delete m_ui ;
+}
+
+void MainWindow::pbConnect()
+{
+	this->disableSending() ;
+
+	m_ui->pbConnect->setEnabled( false ) ;
+
+	m_ui->pbConvert->setEnabled( false ) ;
+
+	if( m_gsm.connected() ){
+
+		if( m_gsm.disconnect() ){
+
+			m_ui->pbConnect->setText( tr( "&Connect" ) ) ;
+
+			m_ui->textEditResult->setText( tr( "Status: Disconnected." ) ) ;
+		}else{
+			m_ui->textEditResult->setText( tr( "Status: ERROR 6: " ) + m_gsm.lastError() ) ;
+		}
+	}else{
+		if( this->Connect() ){
+
+			if( m_ui->lineEditUSSD_code->text().isEmpty() ){
+
+				m_ui->lineEditUSSD_code->setText( this->historyList().first() ) ;
+			}
+		}
+	}
+
+	m_ui->pbConnect->setEnabled( true ) ;
 }
 
 QString MainWindow::getSetting( const QString& opt )
@@ -191,6 +225,7 @@ bool MainWindow::Connect()
 	this->connectStatus() ;
 
 	this->disableSending() ;
+
 	m_ui->pbCancel->setEnabled( false ) ;
 
 	timer.start( 1000 * 1 ) ;
@@ -199,18 +234,25 @@ bool MainWindow::Connect()
 
 	timer.stop() ;
 
+	m_ui->pbCancel->setEnabled( true ) ;
+
 	if( connected ){
+
+		this->enableSending() ;
+
+		m_ui->pbConnect->setEnabled( true ) ;
+
+		m_ui->pbConnect->setText( tr( "&Disconnect" ) ) ;
 
 		m_ui->textEditResult->setText( tr( "Status: Connected." ) ) ;
 
-		m_ui->pbSend->setEnabled( false ) ;
-
 		_suspend_for_one_second() ;
 	}else{
+		m_ui->pbConnect->setText( tr( "&Connect" ) ) ;
+
 		m_ui->textEditResult->setText( tr( "Status: ERROR 2: " ) + m_gsm.lastError() ) ;
 
-		this->enableSending() ;
-		m_ui->pbCancel->setEnabled( true ) ;
+		this->disableSending() ;
 	}
 
 	return connected ;
@@ -274,6 +316,8 @@ void MainWindow::pbSend()
 
 		this->disableSending() ;
 
+		m_ui->pbConnect->setEnabled( false ) ;
+
 		m_ui->textEditResult->setText( tr( "Status: Sending A Request." ) ) ;
 
 		_suspend_for_one_second() ;
@@ -314,11 +358,13 @@ void MainWindow::pbSend()
 			}
 
 			m_ui->pbCancel->setEnabled( true ) ;
-		}else{			
+		}else{
 			m_ui->textEditResult->setText( tr( "Status: ERROR 4: " ) + m_gsm.lastError() ) ;
 
 			this->enableSending() ;
 		}
+
+		m_ui->pbConnect->setEnabled( true ) ;
 	} ;
 
 	m_ui->pbConvert->setEnabled( false ) ;

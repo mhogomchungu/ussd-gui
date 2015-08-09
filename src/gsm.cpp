@@ -153,7 +153,6 @@ static void _callback( GSM_StateMachine * gsm,GSM_USSDMessage * ussd,void * e )
 	( *call )( ussd ) ;
 }
 
-
 const char * gsm::decodeUnicodeString( const QByteArray& e )
 {
 	/*

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
+    <width>581</width>
     <height>332</height>
    </rect>
   </property>
@@ -17,9 +17,9 @@
    <widget class="QPushButton" name="pbSend">
     <property name="geometry">
      <rect>
-      <x>240</x>
+      <x>290</x>
       <y>300</y>
-      <width>121</width>
+      <width>111</width>
       <height>31</height>
      </rect>
     </property>
@@ -36,7 +36,7 @@
    <widget class="QPushButton" name="pbCancel">
     <property name="geometry">
      <rect>
-      <x>360</x>
+      <x>400</x>
       <y>300</y>
       <width>111</width>
       <height>31</height>
@@ -49,9 +49,9 @@
    <widget class="QLineEdit" name="lineEditUSSD_code">
     <property name="geometry">
      <rect>
-      <x>120</x>
+      <x>100</x>
       <y>270</y>
-      <width>361</width>
+      <width>381</width>
       <height>31</height>
      </rect>
     </property>
@@ -61,7 +61,7 @@
      <rect>
       <x>0</x>
       <y>270</y>
-      <width>121</width>
+      <width>101</width>
       <height>31</height>
      </rect>
     </property>
@@ -80,7 +80,7 @@
      <rect>
       <x>10</x>
       <y>9</y>
-      <width>581</width>
+      <width>561</width>
       <height>261</height>
      </rect>
     </property>
@@ -95,7 +95,7 @@
       <rect>
        <x>10</x>
        <y>30</y>
-       <width>561</width>
+       <width>541</width>
        <height>221</height>
       </rect>
      </property>
@@ -123,7 +123,7 @@
    <widget class="QPushButton" name="pbConvert">
     <property name="geometry">
      <rect>
-      <x>130</x>
+      <x>70</x>
       <y>300</y>
       <width>111</width>
       <height>31</height>
@@ -131,6 +131,19 @@
     </property>
     <property name="text">
      <string>&amp;Convert</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pbConnect">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>300</y>
+      <width>111</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>&amp;Connect</string>
     </property>
    </widget>
   </widget>

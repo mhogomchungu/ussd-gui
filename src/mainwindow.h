@@ -43,6 +43,7 @@ public:
 	~MainWindow() ;
 
 private slots:
+	void pbConnect() ;
 	void pbSend() ;
 	void pbQuit() ;
 	void pbConvert() ;
