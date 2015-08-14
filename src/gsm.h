@@ -21,7 +21,10 @@
 #ifndef GSM_H
 #define GSM_H
 
+#include <QString>
 #include <QByteArray>
+#include <QVector>
+
 #include <memory>
 
 class gsm
@@ -40,12 +43,23 @@ public:
 			Unknown } Status ;
 	} ;
 
+	struct SMSText
+	{
+		QString phoneNumber ;
+		QString date ;
+		QString message ;
+		bool read ;
+		bool inSIMcard ;
+	};
+
 	class pimpl ;
 
 	static const char * decodeUnicodeString( const QByteArray& ) ;
 
 	gsm( std::function< void( const gsm::USSDMessage& ussd ) > ) ;
 	~gsm() ;
+
+	QVector< gsm::SMSText > getSMSMessages() ;
 
 	bool connect() ;
 	bool disconnect() ;

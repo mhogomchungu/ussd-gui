@@ -67,6 +67,10 @@ MainWindow::MainWindow( QWidget * parent ) : QMainWindow( parent ),
 
 	m_ui->pbConnect->setDefault( true ) ;
 
+	m_ui->pbSMS->setEnabled( false ) ;
+
+	m_ui->groupBox->setTitle( QString() ) ;
+
 	QCoreApplication::setApplicationName( "ussd-gui" ) ;
 
 	this->setWindowIcon( QIcon( ":/ussd-gui" ) ) ;
@@ -77,6 +81,7 @@ MainWindow::MainWindow( QWidget * parent ) : QMainWindow( parent ),
 	connect( m_ui->pbCancel,SIGNAL( pressed() ),this,SLOT( pbQuit() ) ) ;
 	connect( m_ui->pbSend,SIGNAL( pressed() ),this,SLOT( pbSend() ) ) ;
 	connect( m_ui->pbConvert,SIGNAL( pressed() ),this,SLOT( pbConvert() ) ) ;
+	connect( m_ui->pbSMS,SIGNAL( pressed() ),this,SLOT( pbSMS() ) ) ;
 	connect( &m_menu,SIGNAL( triggered( QAction * ) ),this,SLOT( setHistoryItem( QAction * ) ) ) ;
 
 	m_ui->pbConvert->setEnabled( false ) ;
@@ -136,6 +141,87 @@ MainWindow::~MainWindow()
 	delete m_ui ;
 }
 
+void MainWindow::pbSMS()
+{
+	m_ui->textEditResult->setText( QString() ) ;
+
+	m_ui->groupBox->setTitle( QString() ) ;
+
+	this->disableSending() ;
+
+	m_ui->pbSMS->setEnabled( false ) ;
+	m_ui->pbConnect->setEnabled( false ) ;
+	m_ui->pbCancel->setEnabled( false ) ;
+
+	m_ui->textEditResult->setText( tr( "Status: Retrieving Text Messages." ) ) ;
+
+	_suspend_for_one_second() ;
+
+	auto m = Task::await< QVector< gsm::SMSText > >( [ this ](){ return m_gsm.getSMSMessages() ; } ) ;
+
+	int j = m.size() ;
+
+	if( j > 0 ){
+
+		QString e ;
+
+		m_ui->groupBox->setTitle( tr( "SMS messages." ) ) ;
+
+		for( int i = 0 ; i < j ; i++ ){
+
+			const auto& it = m.at( i ) ;
+
+			QString g = it.message ;
+
+			for( int k = i + 1 ; k < j ; k++,i++ ){
+
+				/*
+				 * Sometimes,a single text message may be split into multiple parts and we
+				 * seem to get these parts as if they are independent text messages.This route
+				 * is a cheap attempt and combining these multi part text messages into one by
+				 * assuming consercutive text messages that share the same time stamp are a part
+				 * of the same text message.
+				 */
+
+				const auto& xt = m.at( k ) ;
+
+				if( it.date == xt.date ){
+
+					g += xt.message ;
+				}else{
+					break ;
+				}
+			}
+
+			auto _read      = []( bool e ){ return e ? tr( "Read" ) : tr( "Not Read" ) ; } ;
+			auto _location  = []( bool e ){ return e ? tr( "SIM" ) : tr( "Phone" ) ; } ;
+
+			auto k = tr( "Number: %1\nDate: %2\nState: %3\nLocation: %4\n\n%5" ) ;
+
+			e += k.arg( it.phoneNumber,it.date,_read( it.read ),_location( it.inSIMcard ),g ) ;
+
+			e += "\n------------------------------------------------------------------------------------\n" ;
+		}
+
+		m_ui->textEditResult->setText( e ) ;
+	}else{
+		auto e = QString( m_gsm.lastError() ) ;
+
+		if( e == "No error." || e == "Entry is empty." ){
+
+			m_ui->textEditResult->setText( tr( "Status: No Text Messages Were Found." )) ;
+		}else{
+			m_ui->textEditResult->setText( tr( "Status: ERROR 7: " ) + e ) ;
+		}
+	}
+
+	this->enableSending() ;
+
+	m_ui->pbSMS->setEnabled( true ) ;
+	m_ui->pbConnect->setEnabled( true ) ;
+	m_ui->pbCancel->setEnabled( true ) ;
+}
+
 void MainWindow::pbConnect()
 {
 	this->disableSending() ;
@@ -147,6 +233,8 @@ void MainWindow::pbConnect()
 	if( m_gsm.connected() ){
 
 		if( m_gsm.disconnect() ){
+
+			m_ui->pbSMS->setEnabled( false ) ;
 
 			m_ui->pbConnect->setText( tr( "&Connect" ) ) ;
 
@@ -241,6 +329,8 @@ bool MainWindow::Connect()
 	m_ui->pbCancel->setEnabled( true ) ;
 
 	if( connected ){
+
+		m_ui->pbSMS->setEnabled( true ) ;
 
 		this->enableSending() ;
 
@@ -371,6 +461,8 @@ void MainWindow::pbSend()
 		m_ui->pbCancel->setEnabled( true ) ;
 	} ;
 
+	m_ui->groupBox->setTitle( QString() ) ;
+
 	m_ui->pbConvert->setEnabled( false ) ;
 
 	if( m_gsm.connected() ){
@@ -386,7 +478,10 @@ void MainWindow::pbSend()
 
 void MainWindow::pbQuit()
 {
-	QCoreApplication::quit() ;
+	if( m_ui->pbCancel->isEnabled() ){
+
+		QCoreApplication::quit() ;
+	}
 }
 
 void MainWindow::disableSending()
@@ -405,6 +500,8 @@ void MainWindow::enableSending()
 
 void MainWindow::processResponce( const gsm::USSDMessage& ussd )
 {
+	m_ui->groupBox->setTitle( tr( "USSD Server Response." ) ) ;
+
 	this->enableSending() ;
 
 	m_ussd.Text   = ussd.Text ;

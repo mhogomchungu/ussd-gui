@@ -42,6 +42,7 @@ public:
 	explicit MainWindow( QWidget  * parent = nullptr ) ;
 	~MainWindow() ;
 private slots:
+	void pbSMS() ;
 	void pbConnect() ;
 	void pbSend() ;
 	void pbQuit() ;

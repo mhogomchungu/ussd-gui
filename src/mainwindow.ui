@@ -149,6 +149,22 @@
      <bool>true</bool>
     </property>
    </widget>
+   <widget class="QPushButton" name="pbSMS">
+    <property name="geometry">
+     <rect>
+      <x>510</x>
+      <y>270</y>
+      <width>51</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>Check SMS Messages.</string>
+    </property>
+    <property name="text">
+     <string>SMS</string>
+    </property>
+   </widget>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
@@ -156,6 +172,7 @@
   <tabstop>textEditResult</tabstop>
   <tabstop>lineEditUSSD_code</tabstop>
   <tabstop>pbHistory</tabstop>
+  <tabstop>pbSMS</tabstop>
   <tabstop>pbConvert</tabstop>
   <tabstop>pbConnect</tabstop>
   <tabstop>pbSend</tabstop>

@@ -78,7 +78,7 @@ public:
 			default                  : m_ussd.Status = gsm::USSDMessage::Unknown        ; break ;
 		}
 
-		m_ussd.Text = QByteArray( ( const char * )ussd->Text,sizeof( ussd->Text ) ) ;
+		m_ussd.Text = QByteArray( ( const char * )ussd->Text,int( sizeof( ussd->Text ) ) ) ;
 		m_function( m_ussd ) ;
 	}
 	bool init()
@@ -118,6 +118,99 @@ public:
 
 		return m_status ;
 	}
+	QVector<gsm::SMSText> getSMSMessages()
+	{
+		auto _getSMS = []( const GSM_SMSMessage * m ){
+#if 0
+			/*
+			 * No idea what to do with this info,but ignoring them seems to work
+			 * just fine with my modem.
+			 */
+			switch( m->Coding ){
+			case SMS_Coding_Unicode_No_Compression:
+
+				sms.message = ? ? ? ?
+
+				break;
+
+			case SMS_Coding_Unicode_Compression:
+
+				sms.message = ? ? ? ?
+
+				break;
+
+			case SMS_Coding_Default_No_Compression:
+
+				sms.message = ? ? ? ?
+
+				break;
+
+			case SMS_Coding_Default_Compression:
+
+				sms.message = ? ? ? ?
+
+				break;
+
+			case SMS_Coding_8bit:
+
+				sms.message = ? ? ? ?
+
+				break;
+			default:
+				break;
+			}
+#endif
+			gsm::SMSText sms ;
+
+			auto d = &m->DateTime ;
+
+			auto _d = []( int n ) { return QString::number( n ) ; } ;
+
+			auto a          = QString( "%1-%2-%3" ).arg( _d( d->Day ),_d( d->Month ),_d( d->Year ) ) ;
+			auto b          = QString( "%1:%2:%3" ).arg( _d( d->Hour ),_d( d->Minute ),_d( d->Second ) ) ;
+
+			sms.date        = a + " " + b ;
+
+			sms.read        = m->State == SMS_Read ;
+
+			sms.inSIMcard   = m->Memory == MEM_SM ;
+
+			sms.phoneNumber = DecodeUnicodeString( m->Number ) ;
+
+			sms.message     = DecodeUnicodeString( m->Text ) ;
+
+			return sms ;
+		} ;
+
+		GSM_MultiSMSMessage sms ;
+
+		QVector< gsm::SMSText > messages ;
+
+		bool start = true ;
+
+		while( true ){
+
+			m_status = GSM_GetNextSMS( m_gsm,&sms,start ) ;
+
+			start = false ;
+
+			if( m_status == ERR_EMPTY ){
+
+				break ;
+
+			}else if( m_status ){
+
+				for( int i = 0 ; i < sms.Number ; i++ ){
+
+					messages.append( _getSMS( &sms.SMS[ i ] ) ) ;
+				}
+			}else{
+				break ;
+			}
+		}
+
+		return messages ;
+	}
 private:
 	class gsm_error
 	{
@@ -126,6 +219,10 @@ private:
 		{
 			m_error = err ;
 			return *this ;
+		}
+		bool operator ==( GSM_Error err )
+		{
+			return m_error == err ;
 		}
 		operator bool()
 		{
@@ -173,6 +270,11 @@ bool gsm::init()
 
 gsm::~gsm()
 {
+}
+
+QVector<gsm::SMSText> gsm::getSMSMessages()
+{
+	return m_pimpl->getSMSMessages() ;
 }
 
 bool gsm::connect()
