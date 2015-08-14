@@ -163,7 +163,7 @@ void MainWindow::pbSMS()
 
 	if( j > 0 ){
 
-		QString e ;
+		QStringList e ;
 
 		m_ui->groupBox->setTitle( tr( "SMS messages." ) ) ;
 
@@ -198,12 +198,18 @@ void MainWindow::pbSMS()
 
 			auto k = tr( "Number: %1\nDate: %2\nState: %3\nLocation: %4\n\n%5" ) ;
 
-			e += k.arg( it.phoneNumber,it.date,_read( it.read ),_location( it.inSIMcard ),g ) ;
-
-			e += "\n------------------------------------------------------------------------------------\n" ;
+			e << k.arg( it.phoneNumber,it.date,_read( it.read ),_location( it.inSIMcard ),g ) ;
 		}
 
-		m_ui->textEditResult->setText( e ) ;
+		QString z ;
+		auto l = "\n------------------------------------------------------------------------------------\n" ;
+
+		for( int i = e.size() -1 ; i >= 0 ; i-- ){
+
+			z += e.at( i ) + l ;
+		}
+
+		m_ui->textEditResult->setText( z ) ;
 	}else{
 		auto e = QString( m_gsm.lastError() ) ;
 
