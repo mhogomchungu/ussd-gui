@@ -63,6 +63,10 @@ MainWindow::MainWindow( QWidget * parent ) : QMainWindow( parent ),
 
 	m_ui->setupUi( this ) ;
 
+	m_ui->pbConnect->setFocus() ;
+
+	m_ui->pbConnect->setDefault( true ) ;
+
 	QCoreApplication::setApplicationName( "ussd-gui" ) ;
 
 	this->setWindowIcon( QIcon( ":/ussd-gui" ) ) ;
@@ -318,6 +322,8 @@ void MainWindow::pbSend()
 
 		m_ui->pbConnect->setEnabled( false ) ;
 
+		m_ui->pbCancel->setEnabled( false ) ;
+
 		m_ui->textEditResult->setText( tr( "Status: Sending A Request." ) ) ;
 
 		_suspend_for_one_second() ;
@@ -325,8 +331,6 @@ void MainWindow::pbSend()
 		if( m_gsm.dial( ussd ) ){
 
 			QString e( tr( "Status: Waiting For A Reply ..." ) ) ;
-
-			m_ui->pbCancel->setEnabled( false ) ;
 
 			int r = 0 ;
 
@@ -356,8 +360,6 @@ void MainWindow::pbSend()
 					}
 				}
 			}
-
-			m_ui->pbCancel->setEnabled( true ) ;
 		}else{
 			m_ui->textEditResult->setText( tr( "Status: ERROR 4: " ) + m_gsm.lastError() ) ;
 
@@ -365,6 +367,8 @@ void MainWindow::pbSend()
 		}
 
 		m_ui->pbConnect->setEnabled( true ) ;
+
+		m_ui->pbCancel->setEnabled( true ) ;
 	} ;
 
 	m_ui->pbConvert->setEnabled( false ) ;
@@ -403,6 +407,9 @@ void MainWindow::processResponce( const gsm::USSDMessage& ussd )
 {
 	this->enableSending() ;
 
+	m_ussd.Text   = ussd.Text ;
+	m_ussd.Status = ussd.Status ;
+
 	if( ussd.Status == gsm::USSDMessage::ActionNeeded || ussd.Status == gsm::USSDMessage::NoActionNeeded ){
 
 		if( ussd.Status == gsm::USSDMessage::ActionNeeded ){
@@ -411,8 +418,6 @@ void MainWindow::processResponce( const gsm::USSDMessage& ussd )
 		}
 
 		m_ui->pbConvert->setEnabled( true ) ;
-
-		m_ussd.Text = ussd.Text ;
 
 		this->displayResult() ;
 	}else{

@@ -41,7 +41,6 @@ class MainWindow : public QMainWindow
 public:
 	explicit MainWindow( QWidget  * parent = nullptr ) ;
 	~MainWindow() ;
-
 private slots:
 	void pbConnect() ;
 	void pbSend() ;
@@ -53,24 +52,30 @@ private slots:
 	void setHistoryItem( QAction * ) ;
 private:
 	QStringList historyList() ;
+	QString getSetting( const QString& ) ;
+
 	bool gsm7Encoded() ;
+	bool Connect() ;
+	bool getBoolSetting( const QString& ) ;
+
 	void displayResult() ;
 	void updateHistory( const QByteArray& ) ;
-	bool Connect() ;
 	void processResponce( const gsm::USSDMessage& ) ;
 	void closeEvent( QCloseEvent * ) ;
 	void setLocalLanguage() ;
 	void setHistoryMenu( const QStringList& ) ;
 	void setHistoryMenu() ;
-	QString getSetting( const QString& ) ;
-	bool getBoolSetting( const QString& ) ;
 	void setSetting( const QString&,const QString& ) ;
 	void setSetting( const QString&,bool ) ;
-	Ui::MainWindow * m_ui ;
+
 	QString m_connectingMsg ;
 	QString m_history ;
+
+	Ui::MainWindow * m_ui ;
+
 	gsm::USSDMessage m_ussd ;
 	gsm m_gsm ;
+	
 	QMenu m_menu ;
 	QSettings m_settings ;
 };
