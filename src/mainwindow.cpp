@@ -207,7 +207,7 @@ void MainWindow::pbSMS()
 	}else{
 		auto e = QString( m_gsm.lastError() ) ;
 
-		if( e == "No error." || e == "Entry is empty." ){
+		if( e == "No error." ){
 
 			m_ui->textEditResult->setText( tr( "Status: No Text Messages Were Found." )) ;
 		}else{

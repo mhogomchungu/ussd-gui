@@ -196,6 +196,8 @@ public:
 
 			if( m_status == ERR_EMPTY ){
 
+				m_status = ERR_NONE ;
+
 				break ;
 
 			}else if( m_status ){
