@@ -171,13 +171,13 @@ void MainWindow::pbSMS()
 
 			const auto& it = m.at( i ) ;
 
-			QString g = it.message ;
+			auto g = it.message ;
 
 			for( int k = i + 1 ; k < j ; k++,i++ ){
 
 				/*
 				 * Sometimes,a single text message may be split into multiple parts and we
-				 * seem to get these parts as if they are independent text messages.This route
+				 * seem to get these parts as if they are independent text messages.This routine
 				 * is a cheap attempt and combining these multi part text messages into one by
 				 * assuming consercutive text messages that share the same time stamp are a part
 				 * of the same text message.
@@ -201,15 +201,18 @@ void MainWindow::pbSMS()
 			e << k.arg( it.phoneNumber,it.date,_read( it.read ),_location( it.inSIMcard ),g ) ;
 		}
 
-		QString z ;
 		auto l = "\n------------------------------------------------------------------------------------\n" ;
 
-		for( int i = e.size() -1 ; i >= 0 ; i-- ){
+		QString z ;
+
+		for( int i = e.size() - 1 ; i >= 0 ; i-- ){
 
 			z += e.at( i ) + l ;
 		}
 
-		m_ui->textEditResult->setText( z ) ;
+		auto n = tr( "\nNumber Of Text Messages: %1%2" ).arg( QString::number( e.size() ),l ) ;
+
+		m_ui->textEditResult->setText( n + z ) ;
 	}else{
 		auto e = QString( m_gsm.lastError() ) ;
 

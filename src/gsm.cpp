@@ -164,7 +164,15 @@ public:
 
 			auto d = &m->DateTime ;
 
-			auto _d = []( int n ) { return QString::number( n ) ; } ;
+			auto _d = []( int n ) {
+
+				if( n < 10 ){
+
+					return QString( "0" ) + QString::number( n ) ;
+				}else{
+					return QString::number( n ) ;
+				}
+			} ;
 
 			auto a          = QString( "%1-%2-%3" ).arg( _d( d->Day ),_d( d->Month ),_d( d->Year ) ) ;
 			auto b          = QString( "%1:%2:%3" ).arg( _d( d->Hour ),_d( d->Minute ),_d( d->Second ) ) ;
