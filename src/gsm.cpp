@@ -121,45 +121,50 @@ public:
 	QVector<gsm::SMSText> getSMSMessages()
 	{
 		auto _getSMS = []( const GSM_SMSMessage * m ){
+
+			auto _message = []( const unsigned char * e ){
 #if 0
-			/*
-			 * No idea what to do with this info,but ignoring them seems to work
-			 * just fine with my modem.
-			 */
-			switch( m->Coding ){
-			case SMS_Coding_Unicode_No_Compression:
+				/*
+				 * No idea what to do with this info,but ignoring them seems to work
+				 * just fine with my modem.
+				 */
+				switch( m->Coding ){
+				case SMS_Coding_Unicode_No_Compression:
 
-				sms.message = ? ? ? ?
+					sms.message = ? ? ? ?
 
-				break;
+					break;
 
-			case SMS_Coding_Unicode_Compression:
+				case SMS_Coding_Unicode_Compression:
 
-				sms.message = ? ? ? ?
+					sms.message = ? ? ? ?
 
-				break;
+					break;
 
-			case SMS_Coding_Default_No_Compression:
+				case SMS_Coding_Default_No_Compression:
 
-				sms.message = ? ? ? ?
+					sms.message = ? ? ? ?
 
-				break;
+					break;
 
-			case SMS_Coding_Default_Compression:
+				case SMS_Coding_Default_Compression:
 
-				sms.message = ? ? ? ?
+					sms.message = ? ? ? ?
 
-				break;
+					break;
 
-			case SMS_Coding_8bit:
+				case SMS_Coding_8bit:
 
-				sms.message = ? ? ? ?
+					sms.message = ? ? ? ?
 
-				break;
-			default:
-				break;
-			}
+					break;
+				default:
+					break;
+				}
 #endif
+				return  DecodeUnicodeString( e ) ;
+			} ;
+
 			gsm::SMSText sms ;
 
 			auto d = &m->DateTime ;
@@ -185,7 +190,7 @@ public:
 
 			sms.phoneNumber = DecodeUnicodeString( m->Number ) ;
 
-			sms.message     = DecodeUnicodeString( m->Text ) ;
+			sms.message     = _message( m->Text ) ;
 
 			return sms ;
 		} ;
@@ -212,7 +217,7 @@ public:
 
 				for( int i = 0 ; i < sms.Number ; i++ ){
 
-					const auto& e = &sms.SMS[ i ] ;
+					const GSM_SMSMessage * e = &sms.SMS[ i ] ;
 
 					if( e->PDU == SMS_Deliver ){
 
