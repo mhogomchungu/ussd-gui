@@ -218,7 +218,7 @@ void MainWindow::pbSMS()
 
 		if( e == "No error." ){
 
-			m_ui->textEditResult->setText( tr( "Status: No Text Messages Were Found." )) ;
+			m_ui->textEditResult->setText( tr( "Status: No Text Messages Were Found." ) ) ;
 		}else{
 			m_ui->textEditResult->setText( tr( "Status: ERROR 7: " ) + e ) ;
 		}

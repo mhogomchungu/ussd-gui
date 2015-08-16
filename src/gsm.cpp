@@ -212,7 +212,12 @@ public:
 
 				for( int i = 0 ; i < sms.Number ; i++ ){
 
-					messages.append( _getSMS( &sms.SMS[ i ] ) ) ;
+					const auto& e = &sms.SMS[ i ] ;
+
+					if( e->PDU == SMS_Deliver ){
+
+						messages.append( _getSMS( e ) ) ;
+					}
 				}
 			}else{
 				break ;
