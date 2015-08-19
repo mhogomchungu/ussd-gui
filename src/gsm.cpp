@@ -122,7 +122,7 @@ public:
 	{
 		auto _getSMS = []( const GSM_SMSMessage * m ){
 
-			auto _message = []( const unsigned char * e ){
+			auto _message = [ m ]( const unsigned char * e ){
 #if 0
 				/*
 				 * No idea what to do with this info,but ignoring them seems to work
@@ -131,31 +131,31 @@ public:
 				switch( m->Coding ){
 				case SMS_Coding_Unicode_No_Compression:
 
-					sms.message = ? ? ? ?
+					return ? ? ? ?
 
 					break;
 
 				case SMS_Coding_Unicode_Compression:
 
-					sms.message = ? ? ? ?
+					return ? ? ? ?
 
 					break;
 
 				case SMS_Coding_Default_No_Compression:
 
-					sms.message = ? ? ? ?
+					return ? ? ? ?
 
 					break;
 
 				case SMS_Coding_Default_Compression:
 
-					sms.message = ? ? ? ?
+					return ? ? ? ?
 
 					break;
 
 				case SMS_Coding_8bit:
 
-					sms.message = ? ? ? ?
+					return ? ? ? ?
 
 					break;
 				default:
@@ -188,6 +188,8 @@ public:
 
 			sms.inSIMcard   = m->Memory == MEM_SM ;
 
+			sms.inInbox     = m->PDU == SMS_Deliver ;
+
 			sms.phoneNumber = DecodeUnicodeString( m->Number ) ;
 
 			sms.message     = _message( m->Text ) ;
@@ -217,12 +219,7 @@ public:
 
 				for( int i = 0 ; i < sms.Number ; i++ ){
 
-					const GSM_SMSMessage * e = &sms.SMS[ i ] ;
-
-					if( e->PDU == SMS_Deliver ){
-
-						messages.append( _getSMS( e ) ) ;
-					}
+					messages.append( _getSMS( &sms.SMS[ i ] ) ) ;
 				}
 			}else{
 				break ;

@@ -171,6 +171,11 @@ void MainWindow::pbSMS()
 
 			const auto& it = m.at( i ) ;
 
+			if( !it.inInbox ){
+
+				continue ;
+			}
+
 			auto g = it.message ;
 
 			for( int k = i + 1 ; k < j ; k++,i++ ){
@@ -193,12 +198,31 @@ void MainWindow::pbSMS()
 				}
 			}
 
-			auto _read      = []( bool e ){ return e ? tr( "Read" ) : tr( "Not Read" ) ; } ;
-			auto _location  = []( bool e ){ return e ? tr( "SIM" ) : tr( "Phone" ) ; } ;
+			auto _r  = []( bool e ){ return e ? tr( "Read" ) : tr( "Not Read" ) ; } ;
+
+			auto _l  = [] ( bool inSimCard,bool inInbox ){
+
+				if( inSimCard ){
+
+					if( inInbox ){
+
+						return tr( "SIM's Inbox" ) ;
+					}else{
+						return tr( "SIM's Outbox" ) ;
+					}
+				}else{
+					if( inInbox ){
+
+						return tr( "Phone's Inbox" ) ;
+					}else{
+						return tr( "Phone's Outbox" ) ;
+					}
+				}
+			} ;
 
 			auto k = tr( "Number: %1\nDate: %2\nState: %3\nLocation: %4\n\n%5" ) ;
 
-			e << k.arg( it.phoneNumber,it.date,_read( it.read ),_location( it.inSIMcard ),g ) ;
+			e << k.arg( it.phoneNumber,it.date,_r( it.read ),_l( it.inSIMcard,it.inInbox ),g ) ;
 		}
 
 		auto l = "\n------------------------------------------------------------------------------------\n" ;

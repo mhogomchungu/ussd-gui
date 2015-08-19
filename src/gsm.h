@@ -50,6 +50,7 @@ public:
 		QString message ;
 		bool read ;
 		bool inSIMcard ;
+		bool inInbox ;
 	};
 
 	class pimpl ;
