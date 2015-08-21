@@ -51,7 +51,7 @@ public:
 		bool read ;
 		bool inSIMcard ;
 		bool inInbox ;
-	};
+	} ;
 
 	class pimpl ;
 
@@ -75,6 +75,6 @@ public:
 	const char * lastError() ;
 private:
 	std::unique_ptr< gsm::pimpl > m_pimpl ;
-};
+} ;
 
 #endif // GSM_H

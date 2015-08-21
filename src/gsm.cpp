@@ -24,6 +24,11 @@
 
 static void _callback( GSM_StateMachine *,GSM_USSDMessage *,void * ) ;
 
+static QByteArray _QByteArray( decltype(( GSM_USSDMessage::Text )) buffer )
+{
+	return QByteArray( ( const char * )buffer,int( sizeof( buffer ) ) ) ;
+}
+
 class gsm::pimpl
 {
 public:
@@ -78,7 +83,8 @@ public:
 			default                  : m_ussd.Status = gsm::USSDMessage::Unknown        ; break ;
 		}
 
-		m_ussd.Text = QByteArray( ( const char * )ussd->Text,int( sizeof( ussd->Text ) ) ) ;
+		m_ussd.Text = _QByteArray( ussd->Text ) ;
+
 		m_function( m_ussd ) ;
 	}
 	bool init()
@@ -120,110 +126,112 @@ public:
 	}
 	QVector<gsm::SMSText> getSMSMessages()
 	{
-		auto _getSMS = []( const GSM_SMSMessage * m ){
+		auto _sms = []( QVector< gsm::SMSText >& messages,const GSM_MultiSMSMessage * m ){
 
-			auto _message = [ m ]( const unsigned char * e ){
-#if 0
-				/*
-				 * No idea what to do with this info,but ignoring them seems to work
-				 * just fine with my modem.
-				 */
-				switch( m->Coding ){
-				case SMS_Coding_Unicode_No_Compression:
+			auto _getSMS = []( const GSM_SMSMessage * m ){
 
-					return ? ? ? ?
+				auto _message = [ m ]( const unsigned char * e ){
 
-					break;
+					/*
+					 * No idea what to do with these options and ignoring them seems
+					 * to work just fine with my modem.
+					 */
 
-				case SMS_Coding_Unicode_Compression:
+					switch( m->Coding ){
 
-					return ? ? ? ?
+					case SMS_Coding_Unicode_No_Compression:
 
-					break;
+						return DecodeUnicodeString( e ) ;
 
-				case SMS_Coding_Default_No_Compression:
+					case SMS_Coding_Unicode_Compression:
 
-					return ? ? ? ?
+						return DecodeUnicodeString( e ) ;
 
-					break;
+					case SMS_Coding_Default_No_Compression:
 
-				case SMS_Coding_Default_Compression:
+						return DecodeUnicodeString( e ) ;
 
-					return ? ? ? ?
+					case SMS_Coding_Default_Compression:
 
-					break;
+						return DecodeUnicodeString( e ) ;
 
-				case SMS_Coding_8bit:
+					case SMS_Coding_8bit:
 
-					return ? ? ? ?
+						return DecodeUnicodeString( e ) ;
+					default:
+						return DecodeUnicodeString( e ) ;
+					}
+				} ;
 
-					break;
-				default:
-					break;
-				}
-#endif
-				return  DecodeUnicodeString( e ) ;
+				gsm::SMSText sms ;
+
+				auto d = &m->DateTime ;
+
+				auto _d = []( decltype( d->Day ) n )->QString{
+
+					if( n < 10 ){
+
+						return "0" + QString::number( n ) ;
+					}else{
+						return QString::number( n ) ;
+					}
+				} ;
+
+				auto a          = QString( "%1-%2-%3" ).arg( _d( d->Day ),_d( d->Month ),_d( d->Year ) ) ;
+				auto b          = QString( "%1:%2:%3" ).arg( _d( d->Hour ),_d( d->Minute ),_d( d->Second ) ) ;
+
+				sms.date        = a + " " + b ;
+
+				sms.read        = m->State == SMS_Read ;
+
+				sms.inSIMcard   = m->Memory == MEM_SM ;
+
+				sms.inInbox     = m->PDU == SMS_Deliver ;
+
+				sms.phoneNumber = DecodeUnicodeString( m->Number ) ;
+
+				sms.message     = _message( m->Text ) ;
+
+				return sms ;
 			} ;
 
-			gsm::SMSText sms ;
+			for( decltype( m->Number ) i = 0 ; i < m->Number ; i++ ){
 
-			auto d = &m->DateTime ;
-
-			auto _d = []( int n ) {
-
-				if( n < 10 ){
-
-					return QString( "0" ) + QString::number( n ) ;
-				}else{
-					return QString::number( n ) ;
-				}
-			} ;
-
-			auto a          = QString( "%1-%2-%3" ).arg( _d( d->Day ),_d( d->Month ),_d( d->Year ) ) ;
-			auto b          = QString( "%1:%2:%3" ).arg( _d( d->Hour ),_d( d->Minute ),_d( d->Second ) ) ;
-
-			sms.date        = a + " " + b ;
-
-			sms.read        = m->State == SMS_Read ;
-
-			sms.inSIMcard   = m->Memory == MEM_SM ;
-
-			sms.inInbox     = m->PDU == SMS_Deliver ;
-
-			sms.phoneNumber = DecodeUnicodeString( m->Number ) ;
-
-			sms.message     = _message( m->Text ) ;
-
-			return sms ;
+				messages.append( _getSMS( &m->SMS[ i ] ) ) ;
+			}
 		} ;
 
 		GSM_MultiSMSMessage sms ;
 
 		QVector< gsm::SMSText > messages ;
 
-		bool start = true ;
+		m_status = GSM_GetNextSMS( m_gsm,&sms,true ) ;
 
-		while( true ){
+		if( m_status ){
 
-			m_status = GSM_GetNextSMS( m_gsm,&sms,start ) ;
+			_sms( messages,&sms ) ;
 
-			start = false ;
+			while( true ){
 
-			if( m_status == ERR_EMPTY ){
+				m_status = GSM_GetNextSMS( m_gsm,&sms,false ) ;
 
-				m_status = ERR_NONE ;
+				if( m_status == ERR_EMPTY ){
 
-				break ;
+					m_status = ERR_NONE ;
 
-			}else if( m_status ){
+					break ;
 
-				for( int i = 0 ; i < sms.Number ; i++ ){
+				}else if( m_status ){
 
-					messages.append( _getSMS( &sms.SMS[ i ] ) ) ;
+					_sms( messages,&sms ) ;
+				}else{
+					break ;
 				}
-			}else{
-				break ;
 			}
+
+		}else if( m_status == ERR_EMPTY ){
+
+			m_status = ERR_NONE ;
 		}
 
 		return messages ;
@@ -262,9 +270,9 @@ static void _callback( GSM_StateMachine * gsm,GSM_USSDMessage * ussd,void * e )
 {
 	Q_UNUSED( gsm ) ;
 
-	auto call = reinterpret_cast< gsm::pimpl * >( e ) ;
+	auto function = reinterpret_cast< gsm::pimpl * >( e ) ;
 
-	( *call )( ussd ) ;
+	( *function )( ussd ) ;
 }
 
 const char * gsm::decodeUnicodeString( const QByteArray& e )
