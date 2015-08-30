@@ -19,6 +19,8 @@
 
 #include "gsm.h"
 
+#include <QStringList>
+#include <QCoreApplication>
 #include <QDebug>
 #include <gammu.h>
 
@@ -104,6 +106,13 @@ public:
 			if( m_status ){
 
 				GSM_SetConfigNum( m_gsm,1 ) ;
+
+				if( QCoreApplication::arguments().contains( "-d" ) ){
+
+					auto e = GSM_GetGlobalDebug() ;
+					GSM_SetDebugFileDescriptor( stderr,true,e ) ;
+					GSM_SetDebugLevel( "textall",e ) ;
+				}
 			}
 		}
 
