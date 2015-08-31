@@ -106,7 +106,7 @@ MainWindow::MainWindow( QWidget * parent ) : QMainWindow( parent ),
 
 	this->setHistoryMenu( l ) ;
 
-	if( !m_gsm.init() ){
+	if( !m_gsm.init( QCoreApplication::arguments().contains( "-d" ) ) ){
 
 		m_ui->textEditResult->setText( QObject::tr( "Status: ERROR 1: " ) + m_gsm.lastError() ) ;
 

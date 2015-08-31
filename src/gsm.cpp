@@ -89,7 +89,7 @@ public:
 
 		m_function( m_ussd ) ;
 	}
-	bool init()
+	bool init( bool log )
 	{
 		struct INI_config
 		{
@@ -107,7 +107,7 @@ public:
 
 				GSM_SetConfigNum( m_gsm,1 ) ;
 
-				if( QCoreApplication::arguments().contains( "-d" ) ){
+				if( log ){
 
 					auto e = GSM_GetGlobalDebug() ;
 					GSM_SetDebugFileDescriptor( stderr,true,e ) ;
@@ -297,9 +297,9 @@ gsm::gsm( std::function< void( const gsm::USSDMessage& ussd ) > f ) :
 {
 }
 
-bool gsm::init()
+bool gsm::init( bool log )
 {
-	return m_pimpl->init() ;
+	return m_pimpl->init( log ) ;
 }
 
 gsm::~gsm()

@@ -64,7 +64,7 @@ public:
 
 	bool connect() ;
 	bool disconnect() ;
-	bool init() ;
+	bool init( bool = false ) ;
 	bool connected() ;
 	bool dial( const QByteArray& ) ;
 	bool hasData( bool waitForData = false ) ;
