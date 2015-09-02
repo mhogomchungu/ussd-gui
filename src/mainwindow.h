@@ -68,6 +68,10 @@ private:
 	void setHistoryMenu() ;
 	void setSetting( const QString&,const QString& ) ;
 	void setSetting( const QString&,bool ) ;
+	int  timeOutInterval() ;
+
+	bool m_waiting ;
+	int m_timeout ;
 
 	QString m_connectingMsg ;
 	QString m_history ;

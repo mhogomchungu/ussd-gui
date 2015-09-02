@@ -95,6 +95,8 @@ MainWindow::MainWindow( QWidget * parent ) : QMainWindow( parent ),
 
 	m_settings.setPath( QSettings::IniFormat,QSettings::UserScope,e ) ;
 
+	m_timeout = this->timeOutInterval() ;
+
 	m_history = this->getSetting( "history" ) ;
 
 	QStringList l = this->historyList() ;
@@ -318,10 +320,23 @@ void MainWindow::setSetting(const QString& key,bool value )
 	m_settings.setValue( key,value ) ;
 }
 
+int MainWindow::timeOutInterval()
+{
+	QString timeOut = "timeout" ;
+
+	if( m_settings.contains( timeOut ) ){
+
+		return m_settings.value( timeOut ).toInt() ;
+	}else{
+		this->setSetting( timeOut,QString( "30" ) ) ;
+		return 30 ;
+	}
+}
+
 void MainWindow::connectStatus()
 {
 	m_ui->textEditResult->setText( m_connectingMsg ) ;
-	m_connectingMsg += "..." ;
+	m_connectingMsg += ".... " ;
 }
 
 void MainWindow::setHistoryItem( QAction * ac )
@@ -341,7 +356,7 @@ QStringList MainWindow::historyList()
 
 bool MainWindow::Connect()
 {
-	m_connectingMsg = tr( "Status: Connecting ..." ) ;
+	m_connectingMsg = tr( "Status: Connecting " ) ;
 
 	QTimer timer ;
 
@@ -453,15 +468,19 @@ void MainWindow::pbSend()
 
 		if( m_gsm.dial( ussd ) ){
 
-			QString e( tr( "Status: Waiting For A Reply ..." ) ) ;
+			QString e( tr( "Status: Waiting For A Reply " ) ) ;
 
 			int r = 0 ;
 
+			m_waiting = true ;
+
 			while( true ){
 
-				if( r == 30 ){
+				if( r == m_timeout ){
 
-					m_ui->textEditResult->setText( tr( "Status: ERROR 3: no response within 30 seconds." ) ) ;
+					auto e = QString::number( m_timeout ) ;
+
+					m_ui->textEditResult->setText( tr( "Status: ERROR 3: no response within %1 seconds." ).arg( e ) ) ;
 
 					this->enableSending() ;
 
@@ -471,15 +490,17 @@ void MainWindow::pbSend()
 				}else{
 					r++ ;
 
-					if( m_gsm.hasData() ){
+					if( m_waiting ){
 
-						break ;
-					}else{
 						m_ui->textEditResult->setText( e ) ;
 
-						e += "...." ;
+						e += ".... " ;
 
 						_suspend_for_one_second() ;
+					}else{
+						m_gsm.listenForEvents( false ) ;
+
+						break ;
 					}
 				}
 			}
@@ -533,6 +554,8 @@ void MainWindow::enableSending()
 
 void MainWindow::processResponce( const gsm::USSDMessage& ussd )
 {
+	m_waiting = false ;
+
 	m_ui->groupBox->setTitle( tr( "USSD Server Response." ) ) ;
 
 	this->enableSending() ;
