@@ -12,3 +12,5 @@ download page is: https://github.com/mhogomchungu/ussd-gui/releases
 [1] http://wammu.eu/gammu/
 
 useful documentation: http://wammu.eu/docs/manual/c/hints.html
+
+The application's FAQ page is at: https://github.com/mhogomchungu/ussd-gui/wiki/Frequently-Asked-Questions
