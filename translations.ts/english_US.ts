@@ -25,7 +25,7 @@
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="85"/>
-        <location filename="../src/mainwindow.cpp" line="559"/>
+        <location filename="../src/mainwindow.cpp" line="561"/>
         <source>USSD Server Response.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -144,11 +144,6 @@ Number Of Text Messages: %1%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="483"/>
-        <source>Status: ERROR 3: no response within %1 seconds.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.cpp" line="387"/>
         <source>&amp;Disconnect</source>
         <translation type="unfinished"></translation>
@@ -169,43 +164,48 @@ Number Of Text Messages: %1%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../src/mainwindow.cpp" line="483"/>
+        <source>Status: ERROR 3: No Response Within %1 Seconds.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../src/mainwindow.cpp" line="508"/>
         <source>Status: ERROR 4: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="583"/>
+        <location filename="../src/mainwindow.cpp" line="585"/>
         <source>Status: No Action Needed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="587"/>
+        <location filename="../src/mainwindow.cpp" line="589"/>
         <source>Status: Action Needed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="591"/>
+        <location filename="../src/mainwindow.cpp" line="593"/>
         <source>Status: ERROR 5: Connection Was Terminated.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="595"/>
+        <location filename="../src/mainwindow.cpp" line="597"/>
         <source>Status: ERROR 5: Another Client Replied.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="599"/>
+        <location filename="../src/mainwindow.cpp" line="601"/>
         <source>Status: ERROR 5: USSD Code Is Not Supported.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="603"/>
+        <location filename="../src/mainwindow.cpp" line="605"/>
         <source>Status: ERROR 5: Connection Timeout.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="607"/>
-        <location filename="../src/mainwindow.cpp" line="610"/>
+        <location filename="../src/mainwindow.cpp" line="609"/>
+        <location filename="../src/mainwindow.cpp" line="612"/>
         <source>Status: ERROR 5: Unknown Error Has Occured.</source>
         <translation type="unfinished"></translation>
     </message>

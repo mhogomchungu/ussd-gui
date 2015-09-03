@@ -65,7 +65,7 @@ public:
 	}
 	const char * lastError()
 	{
-		return GSM_ErrorString( m_status.error() ) ;
+		return m_status.errorString() ;
 	}
 	void setlocale( const char * e )
 	{
@@ -73,16 +73,18 @@ public:
 	}
 	void operator()( GSM_USSDMessage * ussd )
 	{
+		using _gsm = gsm::USSDMessage ;
+
 		switch( ussd->Status ){
 
-			case USSD_NoActionNeeded : m_ussd.Status = gsm::USSDMessage::NoActionNeeded ; break ;
-			case USSD_ActionNeeded   : m_ussd.Status = gsm::USSDMessage::ActionNeeded   ; break ;
-			case USSD_AnotherClient  : m_ussd.Status = gsm::USSDMessage::AnotherClient  ; break ;
-			case USSD_NotSupported   : m_ussd.Status = gsm::USSDMessage::NotSupported   ; break ;
-			case USSD_Timeout        : m_ussd.Status = gsm::USSDMessage::Timeout        ; break ;
-			case USSD_Terminated     : m_ussd.Status = gsm::USSDMessage::Terminated     ; break ;
-			case USSD_Unknown        : m_ussd.Status = gsm::USSDMessage::Unknown        ; break ;
-			default                  : m_ussd.Status = gsm::USSDMessage::Unknown        ; break ;
+			case USSD_NoActionNeeded : m_ussd.Status = _gsm::NoActionNeeded ; break ;
+			case USSD_ActionNeeded   : m_ussd.Status = _gsm::ActionNeeded   ; break ;
+			case USSD_AnotherClient  : m_ussd.Status = _gsm::AnotherClient  ; break ;
+			case USSD_NotSupported   : m_ussd.Status = _gsm::NotSupported   ; break ;
+			case USSD_Timeout        : m_ussd.Status = _gsm::Timeout        ; break ;
+			case USSD_Terminated     : m_ussd.Status = _gsm::Terminated     ; break ;
+			case USSD_Unknown        : m_ussd.Status = _gsm::Unknown        ; break ;
+			default                  : m_ussd.Status = _gsm::Unknown        ; break ;
 		}
 
 		m_ussd.Text = _QByteArray( ussd->Text ) ;
@@ -265,6 +267,10 @@ private:
 		GSM_Error error()
 		{
 			return m_error ;
+		}
+		const char * errorString()
+		{
+			return GSM_ErrorString( m_error ) ;
 		}
 	private:
 		GSM_Error m_error = ERR_UNKNOWN ;

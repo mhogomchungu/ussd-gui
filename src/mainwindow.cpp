@@ -480,7 +480,7 @@ void MainWindow::pbSend()
 
 					auto e = QString::number( m_timeout ) ;
 
-					m_ui->textEditResult->setText( tr( "Status: ERROR 3: no response within %1 seconds." ).arg( e ) ) ;
+					m_ui->textEditResult->setText( tr( "Status: ERROR 3: No Response Within %1 Seconds." ).arg( e ) ) ;
 
 					this->enableSending() ;
 
@@ -554,6 +554,8 @@ void MainWindow::enableSending()
 
 void MainWindow::processResponce( const gsm::USSDMessage& ussd )
 {
+	using _gsm = gsm::USSDMessage ;
+
 	m_waiting = false ;
 
 	m_ui->groupBox->setTitle( tr( "USSD Server Response." ) ) ;
@@ -563,9 +565,9 @@ void MainWindow::processResponce( const gsm::USSDMessage& ussd )
 	m_ussd.Text   = ussd.Text ;
 	m_ussd.Status = ussd.Status ;
 
-	if( ussd.Status == gsm::USSDMessage::ActionNeeded || ussd.Status == gsm::USSDMessage::NoActionNeeded ){
+	if( ussd.Status == _gsm::ActionNeeded || ussd.Status == _gsm::NoActionNeeded ){
 
-		if( ussd.Status == gsm::USSDMessage::ActionNeeded ){
+		if( ussd.Status == _gsm::ActionNeeded ){
 
 			m_ui->lineEditUSSD_code->setText( QString() ) ;
 		}
@@ -574,35 +576,35 @@ void MainWindow::processResponce( const gsm::USSDMessage& ussd )
 
 		this->displayResult() ;
 	}else{
-		auto _error = []( const gsm::USSDMessage& ussd ){
+		auto _error = []( const _gsm& ussd ){
 
 			switch( ussd.Status ){
 
-			case gsm::USSDMessage::NoActionNeeded:
+			case _gsm::NoActionNeeded:
 
 				return tr( "Status: No Action Needed." ) ;
 
-			case gsm::USSDMessage::ActionNeeded:
+			case _gsm::ActionNeeded:
 
 				return tr( "Status: Action Needed." ) ;
 
-			case gsm::USSDMessage::Terminated:
+			case _gsm::Terminated:
 
 				return tr( "Status: ERROR 5: Connection Was Terminated." ) ;
 
-			case gsm::USSDMessage::AnotherClient:
+			case _gsm::AnotherClient:
 
 				return tr( "Status: ERROR 5: Another Client Replied." ) ;
 
-			case gsm::USSDMessage::NotSupported:
+			case _gsm::NotSupported:
 
 				return tr( "Status: ERROR 5: USSD Code Is Not Supported." ) ;
 
-			case gsm::USSDMessage::Timeout:
+			case _gsm::Timeout:
 
 				return tr( "Status: ERROR 5: Connection Timeout." ) ;
 
-			case gsm::USSDMessage::Unknown:
+			case _gsm::Unknown:
 
 				return tr( "Status: ERROR 5: Unknown Error Has Occured." ) ;
 
