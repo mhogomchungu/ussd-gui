@@ -490,6 +490,8 @@ void MainWindow::pbSend()
 				}else{
 					r++ ;
 
+					m_gsm.hasData() ;
+
 					if( m_waiting ){
 
 						m_ui->textEditResult->setText( e ) ;
