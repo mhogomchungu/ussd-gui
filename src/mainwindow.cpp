@@ -474,6 +474,8 @@ void MainWindow::pbSend()
 
 			m_waiting = true ;
 
+			bool has_no_data = true ;
+
 			while( true ){
 
 				if( r == m_timeout ){
@@ -490,7 +492,10 @@ void MainWindow::pbSend()
 				}else{
 					r++ ;
 
-					m_gsm.hasData() ;
+					if( has_no_data ){
+
+						has_no_data = !m_gsm.hasData() ;
+					}
 
 					if( m_waiting ){
 
@@ -500,7 +505,7 @@ void MainWindow::pbSend()
 
 						_suspend_for_one_second() ;
 					}else{
-						m_gsm.listenForEvents( false ) ;
+						//m_gsm.listenForEvents( false ) ;
 
 						break ;
 					}
