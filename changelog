@@ -1,0 +1,6 @@
+
+--version 1.0
+  - initial release.Add support for sending USSD.
+
+--version 1.1
+  - add support for checking text messages.

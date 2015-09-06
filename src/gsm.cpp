@@ -58,8 +58,7 @@ public:
 	bool dial( const QByteArray& code )
 	{
 		this->listenForEvents( true ) ;
-		m_status = GSM_DialService( m_gsm,const_cast< char * >( code.data() ) ) ;
-		return m_status ;
+		return m_status = GSM_DialService( m_gsm,const_cast< char * >( code.data() ) ) ;
 	}
 	bool listenForEvents( bool e )
 	{
