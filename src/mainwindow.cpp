@@ -343,6 +343,8 @@ void MainWindow::setHistoryItem( QAction * ac )
 {
 	auto e = ac->text() ;
 
+	e.remove( "&" ) ;
+
 	if( e != tr( "Empty History." ) ){
 
 		m_ui->lineEditUSSD_code->setText( e ) ;
