@@ -579,6 +579,8 @@ void MainWindow::processResponce( const gsm::USSDMessage& ussd )
 		if( ussd.Status == _gsm::ActionNeeded ){
 
 			m_ui->lineEditUSSD_code->setText( QString() ) ;
+
+			m_ui->lineEditUSSD_code->setFocus() ;
 		}
 
 		m_ui->pbConvert->setEnabled( true ) ;
