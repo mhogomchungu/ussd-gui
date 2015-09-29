@@ -28,14 +28,14 @@ static void _callback( GSM_StateMachine *,GSM_USSDMessage *,void * ) ;
 
 static QByteArray _QByteArray( decltype(( GSM_USSDMessage::Text )) buffer )
 {
-	return QByteArray( ( const char * )buffer,int( sizeof( buffer ) ) ) ;
+	return QByteArray( reinterpret_cast< const char * >( buffer ),int( sizeof( buffer ) ) ) ;
 }
 
 class gsm::pimpl
 {
 public:
-	pimpl( GSM_StateMachine * g,std::function< void( const gsm::USSDMessage& ) > f ) :
-		m_gsm( g ),m_function( std::move( f ) )
+	pimpl( GSM_StateMachine * g,std::function< void( const gsm::USSDMessage& ) > function ) :
+		m_gsm( g ),m_function( std::move( function ) )
 	{
 	}
 	~pimpl()
@@ -149,6 +149,9 @@ public:
 					 * to work just fine with my modem.
 					 */
 
+					/*
+					 * DecodeUnicodeString() is provided by libgammu
+					 */
 					switch( m->Coding ){
 
 					case SMS_Coding_Unicode_No_Compression:
@@ -227,7 +230,7 @@ public:
 
 				m_status = GSM_GetNextSMS( m_gsm,&sms,false ) ;
 
-				if( m_status == ERR_EMPTY ){
+				if( m_status.errEmpty() ){
 
 					m_status = ERR_NONE ;
 
@@ -241,7 +244,7 @@ public:
 				}
 			}
 
-		}else if( m_status == ERR_EMPTY ){
+		}else if( m_status.errEmpty() ){
 
 			m_status = ERR_NONE ;
 		}
@@ -252,22 +255,18 @@ private:
 	class gsm_error
 	{
 	public:
-		gsm_error& operator =( GSM_Error err )
+		gsm_error& operator=( GSM_Error err )
 		{
 			m_error = err ;
 			return *this ;
 		}
-		bool operator ==( GSM_Error err )
+		bool errEmpty()
 		{
-			return m_error == err ;
+			return m_error == ERR_EMPTY ;
 		}
 		operator bool()
 		{
 			return m_error == ERR_NONE ;
-		}
-		GSM_Error error()
-		{
-			return m_error ;
 		}
 		const char * errorString()
 		{
@@ -296,11 +295,11 @@ const char * gsm::decodeUnicodeString( const QByteArray& e )
 	/*
 	 * DecodeUnicodeString() is provided by libgammu
 	 */
-	return DecodeUnicodeString( ( const unsigned char * )e.constData() ) ;
+	return DecodeUnicodeString( reinterpret_cast< const unsigned char * >( e.constData() ) ) ;
 }
 
-gsm::gsm( std::function< void( const gsm::USSDMessage& ussd ) > f ) :
-	m_pimpl( new gsm::pimpl( GSM_AllocStateMachine(),std::move( f ) ) )
+gsm::gsm( std::function< void( const gsm::USSDMessage& ussd ) > function ) :
+	m_pimpl( new gsm::pimpl( GSM_AllocStateMachine(),std::move( function ) ) )
 {
 }
 

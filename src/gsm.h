@@ -25,6 +25,7 @@
 #include <QByteArray>
 #include <QVector>
 
+#include <functional>
 #include <memory>
 
 class gsm

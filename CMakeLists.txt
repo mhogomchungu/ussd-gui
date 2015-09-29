@@ -33,6 +33,7 @@ if( QT5 )
 
 	include_directories( ${Qt5Widgets_INCLUDE_DIRS} )
 	add_definitions( ${Qt5Widgets_DEFINITIONS} )
+
 	QT5_WRAP_CPP( MOC src/mainwindow.h src/task.h )
 	QT5_WRAP_UI( UI src/mainwindow.ui )
 	QT5_ADD_RESOURCES( ICON icons/icons.qrc )
