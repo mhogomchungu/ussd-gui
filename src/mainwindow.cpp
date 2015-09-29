@@ -282,7 +282,12 @@ void MainWindow::pbConnect()
 
 			if( m_ui->lineEditUSSD_code->text().isEmpty() ){
 
-				m_ui->lineEditUSSD_code->setText( this->historyList().first() ) ;
+				auto l = this->historyList() ;
+
+				if( !l.isEmpty() ){
+
+					m_ui->lineEditUSSD_code->setText( l.first() ) ;
+				}
 			}
 		}
 	}
