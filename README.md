@@ -1,16 +1,19 @@
 # ussd-gui
-a Qt based GUI front end to gammu that only handles ussd codes.
+a Qt4/Qt5 based GUI front end to libgammu[1] that can send USSD codes and read text messages
+on supported devices.
 
-This project is a front end to gammu[1] and it provides a Qt based GUI
-solution for sending ussd codes.
 
 A screenshot of the application can be seen from the following link:
 https://github.com/mhogomchungu/ussd-gui/blob/master/icons/ussd-gui.jpeg
 
+
 download page is: https://github.com/mhogomchungu/ussd-gui/releases
+
 
 [1] http://wammu.eu/gammu/
 
+
 useful documentation: http://wammu.eu/docs/manual/c/hints.html
+
 
 The application's FAQ page is at: https://github.com/mhogomchungu/ussd-gui/wiki/Frequently-Asked-Questions
