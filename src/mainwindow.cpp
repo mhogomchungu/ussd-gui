@@ -202,7 +202,7 @@ void MainWindow::pbSMS()
 
 			auto _r  = []( bool e ){ return e ? tr( "Read" ) : tr( "Not Read" ) ; } ;
 
-			auto _l  = [] ( bool inSimCard,bool inInbox ){
+			auto _l  = []( bool inSimCard,bool inInbox ){
 
 				if( inSimCard ){
 
@@ -231,7 +231,7 @@ void MainWindow::pbSMS()
 
 		QString z ;
 
-		for( int i = e.size() - 1 ; i >= 0 ; i-- ){
+		for( auto i = e.size() - 1 ; i >= 0 ; i-- ){
 
 			z += e.at( i ) + l ;
 		}
@@ -240,7 +240,7 @@ void MainWindow::pbSMS()
 
 		m_ui->textEditResult->setText( n + z ) ;
 	}else{
-		auto e = QString( m_gsm.lastError() ) ;
+		QString e = m_gsm.lastError() ;
 
 		if( e == "No error." ){
 
