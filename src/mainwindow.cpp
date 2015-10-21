@@ -473,13 +473,13 @@ void MainWindow::pbSend()
 
 		_suspend_for_one_second() ;
 
+		m_waiting = true ;
+
 		if( m_gsm.dial( ussd ) ){
 
-			QString e( tr( "Status: Waiting For A Reply " ) ) ;
+			QString e = tr( "Status: Waiting For A Reply " ) ;
 
 			int r = 0 ;
-
-			m_waiting = true ;
 
 			bool has_no_data = true ;
 
@@ -512,8 +512,6 @@ void MainWindow::pbSend()
 
 						_suspend_for_one_second() ;
 					}else{
-						//m_gsm.listenForEvents( false ) ;
-
 						break ;
 					}
 				}
