@@ -450,94 +450,94 @@ void MainWindow::updateHistory( const QByteArray& e )
 	this->setHistoryMenu() ;
 }
 
-void MainWindow::pbSend()
+void MainWindow::send()
 {
-	auto _send = [ this ](){
+	QByteArray ussd = m_ui->lineEditUSSD_code->text().toLatin1() ;
 
-		QByteArray ussd = m_ui->lineEditUSSD_code->text().toLatin1() ;
+	if( ussd.startsWith( "*" ) ){
 
-		if( ussd.startsWith( "*" ) ){
+		this->updateHistory( ussd ) ;
 
-			this->updateHistory( ussd ) ;
+		this->setSetting( "history",m_history ) ;
+	}
 
-			this->setSetting( "history",m_history ) ;
-		}
+	this->disableSending() ;
 
-		this->disableSending() ;
+	m_ui->pbConnect->setEnabled( false ) ;
 
-		m_ui->pbConnect->setEnabled( false ) ;
+	m_ui->pbCancel->setEnabled( false ) ;
 
-		m_ui->pbCancel->setEnabled( false ) ;
+	m_ui->textEditResult->setText( tr( "Status: Sending A Request." ) ) ;
 
-		m_ui->textEditResult->setText( tr( "Status: Sending A Request." ) ) ;
+	_suspend_for_one_second() ;
 
-		_suspend_for_one_second() ;
+	m_waiting = true ;
 
-		m_waiting = true ;
+	if( m_gsm.dial( ussd ) ){
 
-		if( m_gsm.dial( ussd ) ){
+		QString e = tr( "Status: Waiting For A Reply " ) ;
 
-			QString e = tr( "Status: Waiting For A Reply " ) ;
+		int r = 0 ;
 
-			int r = 0 ;
+		bool has_no_data = true ;
 
-			bool has_no_data = true ;
+		while( true ){
 
-			while( true ){
+			if( r == m_timeout ){
 
-				if( r == m_timeout ){
+				auto e = QString::number( m_timeout ) ;
 
-					auto e = QString::number( m_timeout ) ;
+				m_ui->textEditResult->setText( tr( "Status: ERROR 3: No Response Within %1 Seconds." ).arg( e ) ) ;
 
-					m_ui->textEditResult->setText( tr( "Status: ERROR 3: No Response Within %1 Seconds." ).arg( e ) ) ;
+				this->enableSending() ;
 
-					this->enableSending() ;
+				m_gsm.listenForEvents( false ) ;
 
-					m_gsm.listenForEvents( false ) ;
+				break ;
+			}else{
+				r++ ;
 
-					break ;
+				if( has_no_data ){
+
+					has_no_data = !m_gsm.hasData() ;
+				}
+
+				if( m_waiting ){
+
+					m_ui->textEditResult->setText( e ) ;
+
+					e += ".... " ;
+
+					_suspend_for_one_second() ;
 				}else{
-					r++ ;
-
-					if( has_no_data ){
-
-						has_no_data = !m_gsm.hasData() ;
-					}
-
-					if( m_waiting ){
-
-						m_ui->textEditResult->setText( e ) ;
-
-						e += ".... " ;
-
-						_suspend_for_one_second() ;
-					}else{
-						break ;
-					}
+					break ;
 				}
 			}
-		}else{
-			m_ui->textEditResult->setText( tr( "Status: ERROR 4: " ) + m_gsm.lastError() ) ;
-
-			this->enableSending() ;
 		}
+	}else{
+		m_ui->textEditResult->setText( tr( "Status: ERROR 4: " ) + m_gsm.lastError() ) ;
 
-		m_ui->pbConnect->setEnabled( true ) ;
+		this->enableSending() ;
+	}
 
-		m_ui->pbCancel->setEnabled( true ) ;
-	} ;
+	m_ui->pbConnect->setEnabled( true ) ;
 
+	m_ui->pbCancel->setEnabled( true ) ;
+}
+
+void MainWindow::pbSend()
+{
 	m_ui->groupBox->setTitle( QString() ) ;
 
 	m_ui->pbConvert->setEnabled( false ) ;
 
 	if( m_gsm.connected() ){
 
-		_send() ;
+		this->send() ;
 	}else{
 		if( this->Connect() ){
 
-			_send() ;
+			this->send() ;
 		}
 	}
 }

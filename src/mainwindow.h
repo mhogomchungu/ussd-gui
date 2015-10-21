@@ -59,6 +59,7 @@ private:
 	bool Connect() ;
 	bool getBoolSetting( const QString& ) ;
 
+	void send() ;
 	void displayResult() ;
 	void updateHistory( const QByteArray& ) ;
 	void processResponce( const gsm::USSDMessage& ) ;
