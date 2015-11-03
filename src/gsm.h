@@ -28,6 +28,8 @@
 #include <functional>
 #include <memory>
 
+#include "task.h"
+
 class gsm
 {
 public:
@@ -61,14 +63,16 @@ public:
 	gsm( std::function< void( const gsm::USSDMessage& ussd ) > ) ;
 	~gsm() ;
 
-	QVector< gsm::SMSText > getSMSMessages() ;
+	Task::future< QVector< gsm::SMSText > >& getSMSMessages() ;
 
-	bool connect() ;
+	Task::future< bool>& connect() ;
+	Task::future< bool>& dial( const QByteArray& ) ;
+	Task::future< bool>& hasData( bool waitForData = false ) ;
+
+	bool canRead( bool waitForData = false ) ;
 	bool disconnect() ;
 	bool init( bool = false ) ;
 	bool connected() ;
-	bool dial( const QByteArray& ) ;
-	bool hasData( bool waitForData = false ) ;
 	bool listenForEvents( bool = true ) ;
 
 	void setlocale( const char * = nullptr ) ;

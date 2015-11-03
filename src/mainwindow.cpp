@@ -34,7 +34,6 @@
 
 #include "../3rd_party/qgsmcodec.h"
 
-#include "task.h"
 
 static void _suspend( int time )
 {
@@ -159,7 +158,7 @@ void MainWindow::pbSMS()
 
 	_suspend_for_one_second() ;
 
-	auto m = Task::await< QVector< gsm::SMSText > >( [ this ](){ return m_gsm.getSMSMessages() ; } ) ;
+	auto m = m_gsm.getSMSMessages().await() ;
 
 	int j = m.size() ;
 
@@ -377,7 +376,7 @@ bool MainWindow::Connect()
 
 	timer.start( 1000 * 1 ) ;
 
-	bool connected = Task::await< bool >( [ this ]{ return m_gsm.connect() ; } ) ;
+	bool connected = m_gsm.connect().await() ;
 
 	timer.stop() ;
 
@@ -473,7 +472,7 @@ void MainWindow::send()
 
 	m_waiting = true ;
 
-	if( m_gsm.dial( ussd ) ){
+	if( m_gsm.dial( ussd ).get() ){
 
 		QString e = tr( "Status: Waiting For A Reply " ) ;
 
@@ -499,7 +498,7 @@ void MainWindow::send()
 
 				if( has_no_data ){
 
-					has_no_data = !m_gsm.hasData() ;
+					has_no_data = !m_gsm.canRead() ;
 				}
 
 				if( m_waiting ){

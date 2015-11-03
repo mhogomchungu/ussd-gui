@@ -312,14 +312,14 @@ gsm::~gsm()
 {
 }
 
-QVector<gsm::SMSText> gsm::getSMSMessages()
+Task::future< QVector< gsm::SMSText > >& gsm::getSMSMessages()
 {
-	return m_pimpl->getSMSMessages() ;
+	return Task::run< QVector< gsm::SMSText > >( [ this ](){ return m_pimpl->getSMSMessages() ; } ) ;
 }
 
-bool gsm::connect()
+Task::future< bool >& gsm::connect()
 {
-	return m_pimpl->connect() ;
+	return Task::run< bool>( [ this ](){ return m_pimpl->connect() ; } ) ;
 }
 
 bool gsm::connected()
@@ -332,7 +332,12 @@ bool gsm::disconnect()
 	return m_pimpl->disconnect() ;
 }
 
-bool gsm::hasData( bool waitForData )
+Task::future< bool>& gsm::hasData( bool waitForData )
+{	
+	return Task::run< bool>( [ this,waitForData ](){ return this->canRead( waitForData ) ; } ) ;
+}
+
+bool gsm::canRead( bool waitForData )
 {
 	return m_pimpl->hasData( waitForData ) ;
 }
@@ -347,9 +352,9 @@ const char * gsm::lastError()
 	return m_pimpl->lastError() ;
 }
 
-bool gsm::dial( const QByteArray& code )
+Task::future< bool>& gsm::dial( const QByteArray& code )
 {
-	return m_pimpl->dial( code ) ;
+	return Task::run< bool>( [ this,code ](){ return m_pimpl->dial( code ) ; } ) ;
 }
 
 bool gsm::listenForEvents( bool e )
