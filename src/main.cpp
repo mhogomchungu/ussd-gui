@@ -19,13 +19,43 @@
 
 #include "mainwindow.h"
 #include <QApplication>
+#include <QStringList>
+
+#include "version.h"
+
+#include <iostream>
+
+static bool version_info( const QStringList& l )
+{
+	return l.contains( "-h" )        ||
+	       l.contains( "-help" )     ||
+	       l.contains( "--help" )    ||
+	       l.contains( "-v" )        ||
+	       l.contains(  "-version" ) ||
+	       l.contains( "--version" ) ;
+}
+
+static const auto e = "\n\
+copyright: 2015 Francis Banyikwa,mhogomchungu@gmail.com\n\
+license  : GPLv2+\n\
+version  : " VERSION "\n" ;
 
 int main( int argc,char * argv[] )
 {
 	QApplication a( argc,argv ) ;
 
-	MainWindow w ;
-	w.show() ;
+	auto l = QCoreApplication::arguments() ;
 
-	return a.exec() ;
+	if( version_info( l ) ){
+
+		std::cout << e << std::endl ;
+
+		return 0 ;
+	}else{
+		MainWindow w( l.contains( "-d" ) ) ;
+
+		w.show() ;
+
+		return a.exec() ;
+	}
 }

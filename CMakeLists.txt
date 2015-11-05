@@ -8,6 +8,14 @@ SET( QT_USE_QTGUI TRUE )
 
 add_definitions( -Wextra -Wall -pedantic -std=c++11 -I${PROJECT_BINARY_DIR} )
 
+set( PGR_VERSION "1.2.0" )
+
+file( WRITE ${PROJECT_BINARY_DIR}/version.h "
+#ifndef VERSION
+#define VERSION \"${PGR_VERSION}\"
+#endif
+\n" )
+
 # uninstall target
 configure_file(
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"

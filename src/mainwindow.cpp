@@ -22,7 +22,7 @@
 
 #include <QCoreApplication>
 #include <QDir>
-
+#include <QStringList>
 #include <QTimer>
 #include <QEventLoop>
 
@@ -33,7 +33,6 @@
 #include "language_path.h"
 
 #include "../3rd_party/qgsmcodec.h"
-
 
 static void _suspend( int time )
 {
@@ -53,7 +52,7 @@ static void _suspend_for_one_second()
 	_suspend( 1 ) ;
 }
 
-MainWindow::MainWindow( QWidget * parent ) : QMainWindow( parent ),
+MainWindow::MainWindow( bool log ) :
 	m_ui( new Ui::MainWindow ),
 	m_gsm( [ this ]( const gsm::USSDMessage& ussd ){ this->processResponce( ussd ) ; } ),
 	m_settings( "ussd-gui","ussd-gui" )
@@ -87,7 +86,7 @@ MainWindow::MainWindow( QWidget * parent ) : QMainWindow( parent ),
 
 	this->disableSending() ;
 
-	QString e = QDir::homePath() + "/.config/ussd-gui" ;
+	auto e = QDir::homePath() + "/.config/ussd-gui" ;
 
 	QDir d ;
 	d.mkpath( e ) ;
@@ -98,7 +97,7 @@ MainWindow::MainWindow( QWidget * parent ) : QMainWindow( parent ),
 
 	m_history = this->getSetting( "history" ) ;
 
-	QStringList l = this->historyList() ;
+	auto l = this->historyList() ;
 
 	if( !l.isEmpty() ){
 
@@ -107,7 +106,7 @@ MainWindow::MainWindow( QWidget * parent ) : QMainWindow( parent ),
 
 	this->setHistoryMenu( l ) ;
 
-	if( !m_gsm.init( QCoreApplication::arguments().contains( "-d" ) ) ){
+	if( !m_gsm.init( log ) ){
 
 		m_ui->textEditResult->setText( QObject::tr( "Status: ERROR 1: " ) + m_gsm.lastError() ) ;
 
@@ -142,6 +141,107 @@ MainWindow::~MainWindow()
 	delete m_ui ;
 }
 
+template< typename T >
+static QString _arrange_sms_in_ascending_order( T& m )
+{
+	auto j = m.size() ;
+
+	auto e = QObject::tr( "\nNumber Of Text Messages: %1" ).arg( QString::number( j ) ) ;
+
+	for( decltype( j ) p = 0 ; p < j ; p++ ){
+
+		auto& it = m[ p ] ;
+
+		for( decltype( j ) q = p + 1 ; q < j ; q++ ){
+
+			auto& xt = m[ q ] ;
+
+			if( it.date > xt.date ){
+
+				auto tmp = it ;
+
+				it = xt ;
+
+				xt = tmp ;
+			}
+		}
+
+		auto _r  = []( bool e ){ return e ? QObject::tr( "Read" ) : QObject::tr( "Not Read" ) ; } ;
+
+		auto _l  = []( bool inSimCard,bool inInbox ){
+
+			if( inSimCard ){
+
+				if( inInbox ){
+
+					return QObject::tr( "SIM's Inbox" ) ;
+				}else{
+					return QObject::tr( "SIM's Outbox" ) ;
+				}
+			}else{
+				if( inInbox ){
+
+					return QObject::tr( "Phone's Inbox" ) ;
+				}else{
+					return QObject::tr( "Phone's Outbox" ) ;
+				}
+			}
+		} ;
+
+		auto l = "\n------------------------------------------------------------------------------------\n" ;
+
+		auto k = QObject::tr( "Number: %1\nDate: %2\nState: %3\nLocation: %4\n\n%5" ) ;
+
+		auto& n = m[ p ] ;
+
+		e += l + k.arg( n.phoneNumber,n.date,_r( n.read ),_l( n.inSIMcard,n.inInbox ),n.message ) ;
+	}
+
+	return e ;
+}
+
+template< typename T >
+static T& _remove_duplicate_sms( T& m )
+{
+	auto j = m.size() ;
+
+	for( decltype( j ) i = 0 ; i < j ; i++ ){
+
+		auto& it = m[ i ] ;
+
+		if( it.inInbox ){
+
+			decltype( i ) k = i + 1 ;
+
+			while( k < j ){
+
+				/*
+				 * Sometimes,a single text message may be split into multiple parts and we
+				 * seem to get these parts as if they are independent text messages.This routine
+				 * is a cheap attempt and combining these multi part text messages into one by
+				 * assuming consercutive text messages that share the same time stamp are a part
+				 * of the same text message.
+				 */
+
+				const auto& xt = m.at( k ) ;
+
+				if( it.date == xt.date ){
+
+					it.message += xt.message ;
+
+					m.remove( k ) ;
+
+					j-- ;
+				}else{
+					k++ ;
+				}
+			}
+		}
+	}
+
+	return m ;
+}
+
 void MainWindow::pbSMS()
 {
 	m_ui->textEditResult->setText( QString() ) ;
@@ -160,84 +260,13 @@ void MainWindow::pbSMS()
 
 	auto m = m_gsm.getSMSMessages().await() ;
 
-	int j = m.size() ;
+	auto j = m.size() ;
 
 	if( j > 0 ){
 
-		QStringList e ;
-
 		m_ui->groupBox->setTitle( tr( "SMS messages." ) ) ;
 
-		for( int i = 0 ; i < j ; i++ ){
-
-			const auto& it = m.at( i ) ;
-
-			if( !it.inInbox ){
-
-				continue ;
-			}
-
-			auto g = it.message ;
-
-			for( int k = i + 1 ; k < j ; k++,i++ ){
-
-				/*
-				 * Sometimes,a single text message may be split into multiple parts and we
-				 * seem to get these parts as if they are independent text messages.This routine
-				 * is a cheap attempt and combining these multi part text messages into one by
-				 * assuming consercutive text messages that share the same time stamp are a part
-				 * of the same text message.
-				 */
-
-				const auto& xt = m.at( k ) ;
-
-				if( it.date == xt.date ){
-
-					g += xt.message ;
-				}else{
-					break ;
-				}
-			}
-
-			auto _r  = []( bool e ){ return e ? tr( "Read" ) : tr( "Not Read" ) ; } ;
-
-			auto _l  = []( bool inSimCard,bool inInbox ){
-
-				if( inSimCard ){
-
-					if( inInbox ){
-
-						return tr( "SIM's Inbox" ) ;
-					}else{
-						return tr( "SIM's Outbox" ) ;
-					}
-				}else{
-					if( inInbox ){
-
-						return tr( "Phone's Inbox" ) ;
-					}else{
-						return tr( "Phone's Outbox" ) ;
-					}
-				}
-			} ;
-
-			auto k = tr( "Number: %1\nDate: %2\nState: %3\nLocation: %4\n\n%5" ) ;
-
-			e << k.arg( it.phoneNumber,it.date,_r( it.read ),_l( it.inSIMcard,it.inInbox ),g ) ;
-		}
-
-		auto l = "\n------------------------------------------------------------------------------------\n" ;
-
-		QString z ;
-
-		for( auto i = e.size() - 1 ; i >= 0 ; i-- ){
-
-			z += e.at( i ) + l ;
-		}
-
-		auto n = tr( "\nNumber Of Text Messages: %1%2" ).arg( QString::number( e.size() ),l ) ;
-
-		m_ui->textEditResult->setText( n + z ) ;
+		m_ui->textEditResult->setText( _arrange_sms_in_ascending_order( _remove_duplicate_sms( m ) ) ) ;
 	}else{
 		QString e = m_gsm.lastError() ;
 
@@ -408,11 +437,11 @@ bool MainWindow::Connect()
 
 void MainWindow::updateHistory( const QByteArray& e )
 {
-	QStringList l = this->historyList() ;
+	auto l = this->historyList() ;
 
 	if( !l.contains( e ) ){
 
-		QStringList q = this->getSetting( "no_history" ).split( "\n",QString::SkipEmptyParts ) ;
+		auto q = this->getSetting( "no_history" ).split( "\n",QString::SkipEmptyParts ) ;
 
 		for( const auto& it : q ){
 
@@ -451,7 +480,7 @@ void MainWindow::updateHistory( const QByteArray& e )
 
 void MainWindow::send()
 {
-	QByteArray ussd = m_ui->lineEditUSSD_code->text().toLatin1() ;
+	auto ussd = m_ui->lineEditUSSD_code->text().toLatin1() ;
 
 	if( ussd.startsWith( "*" ) ){
 
@@ -472,13 +501,16 @@ void MainWindow::send()
 
 	m_waiting = true ;
 
+	/*
+	 * we should call await() here i get occassional crashes for reasons i do not understand.
+	 */
 	if( m_gsm.dial( ussd ).get() ){
 
-		QString e = tr( "Status: Waiting For A Reply " ) ;
+		auto e = tr( "Status: Waiting For A Reply " ) ;
 
-		int r = 0 ;
+		auto r = 0 ;
 
-		bool has_no_data = true ;
+		auto has_no_data = true ;
 
 		while( true ){
 
@@ -678,11 +710,11 @@ void MainWindow::closeEvent( QCloseEvent * e )
 
 void MainWindow::setLocalLanguage()
 {
-	QString lang = this->getSetting( "language" ) ;
+	auto lang = this->getSetting( "language" ) ;
 
 	if( !lang.isEmpty() ){
 
-		QByteArray r = lang.toLatin1() ;
+		auto r = lang.toLatin1() ;
 
 		if( r == "english_US" ){
 			/*

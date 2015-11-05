@@ -28,3 +28,5 @@ INCLUDEPATH += /usr/include/gammu
 
 RESOURCES   += /home/mtz/projects/ussd-gui/icons/icons.qrc
 INCLUDEPATH +=/home/mtz/projects/build/ussd
+
+TRANSLATIONS += translations.ts/english_US.ts
