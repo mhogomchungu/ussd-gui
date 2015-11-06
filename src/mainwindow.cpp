@@ -502,7 +502,7 @@ void MainWindow::send()
 	m_waiting = true ;
 
 	/*
-	 * we should call await() here i get occassional crashes for reasons i do not understand.
+	 * we should call await() here but i get occassional crashes for reasons i do not understand.
 	 */
 	if( m_gsm.dial( ussd ).get() ){
 
