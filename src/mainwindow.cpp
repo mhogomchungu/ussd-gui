@@ -142,27 +142,25 @@ MainWindow::~MainWindow()
 }
 
 template< typename T >
-static QString _arrange_sms_in_ascending_order( T& m )
+static QString _arrange_sms_in_descending_order( T& m )
 {
 	auto j = m.size() ;
+
+	auto d = m.data() ;
 
 	auto e = QObject::tr( "\nNumber Of Text Messages: %1" ).arg( QString::number( j ) ) ;
 
 	for( decltype( j ) p = 0 ; p < j ; p++ ){
 
-		auto& it = m[ p ] ;
+		auto& it = *( d + p ) ;
 
 		for( decltype( j ) q = p + 1 ; q < j ; q++ ){
 
-			auto& xt = m[ q ] ;
+			auto& xt = *( d + q ) ;
 
-			if( it.date > xt.date ){
+			if( it.date < xt.date ){
 
-				auto tmp = it ;
-
-				it = xt ;
-
-				xt = tmp ;
+				std::swap( it,xt ) ;
 			}
 		}
 
@@ -192,7 +190,7 @@ static QString _arrange_sms_in_ascending_order( T& m )
 
 		auto k = QObject::tr( "Number: %1\nDate: %2\nState: %3\nLocation: %4\n\n%5" ) ;
 
-		auto& n = m[ p ] ;
+		auto& n = *( d + p ) ;
 
 		e += l + k.arg( n.phoneNumber,n.date,_r( n.read ),_l( n.inSIMcard,n.inInbox ),n.message ) ;
 	}
@@ -205,9 +203,11 @@ static T& _remove_duplicate_sms( T& m )
 {
 	auto j = m.size() ;
 
+	auto d = m.data() ;
+
 	for( decltype( j ) i = 0 ; i < j ; i++ ){
 
-		auto& it = m[ i ] ;
+		auto& it = *( d + i ) ;
 
 		if( it.inInbox ){
 
@@ -223,7 +223,7 @@ static T& _remove_duplicate_sms( T& m )
 				 * of the same text message.
 				 */
 
-				const auto& xt = m.at( k ) ;
+				const auto& xt = *( d + k ) ;
 
 				if( it.date == xt.date ){
 
@@ -266,7 +266,7 @@ void MainWindow::pbSMS()
 
 		m_ui->groupBox->setTitle( tr( "SMS messages." ) ) ;
 
-		m_ui->textEditResult->setText( _arrange_sms_in_ascending_order( _remove_duplicate_sms( m ) ) ) ;
+		m_ui->textEditResult->setText( _arrange_sms_in_descending_order( _remove_duplicate_sms( m ) ) ) ;
 	}else{
 		QString e = m_gsm.lastError() ;
 

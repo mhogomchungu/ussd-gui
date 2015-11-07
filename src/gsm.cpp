@@ -192,7 +192,7 @@ public:
 					}
 				} ;
 
-				auto a          = QString( "%1-%2-%3" ).arg( _d( d->Day ),_d( d->Month ),_d( d->Year ) ) ;
+				auto a          = QString( "%1-%2-%3" ).arg( _d( d->Month ),_d( d->Day ),_d( d->Year ) ) ;
 				auto b          = QString( "%1:%2:%3" ).arg( _d( d->Hour ),_d( d->Minute ),_d( d->Second ) ) ;
 
 				sms.date        = a + " " + b ;
