@@ -28,12 +28,51 @@
 #include <QStringList>
 #include <QString>
 #include <QMenu>
+#include <QTimer>
+#include <QTextEdit>
 
 #include "gsm.h"
 
 namespace Ui {
 class MainWindow ;
 }
+
+class Timer : public QObject
+{
+	Q_OBJECT
+public:
+	explicit Timer()
+	{
+		connect( &m_timer,SIGNAL( timeout() ),this,SLOT( event() ) ) ;
+	}
+	void setTextEdit( QTextEdit * e )
+	{
+		m_textEdit = e ;
+	}
+	void start( const QString& e )
+	{
+		m_text = e ;
+		m_textEdit->setText( m_text ) ;
+		m_timer.start( 1000 * 1 ) ;
+	}
+	void stop()
+	{
+		m_textEdit->setText( QString() ) ;
+
+		m_timer.stop() ;
+	}
+private slots:
+	void event()
+	{
+		m_text += " ...." ;
+
+		m_textEdit->setText( m_text ) ;
+	}
+private:
+	QString m_text ;
+	QTextEdit * m_textEdit ;
+	QTimer m_timer ;
+};
 
 class MainWindow : public QMainWindow
 {
@@ -49,7 +88,6 @@ private slots:
 	void pbConvert() ;
 	void disableSending() ;
 	void enableSending() ;
-	void connectStatus() ;
 	void setHistoryItem( QAction * ) ;
 private:
 	QStringList historyList() ;
@@ -74,16 +112,17 @@ private:
 	bool m_waiting ;
 	int m_timeout ;
 
-	QString m_connectingMsg ;
 	QString m_history ;
 
 	Ui::MainWindow * m_ui ;
 
 	gsm::USSDMessage m_ussd ;
 	gsm m_gsm ;
-	
+
 	QMenu m_menu ;
 	QSettings m_settings ;
+
+	Timer m_timer ;
 };
 
 #endif // MAINWINDOW_H

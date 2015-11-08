@@ -61,6 +61,8 @@ MainWindow::MainWindow( bool log ) :
 
 	m_ui->setupUi( this ) ;
 
+	m_timer.setTextEdit( m_ui->textEditResult ) ;
+
 	m_ui->pbConnect->setFocus() ;
 
 	m_ui->pbConnect->setDefault( true ) ;
@@ -366,12 +368,6 @@ int MainWindow::timeOutInterval()
 	}
 }
 
-void MainWindow::connectStatus()
-{
-	m_ui->textEditResult->setText( m_connectingMsg ) ;
-	m_connectingMsg += ".... " ;
-}
-
 void MainWindow::setHistoryItem( QAction * ac )
 {
 	auto e = ac->text() ;
@@ -391,23 +387,15 @@ QStringList MainWindow::historyList()
 
 bool MainWindow::Connect()
 {
-	m_connectingMsg = tr( "Status: Connecting " ) ;
-
-	QTimer timer ;
-
-	connect( &timer,SIGNAL( timeout() ),this,SLOT( connectStatus() ) ) ;
-
-	this->connectStatus() ;
+	m_timer.start( tr( "Status: Connecting" ) ) ;
 
 	this->disableSending() ;
 
 	m_ui->pbCancel->setEnabled( false ) ;
 
-	timer.start( 1000 * 1 ) ;
-
 	bool connected = m_gsm.connect().await() ;
 
-	timer.stop() ;
+	m_timer.stop() ;
 
 	m_ui->pbCancel->setEnabled( true ) ;
 
@@ -439,8 +427,17 @@ void MainWindow::updateHistory( const QByteArray& e )
 {
 	auto l = this->historyList() ;
 
-	if( !l.contains( e ) ){
+	if( l.contains( e ) ){
 
+		l.removeOne( e ) ;
+
+		m_history = e ;
+
+		for( const auto& it : l ){
+
+			m_history += "\n" + it ;
+		}
+	}else{
 		auto q = this->getSetting( "no_history" ).split( "\n",QString::SkipEmptyParts ) ;
 
 		for( const auto& it : q ){
@@ -457,15 +454,6 @@ void MainWindow::updateHistory( const QByteArray& e )
 
 			l.append( e ) ;
 		}
-
-		m_history = e ;
-
-		for( const auto& it : l ){
-
-			m_history += "\n" + it ;
-		}
-	}else{
-		l.removeOne( e ) ;
 
 		m_history = e ;
 
