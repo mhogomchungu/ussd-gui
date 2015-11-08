@@ -80,7 +80,15 @@ class MainWindow : public QMainWindow
 public:
 	explicit MainWindow( bool log ) ;
 	~MainWindow() ;
+signals:
+	void displayResultSignal() ;
+	void updateTitleSignal() ;
+	void updateServerResponseSignal() ;
+	void serverResponseSignal( QString ) ;
+	void enableConvertSignal() ;
 private slots:
+	void enableConvert() ;
+	void serverResponse( QString ) ;
 	void pbSMS() ;
 	void pbConnect() ;
 	void pbSend() ;
@@ -89,6 +97,8 @@ private slots:
 	void disableSending() ;
 	void enableSending() ;
 	void setHistoryItem( QAction * ) ;
+	void updateTitle() ;
+	void displayResult() ;
 private:
 	QStringList historyList() ;
 	QString getSetting( const QString& ) ;
@@ -98,7 +108,6 @@ private:
 	bool getBoolSetting( const QString& ) ;
 
 	void send() ;
-	void displayResult() ;
 	void updateHistory( const QByteArray& ) ;
 	void processResponce( const gsm::USSDMessage& ) ;
 	void closeEvent( QCloseEvent * ) ;

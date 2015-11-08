@@ -82,7 +82,13 @@ MainWindow::MainWindow( bool log ) :
 	connect( m_ui->pbSend,SIGNAL( pressed() ),this,SLOT( pbSend() ) ) ;
 	connect( m_ui->pbConvert,SIGNAL( pressed() ),this,SLOT( pbConvert() ) ) ;
 	connect( m_ui->pbSMS,SIGNAL( pressed() ),this,SLOT( pbSMS() ) ) ;
+
 	connect( &m_menu,SIGNAL( triggered( QAction * ) ),this,SLOT( setHistoryItem( QAction * ) ) ) ;
+
+	connect( this,SIGNAL( displayResultSignal() ),this,SLOT( displayResult() ) ) ;
+	connect( this,SIGNAL( updateTitleSignal() ),this,SLOT( updateTitle() ) ) ;
+	connect( this,SIGNAL( serverResponseSignal( QString ) ),this,SLOT( serverResponse( QString ) ) ) ;
+	connect( this,SIGNAL( enableConvertSignal() ),this,SLOT( enableConvert() ) ) ;
 
 	m_ui->pbConvert->setEnabled( false ) ;
 
@@ -489,10 +495,7 @@ void MainWindow::send()
 
 	m_waiting = true ;
 
-	/*
-	 * we should call await() here but i get occassional crashes for reasons i do not understand.
-	 */
-	if( m_gsm.dial( ussd ).get() ){
+	if( m_gsm.dial( ussd ).await() ){
 
 		auto e = tr( "Status: Waiting For A Reply " ) ;
 
@@ -583,31 +586,33 @@ void MainWindow::enableSending()
 	m_ui->labelInput->setEnabled( true ) ;
 }
 
-void MainWindow::processResponce( const gsm::USSDMessage& ussd )
+void MainWindow::updateTitle()
 {
-	using _gsm = gsm::USSDMessage ;
-
-	m_waiting = false ;
-
 	m_ui->groupBox->setTitle( tr( "USSD Server Response." ) ) ;
 
 	this->enableSending() ;
+}
 
-	m_ussd.Text   = ussd.Text ;
-	m_ussd.Status = ussd.Status ;
+void MainWindow::processResponce( const gsm::USSDMessage& ussd )
+{
+	m_ussd = ussd ;
 
-	if( ussd.Status == _gsm::ActionNeeded || ussd.Status == _gsm::NoActionNeeded ){
+	emit updateTitleSignal() ;
 
-		if( ussd.Status == _gsm::ActionNeeded ){
+	m_waiting = false ;
 
-			m_ui->lineEditUSSD_code->setText( QString() ) ;
+	using _gsm = gsm::USSDMessage ;
 
-			m_ui->lineEditUSSD_code->setFocus() ;
+	if( m_ussd.Status == _gsm::ActionNeeded || m_ussd.Status == _gsm::NoActionNeeded ){
+
+		if( m_ussd.Status == _gsm::ActionNeeded ){
+
+			emit serverResponseSignal( QString() ) ;
 		}
 
-		m_ui->pbConvert->setEnabled( true ) ;
+		emit enableConvertSignal() ;
 
-		this->displayResult() ;
+		emit displayResultSignal() ;
 	}else{
 		auto _error = []( const _gsm& ussd ){
 
@@ -646,8 +651,24 @@ void MainWindow::processResponce( const gsm::USSDMessage& ussd )
 			}
 		} ;
 
-		m_ui->textEditResult->setText( _error( ussd ) ) ;
+		emit serverResponseSignal( _error( m_ussd ) ) ;
 	}
+}
+
+void MainWindow::enableConvert()
+{
+	m_ui->pbConvert->setEnabled( true ) ;
+}
+
+void MainWindow::serverResponse( QString e )
+{
+	if( e.isEmpty() ){
+
+		m_ui->lineEditUSSD_code->clear() ;
+		m_ui->lineEditUSSD_code->setFocus() ;
+	}
+
+	m_ui->textEditResult->setText( e ) ;
 }
 
 /*
