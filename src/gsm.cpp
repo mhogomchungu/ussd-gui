@@ -332,9 +332,9 @@ bool gsm::disconnect()
 	return m_pimpl->disconnect() ;
 }
 
-Task::future< bool>& gsm::hasData( bool waitForData )
-{	
-	return Task::run< bool>( [ this,waitForData ](){ return this->canRead( waitForData ) ; } ) ;
+Task::future< bool >& gsm::hasData( bool waitForData )
+{
+	return Task::run< bool >( [ this,waitForData ](){ return this->canRead( waitForData ) ; } ) ;
 }
 
 bool gsm::canRead( bool waitForData )
@@ -352,9 +352,9 @@ const char * gsm::lastError()
 	return m_pimpl->lastError() ;
 }
 
-Task::future< bool>& gsm::dial( const QByteArray& code )
+Task::future< bool >& gsm::dial( const QByteArray& code )
 {
-	return Task::run< bool>( [ this,code ](){ return m_pimpl->dial( code ) ; } ) ;
+	return Task::run< bool >( [ this,code ](){ return m_pimpl->dial( code ) ; } ) ;
 }
 
 bool gsm::listenForEvents( bool e )
