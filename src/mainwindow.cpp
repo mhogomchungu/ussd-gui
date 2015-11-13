@@ -23,8 +23,6 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QStringList>
-#include <QTimer>
-#include <QEventLoop>
 
 #include <QTranslator>
 
@@ -33,24 +31,6 @@
 #include "language_path.h"
 
 #include "../3rd_party/qgsmcodec.h"
-
-static void _suspend( int time )
-{
-	QEventLoop l ;
-
-	QTimer t ;
-
-	QObject::connect( &t,SIGNAL( timeout() ),&l,SLOT( quit() ) ) ;
-
-	t.start( 1000 * time ) ;
-
-	l.exec() ;
-}
-
-static void _suspend_for_one_second()
-{
-	_suspend( 1 ) ;
-}
 
 MainWindow::MainWindow( bool log ) :
 	m_ui( new Ui::MainWindow ),
@@ -61,7 +41,7 @@ MainWindow::MainWindow( bool log ) :
 
 	m_ui->setupUi( this ) ;
 
-	m_timer.setTextEdit( m_ui->textEditResult ) ;
+	m_timer.setTextEdit( *( m_ui->textEditResult ) ) ;
 
 	m_ui->pbConnect->setFocus() ;
 
@@ -89,6 +69,8 @@ MainWindow::MainWindow( bool log ) :
 	connect( this,SIGNAL( updateTitleSignal() ),this,SLOT( updateTitle() ) ) ;
 	connect( this,SIGNAL( serverResponseSignal( QString ) ),this,SLOT( serverResponse( QString ) ) ) ;
 	connect( this,SIGNAL( enableConvertSignal() ),this,SLOT( enableConvert() ) ) ;
+
+	connect( &m_eventTimer,SIGNAL( timeout() ),&m_eventLoop,SLOT( quit() ) ) ;
 
 	m_ui->pbConvert->setEnabled( false ) ;
 
@@ -264,7 +246,7 @@ void MainWindow::pbSMS()
 
 	m_ui->textEditResult->setText( tr( "Status: Retrieving Text Messages." ) ) ;
 
-	_suspend_for_one_second() ;
+	this->wait() ;
 
 	auto m = m_gsm.getSMSMessages().await() ;
 
@@ -310,6 +292,8 @@ void MainWindow::pbConnect()
 			m_ui->pbConnect->setText( tr( "&Connect" ) ) ;
 
 			m_ui->textEditResult->setText( tr( "Status: Disconnected." ) ) ;
+
+			m_ui->lineEditUSSD_code->setText( this->topHistory() ) ;
 		}else{
 			m_ui->textEditResult->setText( tr( "Status: ERROR 6: " ) + m_gsm.lastError() ) ;
 		}
@@ -318,12 +302,7 @@ void MainWindow::pbConnect()
 
 			if( m_ui->lineEditUSSD_code->text().isEmpty() ){
 
-				auto l = this->historyList() ;
-
-				if( !l.isEmpty() ){
-
-					m_ui->lineEditUSSD_code->setText( l.first() ) ;
-				}
+				m_ui->lineEditUSSD_code->setText( this->topHistory() ) ;
 			}
 		}
 	}
@@ -391,6 +370,18 @@ QStringList MainWindow::historyList()
 	return m_history.split( "\n",QString::SkipEmptyParts ) ;
 }
 
+QString MainWindow::topHistory()
+{
+	auto l = this->historyList() ;
+
+	if( l.isEmpty() ){
+
+		return QString() ;
+	}else{
+		return l.first() ;
+	}
+}
+
 bool MainWindow::Connect()
 {
 	m_timer.start( tr( "Status: Connecting" ) ) ;
@@ -399,7 +390,7 @@ bool MainWindow::Connect()
 
 	m_ui->pbCancel->setEnabled( false ) ;
 
-	bool connected = m_gsm.connect().await() ;
+	auto connected = m_gsm.connect().await() ;
 
 	m_timer.stop() ;
 
@@ -417,7 +408,7 @@ bool MainWindow::Connect()
 
 		m_ui->textEditResult->setText( tr( "Status: Connected." ) ) ;
 
-		_suspend_for_one_second() ;
+		this->wait() ;
 	}else{
 		m_ui->pbConnect->setText( tr( "&Connect" ) ) ;
 
@@ -491,7 +482,7 @@ void MainWindow::send()
 
 	m_ui->textEditResult->setText( tr( "Status: Sending A Request." ) ) ;
 
-	_suspend_for_one_second() ;
+	this->wait() ;
 
 	m_waiting = true ;
 
@@ -530,7 +521,7 @@ void MainWindow::send()
 
 					e += ".... " ;
 
-					_suspend_for_one_second() ;
+					this->wait() ;
 				}else{
 					break ;
 				}
@@ -545,6 +536,15 @@ void MainWindow::send()
 	m_ui->pbConnect->setEnabled( true ) ;
 
 	m_ui->pbCancel->setEnabled( true ) ;
+}
+
+void MainWindow::wait( int interval )
+{
+	m_eventTimer.start( 1000 * interval ) ;
+
+	m_eventLoop.exec() ;
+
+	m_eventTimer.stop() ;
 }
 
 void MainWindow::pbSend()

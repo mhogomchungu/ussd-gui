@@ -30,7 +30,7 @@
 #include <QMenu>
 #include <QTimer>
 #include <QTextEdit>
-
+#include <QEventLoop>
 #include "gsm.h"
 
 namespace Ui {
@@ -41,23 +41,23 @@ class Timer : public QObject
 {
 	Q_OBJECT
 public:
-	explicit Timer()
+	Timer()
 	{
 		connect( &m_timer,SIGNAL( timeout() ),this,SLOT( event() ) ) ;
 	}
-	void setTextEdit( QTextEdit * e )
+	void setTextEdit( QTextEdit& e )
 	{
 		m_textEdit = e ;
 	}
 	void start( const QString& e )
 	{
 		m_text = e ;
-		m_textEdit->setText( m_text ) ;
+		m_textEdit.get().setText( m_text ) ;
 		m_timer.start( 1000 * 1 ) ;
 	}
 	void stop()
 	{
-		m_textEdit->setText( QString() ) ;
+		m_textEdit.get().setText( QString() ) ;
 
 		m_timer.stop() ;
 	}
@@ -66,11 +66,12 @@ private slots:
 	{
 		m_text += " ...." ;
 
-		m_textEdit->setText( m_text ) ;
+		m_textEdit.get().setText( m_text ) ;
 	}
 private:
 	QString m_text ;
-	QTextEdit * m_textEdit ;
+	QTextEdit m_privateQTextEdit ;
+	std::reference_wrapper< QTextEdit > m_textEdit = m_privateQTextEdit ;
 	QTimer m_timer ;
 };
 
@@ -100,6 +101,7 @@ private slots:
 	void updateTitle() ;
 	void displayResult() ;
 private:
+	QString topHistory() ;
 	QStringList historyList() ;
 	QString getSetting( const QString& ) ;
 
@@ -107,6 +109,7 @@ private:
 	bool Connect() ;
 	bool getBoolSetting( const QString& ) ;
 
+	void wait( int = 1 ) ;
 	void send() ;
 	void updateHistory( const QByteArray& ) ;
 	void processResponce( const gsm::USSDMessage& ) ;
@@ -132,6 +135,9 @@ private:
 	QSettings m_settings ;
 
 	Timer m_timer ;
+
+	QTimer m_eventTimer ;
+	QEventLoop m_eventLoop ;
 };
 
 #endif // MAINWINDOW_H
