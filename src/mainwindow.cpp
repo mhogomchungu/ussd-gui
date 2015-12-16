@@ -176,13 +176,36 @@ static QString _arrange_sms_in_descending_order( T& m )
 			}
 		} ;
 
+		auto _date = []( const QString& e ){
+
+			auto f = e.mid( 2 ) ;
+
+			switch( e.mid( 0,2 ).remove( "0" ).toInt() ){
+
+				case 1  : return QObject::tr( "January" )   + f ;
+				case 2  : return QObject::tr( "February" )  + f ;
+				case 3  : return QObject::tr( "March" )     + f ;
+				case 4  : return QObject::tr( "April" )     + f ;
+				case 5  : return QObject::tr( "May" )       + f ;
+				case 6  : return QObject::tr( "June" )      + f ;
+				case 7  : return QObject::tr( "July" )      + f ;
+				case 8  : return QObject::tr( "August" )    + f ;
+				case 9  : return QObject::tr( "September" ) + f ;
+				case 10 : return QObject::tr( "October" )   + f ;
+				case 11 : return QObject::tr( "November" )  + f ;
+				case 12 : return QObject::tr( "December" )  + f ;
+			}
+
+			return e ;
+		} ;
+
 		auto l = "\n------------------------------------------------------------------------------------\n" ;
 
 		auto k = QObject::tr( "Number: %1\nDate: %2\nState: %3\nLocation: %4\n\n%5" ) ;
 
 		auto& n = *( d + p ) ;
 
-		e += l + k.arg( n.phoneNumber,n.date,_r( n.read ),_l( n.inSIMcard,n.inInbox ),n.message ) ;
+		e += l + k.arg( n.phoneNumber,_date( n.date ),_r( n.read ),_l( n.inSIMcard,n.inInbox ),n.message ) ;
 	}
 
 	return e ;
