@@ -176,7 +176,7 @@ static QString _arrange_sms_in_descending_order( T& m )
 			}
 		} ;
 
-		auto _date = []( const QString& e ){
+		auto _d = []( const auto& e ){
 
 			auto f = e.mid( 2 ) ;
 
@@ -205,7 +205,7 @@ static QString _arrange_sms_in_descending_order( T& m )
 
 		auto& n = *( d + p ) ;
 
-		e += l + k.arg( n.phoneNumber,_date( n.date ),_r( n.read ),_l( n.inSIMcard,n.inInbox ),n.message ) ;
+		e += l + k.arg( n.phoneNumber,_d( n.date ),_r( n.read ),_l( n.inSIMcard,n.inInbox ),n.message ) ;
 	}
 
 	return e ;

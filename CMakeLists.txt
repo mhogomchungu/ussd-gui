@@ -6,7 +6,7 @@ project(ussd-gui)
 SET( QT_USE_QTCORE TRUE )
 SET( QT_USE_QTGUI TRUE )
 
-add_definitions( -Wextra -Wall -pedantic -std=c++11 -I${PROJECT_BINARY_DIR} )
+add_definitions( -Wextra -Wall -pedantic -std=c++14 -I${PROJECT_BINARY_DIR} )
 
 set( PGR_VERSION "1.2.0" )
 
