@@ -110,7 +110,7 @@ private:
 	bool getBoolSetting( const QString& ) ;
 
 	void wait( int = 1 ) ;
-	void send() ;
+	void send( const QString& = QString() ) ;
 	void updateHistory( const QByteArray& ) ;
 	void processResponce( const gsm::USSDMessage& ) ;
 	void closeEvent( QCloseEvent * ) ;
@@ -120,11 +120,16 @@ private:
 	void setSetting( const QString&,const QString& ) ;
 	void setSetting( const QString&,bool ) ;
 	int  timeOutInterval() ;
+	int  autowaitInterval() ;
 
 	bool m_waiting ;
 	int m_timeout ;
 
+	int m_autowaitInterval ;
+
 	QString m_history ;
+
+	QStringList m_autoSend ;
 
 	Ui::MainWindow * m_ui ;
 

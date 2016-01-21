@@ -85,6 +85,8 @@ MainWindow::MainWindow( bool log ) :
 
 	m_timeout = this->timeOutInterval() ;
 
+	m_autowaitInterval = this->autowaitInterval() ;
+
 	m_history = this->getSetting( "history" ) ;
 
 	auto l = this->historyList() ;
@@ -376,6 +378,20 @@ int MainWindow::timeOutInterval()
 	}
 }
 
+int MainWindow::autowaitInterval()
+{
+	QString waitInterval = "autowaitInterval" ;
+
+	if( m_settings.contains( waitInterval ) ){
+
+		return m_settings.value( waitInterval ).toInt() ;
+	}else{
+		m_settings.setValue( waitInterval,QString( "2" ) ) ;
+
+		return 2 ;
+	}
+}
+
 void MainWindow::setHistoryItem( QAction * ac )
 {
 	auto e = ac->text() ;
@@ -486,15 +502,37 @@ void MainWindow::updateHistory( const QByteArray& e )
 	this->setHistoryMenu() ;
 }
 
-void MainWindow::send()
+void MainWindow::send( const QString& code )
 {
-	auto ussd = m_ui->lineEditUSSD_code->text().toLatin1() ;
+	QByteArray ussd ;
 
-	if( ussd.startsWith( "*" ) ){
+	if( code.isEmpty() ){
 
-		this->updateHistory( ussd ) ;
+		ussd = m_ui->lineEditUSSD_code->text().toLatin1() ;
 
-		this->setSetting( "history",m_history ) ;
+		if( ussd.startsWith( "*" ) ){
+
+			this->updateHistory( ussd ) ;
+
+			this->setSetting( "history",m_history ) ;
+		}
+
+		m_autoSend = QString( ussd ).split( ' ',QString::SkipEmptyParts ) ;
+
+		ussd = m_autoSend.first().toLatin1() ;
+
+		m_autoSend.removeFirst() ;
+	}else{
+		ussd = code.toLatin1() ;
+
+		m_ui->lineEditUSSD_code->setText( code ) ;
+	}
+
+	if( ussd.isEmpty() ){
+
+		m_ui->textEditResult->setText( tr( "Status: ERROR 6: ussd code required." ) ) ;
+
+		return ;
 	}
 
 	this->disableSending() ;
@@ -731,6 +769,19 @@ void MainWindow::displayResult()
 		m_ui->textEditResult->setText( QGsmCodec::fromGsm7BitEncodedtoUnicode( e ) ) ;
 	}else{
 		m_ui->textEditResult->setText( QGsmCodec::fromUnicodeStringInHexToUnicode( e ) ) ;
+	}
+
+	if( m_autoSend.size() > 0 ){
+
+		this->disableSending() ;
+
+		auto first = m_autoSend.first() ;
+
+		m_autoSend.removeFirst() ;
+
+		this->wait( m_autowaitInterval ) ;
+
+		this->send( first ) ;
 	}
 }
 

@@ -37,6 +37,8 @@ include_directories( ${GAMMU_INCLUDE_DIR} )
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/3rd_party )
 include_directories( ${GAMMU_INCLUDE_DIRS} )
 
+include_directories( ${PROJECT_BINARY_DIR} )
+
 if( QT5 )
 	find_package( Qt5Widgets REQUIRED )
 	find_package( Qt5Core REQUIRED )
