@@ -35,6 +35,7 @@ internal::~internal()
 
 bool internal::disconnect()
 {
+	//m_write.write( "AT+CUSD=2,,15\r" ) ;
 	m_read.close() ;
 
 	if( m_read.isOpen() ){
@@ -114,11 +115,31 @@ void internal::readDevice()
 			qDebug() << m_ussd.Text ;
 		}
 
-		if( m_ussd.Text.contains( "+CUSD: 1" ) ){
+		if( m_ussd.Text.contains( "+CUSD: 0" ) ){
+
+			m_ussd.Status = gsm::USSDMessage::NoActionNeeded ;
+
+		}else if( m_ussd.Text.contains( "+CUSD: 1" ) ){
 
 			m_ussd.Status = gsm::USSDMessage::ActionNeeded ;
+
+		}else if( m_ussd.Text.contains( "+CUSD: 2" ) ){
+
+			m_ussd.Status = gsm::USSDMessage::Terminated ;
+
+		}else if( m_ussd.Text.contains( "+CUSD: 3" ) ){
+
+			m_ussd.Status = gsm::USSDMessage::AnotherClient ;
+
+		}else if( m_ussd.Text.contains( "+CUSD: 4" ) ){
+
+			m_ussd.Status = gsm::USSDMessage::NotSupported ;
+
+		}else if( m_ussd.Text.contains( "+CUSD: 5" ) ){
+
+			m_ussd.Status = gsm::USSDMessage::Timeout ;
 		}else{
-			m_ussd.Status = gsm::USSDMessage::NoActionNeeded ;
+			m_ussd.Status = gsm::USSDMessage::Unknown ;
 		}
 
 		while( true ){
