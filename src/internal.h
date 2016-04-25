@@ -44,5 +44,7 @@ private:
 	std::function< void( const gsm::USSDMessage& ussd ) > m_function ;
 	QFile m_read ;
 	QFile m_write ;
+	QByteArray m_lastError ;
+	bool m_log ;
 } ;
 

@@ -37,9 +37,21 @@ bool internal::disconnect()
 {
 	m_read.close() ;
 
+	if( m_read.isOpen() ){
+
+		m_lastError = QObject::tr( "Failed to close reading channel" ).toLatin1() ;
+		return false ;
+	}
+
 	m_write.close() ;
 
-	return !m_write.isOpen() && !m_read.isOpen() ;
+	if( m_write.isOpen() ){
+
+		m_lastError = QObject::tr( "Failed to close writing channel" ).toLatin1() ;
+		return false ;
+	}
+
+	return true ;
 }
 
 bool internal::connected()
@@ -67,11 +79,7 @@ void internal::readDevice()
 {
 	Task::exec( [ this ](){
 
-		using _gsm = gsm::USSDMessage ;
-
 		m_ussd.Text.clear() ;
-
-		m_read.flush() ;
 
 		QByteArray tmp ;
 
@@ -85,6 +93,11 @@ void internal::readDevice()
 			}
 		}
 
+		if( m_log ){
+
+			qDebug() << tmp ;
+		}
+
 		while( true ){
 
 			auto e = m_read.read( 1 ) ;
@@ -96,11 +109,16 @@ void internal::readDevice()
 			}
 		}
 
+		if( m_log ){
+
+			qDebug() << m_ussd.Text ;
+		}
+
 		if( m_ussd.Text.contains( "+CUSD: 1" ) ){
 
-			m_ussd.Status = _gsm::ActionNeeded ;
+			m_ussd.Status = gsm::USSDMessage::ActionNeeded ;
 		}else{
-			m_ussd.Status = _gsm::NoActionNeeded ;
+			m_ussd.Status = gsm::USSDMessage::NoActionNeeded ;
 		}
 
 		while( true ){
@@ -126,7 +144,13 @@ Task::future< bool >& internal::dial( const QByteArray& code )
 
 	return Task::run< bool >( [ this,code ](){
 
-		m_write.write( "AT+CUSD=1,\"" + code + "\",15\r" ) ;
+		if( m_write.write( "AT+CUSD=1,\"" + code + "\",15\r" ) > 0 ){
+
+			return true ;
+		}else{
+			m_lastError = QObject::tr( "Failed to write to device when sending ussd code" ).toLatin1() ;
+			return false ;
+		}
 		return true ;
 	} ) ;
 }
@@ -134,12 +158,12 @@ Task::future< bool >& internal::dial( const QByteArray& code )
 bool internal::listenForEvents( bool e )
 {
 	Q_UNUSED( e ) ;
-	return false ;
+	return true ;
 }
 
 const char * internal::lastError()
 {
-	return "" ;
+	return m_lastError.constData() ;
 }
 
 void internal::setlocale( const char * e )
@@ -149,7 +173,7 @@ void internal::setlocale( const char * e )
 
 bool internal::init( bool log )
 {
-	Q_UNUSED( log ) ;
+	m_log = log ;
 	return true ;
 }
 
@@ -161,7 +185,24 @@ Task::future< bool >& internal::connect()
 
 		m_read.open( QIODevice::ReadOnly | QIODevice::Unbuffered ) ;
 
-		m_write.open( QIODevice::WriteOnly | QIODevice::Unbuffered ) ;
+		if( m_read.isOpen() ){
+
+			m_write.open( QIODevice::WriteOnly | QIODevice::Unbuffered ) ;
+
+			if( m_write.isOpen() ){
+
+				//m_write.write( "AT^SYSCFGEX="030201",3FFFFFFF,1,2,800C5,," ) ;
+				//m_write.write( "AT+CMGF=1;^CURC=0;^USSDMODE=0" ) ;
+
+				return true ;
+			}else{
+				m_lastError = QObject::tr( "Failed to open writing channel.Device is in use or does not exist" ).toLatin1() ;
+				return false ;
+			}
+		}else{
+			m_lastError = QObject::tr( "Failed to open reading channel.Device is in use or does not exist" ).toLatin1() ;
+			return false ;
+		}
 
 		return m_read.isOpen() && m_write.isOpen() ;
 	} ) ;
