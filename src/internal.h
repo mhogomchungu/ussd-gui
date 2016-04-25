@@ -37,6 +37,7 @@ public:
 	Task::future< bool >& connect() ;
 	Task::future< QVector< gsm::SMSText > >& getSMSMessages() ;
 	QString source() ;
+	bool canCheckSms() ;
 private:
 	void readDevice() ;
 	gsm::USSDMessage m_ussd ;

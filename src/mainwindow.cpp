@@ -453,7 +453,7 @@ bool MainWindow::Connect()
 
 	if( connected ){
 
-		m_ui->pbSMS->setEnabled( true ) ;
+		m_ui->pbSMS->setEnabled( m_gsm->canCheckSms() ) ;
 
 		this->enableSending() ;
 

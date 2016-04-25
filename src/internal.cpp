@@ -179,3 +179,8 @@ QString internal::source()
 {
 	return "internal" ;
 }
+
+bool internal::canCheckSms()
+{
+	return false ;
+}

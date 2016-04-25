@@ -284,6 +284,11 @@ QString libgammu::source()
 	return "libgammu" ;
 }
 
+bool libgammu::canCheckSms()
+{
+	return true ;
+}
+
 static void _callback( GSM_StateMachine * gsm,GSM_USSDMessage * ussd,void * e )
 {
 	Q_UNUSED( gsm ) ;

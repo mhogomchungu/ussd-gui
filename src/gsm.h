@@ -73,6 +73,8 @@ public:
 	virtual bool connected() = 0 ;
 	virtual bool listenForEvents( bool = true ) = 0 ;
 
+	virtual bool canCheckSms() = 0 ;
+
 	virtual void setlocale( const char * = nullptr ) = 0 ;
 
 	virtual const char * lastError() = 0 ;
