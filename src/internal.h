@@ -16,33 +16,25 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include "gsm.h"
 
-#include "internal.h"
-#include "libgammu.h"
-
-const char * gsm::decodeUnicodeString( const QByteArray& e )
+class internal : public gsm
 {
-	/*
-	 * DecodeUnicodeString() is provided by libgammu
-	 */
-	return DecodeUnicodeString( reinterpret_cast< const unsigned char * >( e.constData() ) ) ;
-}
+public:
+	internal( std::function< void( const gsm::USSDMessage& ) >&& function ) ;
+	~internal() ;
+	bool disconnect() ;
+	bool connected() ;
+	bool canRead( bool waitForData ) ;
+	Task::future< bool >& hasData( bool waitForData ) ;
+	Task::future< bool >& dial( const QByteArray& code ) ;
+	bool listenForEvents( bool e ) ;
+	const char * lastError() ;
+	void setlocale( const char * e ) ;
+	bool init( bool log ) ;
+	Task::future< bool >& connect() ;
+	Task::future< QVector< gsm::SMSText > >& getSMSMessages() ;
+	QString source() ;
+} ;
 
-gsm * gsm::Source( const QString& backend,std::function< void( const gsm::USSDMessage& ) >&& function )
-{
-	if( backend == "libgammu" ){
-
-		return new libgammu( GSM_AllocStateMachine(),std::move( function ) ) ;
-
-	}else if( backend == "internal" ){
-
-		return new internal( std::move( function ) ) ;
-	}else{
-		return new libgammu( GSM_AllocStateMachine(),std::move( function ) ) ;
-	}
-}
-
-gsm::~gsm()
-{
-}

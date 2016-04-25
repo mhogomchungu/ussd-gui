@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (c) 2015
+ *  Copyright (c) 2015-2016
  *  name : Francis Banyikwa
  *  email: mhogomchungu@gmail.com
  *  This program is free software: you can redistribute it and/or modify
@@ -131,13 +131,14 @@ private:
 
 	QStringList m_autoSend ;
 
-	Ui::MainWindow * m_ui ;
+	std::unique_ptr< Ui::MainWindow > m_ui ;
 
 	gsm::USSDMessage m_ussd ;
-	gsm m_gsm ;
+
+	QSettings m_settings ;
+	std::unique_ptr< gsm > m_gsm ;
 
 	QMenu m_menu ;
-	QSettings m_settings ;
 
 	Timer m_timer ;
 

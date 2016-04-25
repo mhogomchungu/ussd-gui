@@ -63,7 +63,7 @@ else()
 	QT4_ADD_RESOURCES( ICON icons/icons.qrc )
 endif()
 
-add_executable( ussd-gui src/main.cpp src/gsm.cpp src/mainwindow.cpp 3rd_party/qgsmcodec.cpp ${MOC} ${UI} ${ICON} )
+add_executable( ussd-gui src/internal.cpp src/libgammu.cpp src/main.cpp src/gsm.cpp src/mainwindow.cpp 3rd_party/qgsmcodec.cpp ${MOC} ${UI} ${ICON} )
 
 set_target_properties( ussd-gui PROPERTIES COMPILE_FLAGS "-Wextra -Wall -s -fPIE -pthread  -pedantic" )
 set_target_properties( ussd-gui PROPERTIES LINK_FLAGS "-pie" )

@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (c) 2015
+ *  Copyright (c) 2015-2016
  *  name : Francis Banyikwa
  *  email: mhogomchungu@gmail.com
  *  This program is free software: you can redistribute it and/or modify
@@ -32,10 +32,25 @@
 
 #include "../3rd_party/qgsmcodec.h"
 
+static QString _source( QSettings& settings )
+{
+	QString e = "source" ;
+
+	if( settings.contains( e ) ){
+
+		return settings.value( e ).toString() ;
+	}else{
+		QString q = "libgammu" ;
+		settings.setValue( e,q ) ;
+		return q ;
+	}
+}
+
 MainWindow::MainWindow( bool log ) :
 	m_ui( new Ui::MainWindow ),
-	m_gsm( [ this ]( const gsm::USSDMessage& ussd ){ this->processResponce( ussd ) ; } ),
-	m_settings( "ussd-gui","ussd-gui" )
+	m_settings( "ussd-gui","ussd-gui" ),
+	m_gsm( gsm::Source( _source( m_settings ),[ this ]( const gsm::USSDMessage& ussd ){ this->processResponce( ussd ) ; } ) )
+
 {
 	this->setLocalLanguage() ;
 
@@ -98,9 +113,9 @@ MainWindow::MainWindow( bool log ) :
 
 	this->setHistoryMenu( l ) ;
 
-	if( !m_gsm.init( log ) ){
+	if( !m_gsm->init( log ) ){
 
-		m_ui->textEditResult->setText( QObject::tr( "Status: ERROR 1: " ) + m_gsm.lastError() ) ;
+		m_ui->textEditResult->setText( QObject::tr( "Status: ERROR 1: " ) + m_gsm->lastError() ) ;
 
 		this->disableSending() ;
 	}
@@ -130,7 +145,6 @@ void MainWindow::setHistoryMenu()
 
 MainWindow::~MainWindow()
 {
-	delete m_ui ;
 }
 
 template< typename T >
@@ -273,7 +287,7 @@ void MainWindow::pbSMS()
 
 	this->wait() ;
 
-	auto m = m_gsm.getSMSMessages().await() ;
+	auto m = m_gsm->getSMSMessages().await() ;
 
 	auto j = m.size() ;
 
@@ -283,7 +297,7 @@ void MainWindow::pbSMS()
 
 		m_ui->textEditResult->setText( _arrange_sms_in_descending_order( _remove_duplicate_sms( m ) ) ) ;
 	}else{
-		QString e = m_gsm.lastError() ;
+		QString e = m_gsm->lastError() ;
 
 		if( e == "No error." ){
 
@@ -308,9 +322,9 @@ void MainWindow::pbConnect()
 
 	m_ui->pbConvert->setEnabled( false ) ;
 
-	if( m_gsm.connected() ){
+	if( m_gsm->connected() ){
 
-		if( m_gsm.disconnect() ){
+		if( m_gsm->disconnect() ){
 
 			m_ui->pbSMS->setEnabled( false ) ;
 
@@ -320,7 +334,7 @@ void MainWindow::pbConnect()
 
 			m_ui->lineEditUSSD_code->setText( this->topHistory() ) ;
 		}else{
-			m_ui->textEditResult->setText( tr( "Status: ERROR 6: " ) + m_gsm.lastError() ) ;
+			m_ui->textEditResult->setText( tr( "Status: ERROR 6: " ) + m_gsm->lastError() ) ;
 		}
 	}else{
 		if( this->Connect() ){
@@ -429,7 +443,7 @@ bool MainWindow::Connect()
 
 	m_ui->pbCancel->setEnabled( false ) ;
 
-	auto connected = m_gsm.connect().await() ;
+	auto connected = m_gsm->connect().await() ;
 
 	m_timer.stop() ;
 
@@ -451,7 +465,7 @@ bool MainWindow::Connect()
 	}else{
 		m_ui->pbConnect->setText( tr( "&Connect" ) ) ;
 
-		m_ui->textEditResult->setText( tr( "Status: ERROR 2: " ) + m_gsm.lastError() ) ;
+		m_ui->textEditResult->setText( tr( "Status: ERROR 2: " ) + m_gsm->lastError() ) ;
 
 		this->disableSending() ;
 	}
@@ -547,7 +561,7 @@ void MainWindow::send( const QString& code )
 
 	m_waiting = true ;
 
-	if( m_gsm.dial( ussd ).await() ){
+	if( m_gsm->dial( ussd ).await() ){
 
 		auto e = tr( "Status: Waiting For A Reply " ) ;
 
@@ -565,7 +579,7 @@ void MainWindow::send( const QString& code )
 
 				this->enableSending() ;
 
-				m_gsm.listenForEvents( false ) ;
+				m_gsm->listenForEvents( false ) ;
 
 				break ;
 			}else{
@@ -573,7 +587,7 @@ void MainWindow::send( const QString& code )
 
 				if( has_no_data ){
 
-					has_no_data = !m_gsm.canRead() ;
+					has_no_data = !m_gsm->canRead() ;
 				}
 
 				if( m_waiting ){
@@ -589,7 +603,7 @@ void MainWindow::send( const QString& code )
 			}
 		}
 	}else{
-		m_ui->textEditResult->setText( tr( "Status: ERROR 4: " ) + m_gsm.lastError() ) ;
+		m_ui->textEditResult->setText( tr( "Status: ERROR 4: " ) + m_gsm->lastError() ) ;
 
 		this->enableSending() ;
 	}
@@ -614,7 +628,7 @@ void MainWindow::pbSend()
 
 	m_ui->pbConvert->setEnabled( false ) ;
 
-	if( m_gsm.connected() ){
+	if( m_gsm->connected() ){
 
 		this->send() ;
 	}else{

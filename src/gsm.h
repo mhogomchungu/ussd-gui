@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (c) 2015
+ *  Copyright (c) 2015-2016
  *  name : Francis Banyikwa
  *  email: mhogomchungu@gmail.com
  *  This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,6 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 
 #ifndef GSM_H
 #define GSM_H
@@ -56,30 +55,28 @@ public:
 		bool inInbox ;
 	} ;
 
-	class pimpl ;
-
 	static const char * decodeUnicodeString( const QByteArray& ) ;
+	static gsm * Source( const QString&,std::function< void( const gsm::USSDMessage& ussd ) >&& ) ;
 
-	gsm( std::function< void( const gsm::USSDMessage& ussd ) > ) ;
-	~gsm() ;
+	virtual ~gsm() ;
 
-	Task::future< QVector< gsm::SMSText > >& getSMSMessages() ;
+	virtual Task::future< QVector< gsm::SMSText > >& getSMSMessages() = 0 ;
 
-	Task::future< bool>& connect() ;
-	Task::future< bool>& dial( const QByteArray& ) ;
-	Task::future< bool>& hasData( bool waitForData = false ) ;
+	virtual Task::future< bool>& connect() = 0 ;
+	virtual Task::future< bool>& dial( const QByteArray& ) = 0 ;
+	virtual Task::future< bool>& hasData( bool waitForData = false ) = 0 ;
 
-	bool canRead( bool waitForData = false ) ;
-	bool disconnect() ;
-	bool init( bool = false ) ;
-	bool connected() ;
-	bool listenForEvents( bool = true ) ;
+	virtual bool canRead( bool waitForData = false ) = 0 ;
+	virtual bool disconnect() = 0 ;
+	virtual bool init( bool = false ) = 0 ;
+	virtual bool connected() = 0 ;
+	virtual bool listenForEvents( bool = true ) = 0 ;
 
-	void setlocale( const char * = nullptr ) ;
+	virtual void setlocale( const char * = nullptr ) = 0 ;
 
-	const char * lastError() ;
-private:
-	std::unique_ptr< gsm::pimpl > m_pimpl ;
+	virtual const char * lastError() = 0 ;
+
+	virtual QString source() = 0 ;
 } ;
 
 #endif // GSM_H
