@@ -20,6 +20,7 @@
 #ifndef GSM_H
 #define GSM_H
 
+#include <QStringList>
 #include <QString>
 #include <QByteArray>
 #include <QVector>
@@ -56,7 +57,7 @@ public:
 	} ;
 
 	static const char * decodeUnicodeString( const QByteArray& ) ;
-	static gsm * Source( const QString&,std::function< void( const gsm::USSDMessage& ussd ) >&& ) ;
+	static gsm * Source( const QStringList&,std::function< void( const gsm::USSDMessage& ussd ) >&& ) ;
 
 	virtual ~gsm() ;
 

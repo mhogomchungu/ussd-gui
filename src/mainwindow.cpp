@@ -32,18 +32,20 @@
 
 #include "../3rd_party/qgsmcodec.h"
 
-static QString _source( QSettings& settings )
+static QStringList _source( QSettings& settings )
 {
-	QString e = "source" ;
+	auto _option = [ & ]( const QString& key,QString value ){
 
-	if( settings.contains( e ) ){
+		if( settings.contains( key ) ){
 
-		return settings.value( e ).toString() ;
-	}else{
-		QString q = "libgammu" ;
-		settings.setValue( e,q ) ;
-		return q ;
-	}
+			return settings.value( key ).toString() ;
+		}else{
+			settings.setValue( key,value ) ;
+			return value ;
+		}
+	} ;
+
+	return { _option( "source","libgammu" ),_option( "device","/dev/ttyACM0" ) } ;
 }
 
 MainWindow::MainWindow( bool log ) :
@@ -776,13 +778,18 @@ bool MainWindow::gsm7Encoded()
 
 void MainWindow::displayResult()
 {
-	auto e = gsm::decodeUnicodeString( m_ussd.Text ) ;
+	if( m_gsm->source() == "internal" ){
 
-	if( this->gsm7Encoded() ){
-
-		m_ui->textEditResult->setText( QGsmCodec::fromGsm7BitEncodedtoUnicode( e ) ) ;
+		m_ui->textEditResult->setText( m_ussd.Text ) ;
 	}else{
-		m_ui->textEditResult->setText( QGsmCodec::fromUnicodeStringInHexToUnicode( e ) ) ;
+		auto e = gsm::decodeUnicodeString( m_ussd.Text ) ;
+
+		if( this->gsm7Encoded() ){
+
+			m_ui->textEditResult->setText( QGsmCodec::fromGsm7BitEncodedtoUnicode( e ) ) ;
+		}else{
+			m_ui->textEditResult->setText( QGsmCodec::fromUnicodeStringInHexToUnicode( e ) ) ;
+		}
 	}
 
 	if( m_autoSend.size() > 0 ){

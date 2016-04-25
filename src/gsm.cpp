@@ -29,15 +29,17 @@ const char * gsm::decodeUnicodeString( const QByteArray& e )
 	return DecodeUnicodeString( reinterpret_cast< const unsigned char * >( e.constData() ) ) ;
 }
 
-gsm * gsm::Source( const QString& backend,std::function< void( const gsm::USSDMessage& ) >&& function )
+gsm * gsm::Source( const QStringList& backend,std::function< void( const gsm::USSDMessage& ) >&& function )
 {
-	if( backend == "libgammu" ){
+	const auto& e = backend.first() ;
+
+	if( e == "libgammu" ){
 
 		return new libgammu( GSM_AllocStateMachine(),std::move( function ) ) ;
 
-	}else if( backend == "internal" ){
+	}else if( e == "internal" ){
 
-		return new internal( std::move( function ) ) ;
+		return new internal( backend.at( 1 ),std::move( function ) ) ;
 	}else{
 		return new libgammu( GSM_AllocStateMachine(),std::move( function ) ) ;
 	}

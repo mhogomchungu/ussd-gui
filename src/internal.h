@@ -18,11 +18,12 @@
  */
 
 #include "gsm.h"
+#include <QFile>
 
 class internal : public gsm
 {
 public:
-	internal( std::function< void( const gsm::USSDMessage& ) >&& function ) ;
+	internal( const QString& device,std::function< void( const gsm::USSDMessage& ) >&& ) ;
 	~internal() ;
 	bool disconnect() ;
 	bool connected() ;
@@ -36,5 +37,11 @@ public:
 	Task::future< bool >& connect() ;
 	Task::future< QVector< gsm::SMSText > >& getSMSMessages() ;
 	QString source() ;
+private:
+	void readDevice() ;
+	gsm::USSDMessage m_ussd ;
+	std::function< void( const gsm::USSDMessage& ussd ) > m_function ;
+	QFile m_read ;
+	QFile m_write ;
 } ;
 

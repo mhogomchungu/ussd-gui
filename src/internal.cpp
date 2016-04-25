@@ -20,9 +20,13 @@
 #include "internal.h"
 #include <QDebug>
 
-internal::internal( std::function< void( const gsm::USSDMessage& ) >&& function )
+#include <unistd.h>
+
+internal::internal( const QString& device,std::function< void( const gsm::USSDMessage& ) >&& function ) :
+	m_function( std::move( function ) )
 {
-	Q_UNUSED( function ) ;
+	m_read.setFileName( device ) ;
+	m_write.setFileName( device ) ;
 }
 
 internal::~internal()
@@ -31,12 +35,16 @@ internal::~internal()
 
 bool internal::disconnect()
 {
-	return false ;
+	m_read.close() ;
+
+	m_write.close() ;
+
+	return !m_write.isOpen() && !m_read.isOpen() ;
 }
 
 bool internal::connected()
 {
-	return false ;
+	return m_write.isOpen() && m_read.isOpen() ;
 }
 
 bool internal::canRead( bool waitForData )
@@ -55,13 +63,71 @@ Task::future< bool >& internal::hasData( bool waitForData )
 	} ) ;
 }
 
+void internal::readDevice()
+{
+	Task::exec( [ this ](){
+
+		using _gsm = gsm::USSDMessage ;
+
+		m_ussd.Text.clear() ;
+
+		m_read.flush() ;
+
+		QByteArray tmp ;
+
+		while( true ){
+
+			tmp += m_read.read( 1 ) ;
+
+			if( tmp.endsWith( "\",15" ) ){
+
+				break ;
+			}
+		}
+
+		while( true ){
+
+			auto e = m_read.read( 1 ) ;
+			m_ussd.Text += e ;
+
+			if( m_ussd.Text.endsWith( "\",15" ) ){
+
+				break ;
+			}
+		}
+
+		if( m_ussd.Text.contains( "+CUSD: 1" ) ){
+
+			m_ussd.Status = _gsm::ActionNeeded ;
+		}else{
+			m_ussd.Status = _gsm::NoActionNeeded ;
+		}
+
+		while( true ){
+
+			if( m_ussd.Text.startsWith( "+CUSD: " ) ){
+
+				m_ussd.Text.remove( 0,10 ) ;
+				break ;
+			}else{
+				m_ussd.Text.remove( 0,1 ) ;
+			}
+		}
+
+		m_ussd.Text.remove( m_ussd.Text.size() - 4,4 ) ;
+
+		m_function( m_ussd ) ;
+	} ) ;
+}
+
 Task::future< bool >& internal::dial( const QByteArray& code )
 {
-	Q_UNUSED( code ) ;
+	this->readDevice() ;
 
-	return Task::run< bool >( [](){
+	return Task::run< bool >( [ this,code ](){
 
-		return false ;
+		m_write.write( "AT+CUSD=1,\"" + code + "\",15\r" ) ;
+		return true ;
 	} ) ;
 }
 
@@ -84,14 +150,20 @@ void internal::setlocale( const char * e )
 bool internal::init( bool log )
 {
 	Q_UNUSED( log ) ;
-	return false ;
+	return true ;
 }
 
 Task::future< bool >& internal::connect()
 {
-	return Task::run< bool >( [](){
+	return Task::run< bool >( [ this ](){
 
-		return false ;
+		sleep( 2 ) ;
+
+		m_read.open( QIODevice::ReadOnly | QIODevice::Unbuffered ) ;
+
+		m_write.open( QIODevice::WriteOnly | QIODevice::Unbuffered ) ;
+
+		return m_read.isOpen() && m_write.isOpen() ;
 	} ) ;
 }
 
