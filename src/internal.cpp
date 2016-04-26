@@ -259,7 +259,7 @@ Task::future< bool >& internal::connect()
 
 				//m_write.write( "AT^SYSCFGEX="030201",3FFFFFFF,1,2,800C5,," ) ;
 				//m_write.write( "AT+CMGF=1;^CURC=0;^USSDMODE=0" ) ;
-				m_write.write( "^USSDMODE=1" ) ;
+				//m_write.write( "^USSDMODE=1" ) ;
 				return true ;
 			}else{
 				m_lastError = QObject::tr( "Failed to open writing channel.Device is in use or does not exist" ).toLatin1() ;
