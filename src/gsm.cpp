@@ -29,7 +29,7 @@ const char * gsm::decodeUnicodeString( const QByteArray& e )
 	return DecodeUnicodeString( reinterpret_cast< const unsigned char * >( e.constData() ) ) ;
 }
 
-gsm * gsm::Source( const QStringList& backend,std::function< void( const gsm::USSDMessage& ) >&& function )
+gsm * gsm::instance( const QStringList& backend,std::function< void( const gsm::USSDMessage& ) >&& function )
 {
 	const auto& e = backend.first() ;
 

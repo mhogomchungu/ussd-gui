@@ -51,8 +51,7 @@ static QStringList _source( QSettings& settings )
 MainWindow::MainWindow( bool log ) :
 	m_ui( new Ui::MainWindow ),
 	m_settings( "ussd-gui","ussd-gui" ),
-	m_gsm( gsm::Source( _source( m_settings ),[ this ]( const gsm::USSDMessage& ussd ){ this->processResponce( ussd ) ; } ) )
-
+	m_gsm( gsm::instance( _source( m_settings ),[ this ]( const gsm::USSDMessage& ussd ){ this->processResponce( ussd ) ; } ) )
 {
 	this->setLocalLanguage() ;
 
