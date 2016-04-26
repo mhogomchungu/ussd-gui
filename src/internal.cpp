@@ -18,9 +18,19 @@
  */
 
 #include "internal.h"
-#include <QDebug>
+#include "../3rd_party/qgsmcodec.h"
 
 #include <unistd.h>
+
+#include <QDebug>
+
+static void _convert_if_unicode_in_string( QByteArray& text )
+{
+	if( QGsmCodec::stringHex( text ) ){
+
+		text = QGsmCodec::fromUnicodeStringInHexToUnicode( text.constData() ).toLatin1() ;
+	}
+}
 
 internal::internal( const QString& device,const QString& e,std::function< void( const gsm::USSDMessage& ) >&& function ) :
 	m_terminatorSequence( e ),m_function( std::move( function ) )
@@ -179,6 +189,8 @@ void internal::readDevice()
 
 		m_ussd.Text.remove( m_ussd.Text.size() - 4,4 ) ;
 
+		_convert_if_unicode_in_string( m_ussd.Text ) ;
+
 		m_function( m_ussd ) ;
 	} ) ;
 }
@@ -247,7 +259,7 @@ Task::future< bool >& internal::connect()
 
 				//m_write.write( "AT^SYSCFGEX="030201",3FFFFFFF,1,2,800C5,," ) ;
 				//m_write.write( "AT+CMGF=1;^CURC=0;^USSDMODE=0" ) ;
-
+				m_write.write( "^USSDMODE=1" ) ;
 				return true ;
 			}else{
 				m_lastError = QObject::tr( "Failed to open writing channel.Device is in use or does not exist" ).toLatin1() ;

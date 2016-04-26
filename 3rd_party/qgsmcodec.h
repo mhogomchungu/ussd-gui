@@ -44,6 +44,8 @@ public:
     static QString fromGsm7BitEncodedtoUnicode(const char*);
     static QString fromUnicodeStringInHexToUnicode(const char*);
 
+   static  bool stringHex( const QByteArray& ) ;
+
 protected:
     QString convertToUnicode(const char *in, int length, ConverterState *state) const;
     QByteArray convertFromUnicode(const QChar *in, int length, ConverterState *state) const;

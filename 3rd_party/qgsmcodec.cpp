@@ -462,6 +462,36 @@ QString QGsmCodec::fromUnicodeStringInHexToUnicode( const char * e )
 	}
 }
 
+bool QGsmCodec::stringHex( const QByteArray& e )
+{
+	if( e.size() % 4 != 0 ){
+
+		return false ;
+	}
+
+	for( const auto& it : e ){
+
+		if( it >= '0' && it <= '9' ){
+
+			continue ;
+		}
+
+		if( it >= 'A' && it <= 'F' ){
+
+			continue ;
+		}
+
+		if( it >= 'a' && it <= 'f' ){
+
+			continue ;
+		}
+
+		return false ;
+	}
+
+	return true ;
+}
+
 /*
  * my own addition ends here
  */
