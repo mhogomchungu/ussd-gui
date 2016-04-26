@@ -82,13 +82,6 @@ MainWindow::MainWindow( bool log ) :
 
 	connect( &m_menu,SIGNAL( triggered( QAction * ) ),this,SLOT( setHistoryItem( QAction * ) ) ) ;
 
-	connect( this,SIGNAL( displayResultSignal() ),this,SLOT( displayResult() ) ) ;
-	connect( this,SIGNAL( updateTitleSignal() ),this,SLOT( updateTitle() ) ) ;
-	connect( this,SIGNAL( serverResponseSignal( QString ) ),this,SLOT( serverResponse( QString ) ) ) ;
-	connect( this,SIGNAL( enableConvertSignal() ),this,SLOT( enableConvert() ) ) ;
-
-	connect( &m_eventTimer,SIGNAL( timeout() ),&m_eventLoop,SLOT( quit() ) ) ;
-
 	m_ui->pbConvert->setEnabled( false ) ;
 
 	this->disableSending() ;
@@ -617,11 +610,15 @@ void MainWindow::send( const QString& code )
 
 void MainWindow::wait( int interval )
 {
-	m_eventTimer.start( 1000 * interval ) ;
+	QTimer e ;
 
-	m_eventLoop.exec() ;
+	QEventLoop s ;
 
-	m_eventTimer.stop() ;
+	connect( &e,SIGNAL( timeout() ),&s,SLOT( quit() ) ) ;
+
+	e.start( 1000 * interval ) ;
+
+	s.exec() ;
 }
 
 void MainWindow::pbSend()
@@ -674,7 +671,7 @@ void MainWindow::processResponce( const gsm::USSDMessage& ussd )
 {
 	m_ussd = ussd ;
 
-	emit updateTitleSignal() ;
+	QMetaObject::invokeMethod( this,"updateTitle",Qt::QueuedConnection ) ;
 
 	m_waiting = false ;
 
@@ -684,12 +681,12 @@ void MainWindow::processResponce( const gsm::USSDMessage& ussd )
 
 		if( m_ussd.Status == _gsm::ActionNeeded ){
 
-			emit serverResponseSignal( QString() ) ;
+			QMetaObject::invokeMethod( this,"serverResponse",Qt::QueuedConnection,Q_ARG( QString,QString() ) ) ;
 		}
 
-		emit enableConvertSignal() ;
+		QMetaObject::invokeMethod( this,"enableConvert",Qt::QueuedConnection ) ;
 
-		emit displayResultSignal() ;
+		QMetaObject::invokeMethod( this,"displayResult",Qt::QueuedConnection ) ;
 	}else{
 		auto _error = []( const _gsm& ussd ){
 
@@ -728,7 +725,7 @@ void MainWindow::processResponce( const gsm::USSDMessage& ussd )
 			}
 		} ;
 
-		emit serverResponseSignal( _error( m_ussd ) ) ;
+		QMetaObject::invokeMethod( this,"serverResponse",Qt::QueuedConnection,Q_ARG( QString,_error( m_ussd ) ) ) ;
 	}
 }
 

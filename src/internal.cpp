@@ -35,7 +35,7 @@ internal::~internal()
 
 bool internal::disconnect()
 {
-	//m_write.write( "AT+CUSD=2,,15\r" ) ;
+	m_write.write( "AT+CUSD=2,,15\r" ) ;
 	m_read.close() ;
 
 	if( m_read.isOpen() ){
@@ -172,7 +172,6 @@ Task::future< bool >& internal::dial( const QByteArray& code )
 			m_lastError = QObject::tr( "Failed to write to device when sending ussd code" ).toLatin1() ;
 			return false ;
 		}
-		return true ;
 	} ) ;
 }
 

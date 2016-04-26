@@ -81,12 +81,6 @@ class MainWindow : public QMainWindow
 public:
 	explicit MainWindow( bool log ) ;
 	~MainWindow() ;
-signals:
-	void displayResultSignal() ;
-	void updateTitleSignal() ;
-	void updateServerResponseSignal() ;
-	void serverResponseSignal( QString ) ;
-	void enableConvertSignal() ;
 private slots:
 	void enableConvert() ;
 	void serverResponse( QString ) ;
@@ -141,9 +135,6 @@ private:
 	QMenu m_menu ;
 
 	Timer m_timer ;
-
-	QTimer m_eventTimer ;
-	QEventLoop m_eventLoop ;
 };
 
 #endif // MAINWINDOW_H
