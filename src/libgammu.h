@@ -23,22 +23,28 @@
 class libgammu : public gsm
 {
 public:
-	libgammu( GSM_StateMachine * g,std::function< void( const gsm::USSDMessage& ) >&& ) ;
+	libgammu( GSM_StateMachine *,std::function< void( const gsm::USSDMessage& ) >&& ) ;
 	~libgammu() ;
+
+	bool canCheckSms() ;
 	bool disconnect() ;
 	bool connected() ;
 	bool canRead( bool waitForData ) ;
+	bool listenForEvents( bool ) ;
+	bool init( bool log ) ;
+	bool cancelCurrentOperation() ;
+
 	Task::future< bool >& hasData( bool waitForData ) ;
 	Task::future< bool >& dial( const QByteArray& code ) ;
-	bool listenForEvents( bool e ) ;
-	const char * lastError() ;
-	void setlocale( const char * e ) ;
-	bool init( bool log ) ;
 	Task::future< bool >& connect() ;
 	Task::future< QVector< gsm::SMSText > >& getSMSMessages() ;
+
+	const char * lastError() ;
+	void setlocale( const char * ) ;
+
 	QString source() ;
-	bool canCheckSms() ;
-	void operator()( GSM_USSDMessage * ussd ) ;
+
+	void operator()( GSM_USSDMessage * ) ;
 private:
 	QVector< gsm::SMSText > _getSMSMessages() ;
 

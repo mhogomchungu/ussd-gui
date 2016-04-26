@@ -136,6 +136,12 @@ bool libgammu::init( bool log )
 	return m_status ;
 }
 
+bool libgammu::cancelCurrentOperation()
+{
+	this->listenForEvents( false ) ;
+	return m_status = GSM_AbortOperation( m_gsm ) ;
+}
+
 Task::future< bool >& libgammu::connect()
 {
 	return Task::run< bool >( [ this ]{

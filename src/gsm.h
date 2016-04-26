@@ -72,7 +72,7 @@ public:
 	virtual bool init( bool = false ) = 0 ;
 	virtual bool connected() = 0 ;
 	virtual bool listenForEvents( bool = true ) = 0 ;
-
+	virtual bool cancelCurrentOperation() = 0 ;
 	virtual bool canCheckSms() = 0 ;
 
 	virtual void setlocale( const char * = nullptr ) = 0 ;

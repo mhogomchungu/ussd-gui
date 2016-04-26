@@ -571,9 +571,9 @@ void MainWindow::send( const QString& code )
 
 				m_ui->textEditResult->setText( tr( "Status: ERROR 3: No Response Within %1 Seconds." ).arg( e ) ) ;
 
-				this->enableSending() ;
+				m_gsm->cancelCurrentOperation() ;
 
-				m_gsm->listenForEvents( false ) ;
+				this->enableSending() ;
 
 				break ;
 			}else{

@@ -197,6 +197,16 @@ bool internal::init( bool log )
 	return true ;
 }
 
+bool internal::cancelCurrentOperation()
+{
+	if( this->disconnect() ){
+
+		return this->connect().await() ;
+	}else{
+		return false ;
+	}
+}
+
 Task::future< bool >& internal::connect()
 {
 	return Task::run< bool >( [ this ](){

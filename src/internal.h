@@ -25,26 +25,31 @@ class internal : public gsm
 public:
 	internal( const QString& device,std::function< void( const gsm::USSDMessage& ) >&& ) ;
 	~internal() ;
+
+	bool canCheckSms() ;
 	bool disconnect() ;
 	bool connected() ;
 	bool canRead( bool waitForData ) ;
+	bool listenForEvents( bool ) ;
+	bool init( bool log ) ;
+	bool cancelCurrentOperation() ;
+
 	Task::future< bool >& hasData( bool waitForData ) ;
 	Task::future< bool >& dial( const QByteArray& code ) ;
-	bool listenForEvents( bool e ) ;
-	const char * lastError() ;
-	void setlocale( const char * e ) ;
-	bool init( bool log ) ;
 	Task::future< bool >& connect() ;
 	Task::future< QVector< gsm::SMSText > >& getSMSMessages() ;
+
+	const char * lastError() ;
+	void setlocale( const char * ) ;
+
 	QString source() ;
-	bool canCheckSms() ;
 private:
 	void readDevice() ;
 	gsm::USSDMessage m_ussd ;
-	std::function< void( const gsm::USSDMessage& ussd ) > m_function ;
 	QFile m_read ;
 	QFile m_write ;
 	QByteArray m_lastError ;
 	bool m_log ;
+	std::function< void( const gsm::USSDMessage& ussd ) > m_function ;
 } ;
 
