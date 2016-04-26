@@ -23,7 +23,9 @@
 class internal : public gsm
 {
 public:
-	internal( const QString& device,std::function< void( const gsm::USSDMessage& ) >&& ) ;
+	internal( const QString& device,
+		  const QString& terminatorSequence,
+		  std::function< void( const gsm::USSDMessage& ) >&& ) ;
 	~internal() ;
 
 	bool canCheckSms() ;
@@ -50,6 +52,7 @@ private:
 	QFile m_write ;
 	QByteArray m_lastError ;
 	bool m_log ;
+	QString m_terminatorSequence ;
 	std::function< void( const gsm::USSDMessage& ussd ) > m_function ;
 } ;
 

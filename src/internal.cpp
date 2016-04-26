@@ -22,8 +22,8 @@
 
 #include <unistd.h>
 
-internal::internal( const QString& device,std::function< void( const gsm::USSDMessage& ) >&& function ) :
-	m_function( std::move( function ) )
+internal::internal( const QString& device,const QString& e,std::function< void( const gsm::USSDMessage& ) >&& function ) :
+	m_terminatorSequence( e ),m_function( std::move( function ) )
 {
 	m_read.setFileName( device ) ;
 	m_write.setFileName( device ) ;
@@ -84,14 +84,30 @@ void internal::readDevice()
 
 		QByteArray tmp ;
 
+		QByteArray e ;
+
+		auto _timeout = [ this ](){
+
+			m_ussd.Status = gsm::USSDMessage::Timeout ;
+			m_function( m_ussd ) ;
+		} ;
+
 		while( true ){
 
-			tmp += m_read.read( 1 ) ;
+			e = m_read.read( 1 ) ;
 
-			if( tmp.endsWith( "\",15" ) ){
+			if( e.size() < 1 ){
 
-				break ;
+				return _timeout() ;
+			}else{
+				tmp += e ;
+
+				if( tmp.endsWith( "\",15" ) ){
+
+					break ;
+				}
 			}
+
 		}
 
 		if( m_log ){
@@ -99,14 +115,22 @@ void internal::readDevice()
 			qDebug() << tmp ;
 		}
 
+		QByteArray end = "\"," + m_terminatorSequence.toLatin1() ;
+
 		while( true ){
 
-			auto e = m_read.read( 1 ) ;
-			m_ussd.Text += e ;
+			e = m_read.read( 1 ) ;
 
-			if( m_ussd.Text.endsWith( "\",15" ) ){
+			if( e.size() < 1 ){
 
-				break ;
+				return _timeout() ;
+			}else{
+				m_ussd.Text += e ;
+
+				if( m_ussd.Text.endsWith( end ) ){
+
+					break ;
+				}
 			}
 		}
 
