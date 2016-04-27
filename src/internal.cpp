@@ -50,7 +50,7 @@ bool internal::disconnect()
 
 	if( m_read.isOpen() ){
 
-		m_lastError = QObject::tr( "Failed to close reading channel" ).toLatin1() ;
+		m_lastError = QObject::tr( "Failed to close reading channel." ).toLatin1() ;
 		return false ;
 	}
 
@@ -58,7 +58,7 @@ bool internal::disconnect()
 
 	if( m_write.isOpen() ){
 
-		m_lastError = QObject::tr( "Failed to close writing channel" ).toLatin1() ;
+		m_lastError = QObject::tr( "Failed to close writing channel." ).toLatin1() ;
 		return false ;
 	}
 
@@ -205,7 +205,7 @@ Task::future< bool >& internal::dial( const QByteArray& code )
 
 			return true ;
 		}else{
-			m_lastError = QObject::tr( "Failed to write to device when sending ussd code" ).toLatin1() ;
+			m_lastError = QObject::tr( "Failed to write to device when sending ussd code." ).toLatin1() ;
 			return false ;
 		}
 	} ) ;
@@ -262,11 +262,11 @@ Task::future< bool >& internal::connect()
 				//m_write.write( "^USSDMODE=1" ) ;
 				return true ;
 			}else{
-				m_lastError = QObject::tr( "Failed to open writing channel.Device is in use or does not exist" ).toLatin1() ;
+				m_lastError = QObject::tr( "Failed to open writing channel.Device is in use or does not exist." ).toLatin1() ;
 				return false ;
 			}
 		}else{
-			m_lastError = QObject::tr( "Failed to open reading channel.Device is in use or does not exist" ).toLatin1() ;
+			m_lastError = QObject::tr( "Failed to open reading channel.Device is in use or does not exist." ).toLatin1() ;
 			return false ;
 		}
 
@@ -276,9 +276,22 @@ Task::future< bool >& internal::connect()
 
 Task::future< QVector< gsm::SMSText > >& internal::getSMSMessages()
 {
-	return Task::run< QVector< gsm::SMSText > >( [](){
+	return Task::run< QVector< gsm::SMSText > >( [ this ](){
 
-		return QVector< gsm::SMSText >() ;
+		QVector< gsm::SMSText > r ;
+
+		std::unique_ptr< gsm > e( gsm::instance( { "libgammu" } ) ) ;
+
+		if( e->init( false ) && e->connect().get() ){
+
+			r = e->getSMSMessages().get() ;
+
+			e->disconnect() ;
+		}else{
+			m_lastError = e->lastError() ;
+		}
+
+		return r ;
 	} ) ;
 }
 
@@ -289,5 +302,5 @@ QString internal::source()
 
 bool internal::canCheckSms()
 {
-	return false ;
+	return true ;
 }

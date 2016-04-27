@@ -35,13 +35,13 @@ gsm * gsm::instance( const QStringList& backend,std::function< void( const gsm::
 
 	if( e == "libgammu" ){
 
-		return new libgammu( GSM_AllocStateMachine(),std::move( function ) ) ;
+		return new libgammu( std::move( function ) ) ;
 
 	}else if( e == "internal" ){
 
 		return new internal( backend.at( 1 ),backend.at( 2 ),std::move( function ) ) ;
 	}else{
-		return new libgammu( GSM_AllocStateMachine(),std::move( function ) ) ;
+		return new libgammu( std::move( function ) ) ;
 	}
 }
 

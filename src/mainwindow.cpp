@@ -276,6 +276,7 @@ void MainWindow::pbSMS()
 	m_ui->pbSMS->setEnabled( false ) ;
 	m_ui->pbConnect->setEnabled( false ) ;
 	m_ui->pbCancel->setEnabled( false ) ;
+	m_ui->pbConvert->setEnabled( false ) ;
 
 	m_ui->textEditResult->setText( tr( "Status: Retrieving Text Messages." ) ) ;
 
@@ -306,6 +307,7 @@ void MainWindow::pbSMS()
 	m_ui->pbSMS->setEnabled( true ) ;
 	m_ui->pbConnect->setEnabled( true ) ;
 	m_ui->pbCancel->setEnabled( true ) ;
+	m_ui->pbConvert->setEnabled( true ) ;
 }
 
 void MainWindow::pbConnect()

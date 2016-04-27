@@ -23,7 +23,7 @@
 class libgammu : public gsm
 {
 public:
-	libgammu( GSM_StateMachine *,std::function< void( const gsm::USSDMessage& ) >&& ) ;
+	libgammu( std::function< void( const gsm::USSDMessage& ) >&& ) ;
 	~libgammu() ;
 
 	bool canCheckSms() ;

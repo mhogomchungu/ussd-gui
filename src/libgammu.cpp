@@ -27,8 +27,8 @@ static QByteArray _QByteArray( decltype(( GSM_USSDMessage::Text )) buffer )
 	return QByteArray( reinterpret_cast< const char * >( buffer ),int( sizeof( buffer ) ) ) ;
 }
 
-libgammu::libgammu( GSM_StateMachine * g,std::function< void( const gsm::USSDMessage& ) >&& function ) :
-		m_gsm( g ),m_function( std::move( function ) )
+libgammu::libgammu( std::function< void( const gsm::USSDMessage& ) >&& function ) :
+		m_gsm( GSM_AllocStateMachine() ),m_function( std::move( function ) )
 {
 }
 
