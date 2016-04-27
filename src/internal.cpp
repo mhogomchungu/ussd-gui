@@ -149,38 +149,23 @@ void internal::readDevice()
 			qDebug() << m_ussd.Text ;
 		}
 
-		if( m_ussd.Text.contains( "+CUSD: 0" ) ){
-
-			m_ussd.Status = gsm::USSDMessage::NoActionNeeded ;
-
-		}else if( m_ussd.Text.contains( "+CUSD: 1" ) ){
-
-			m_ussd.Status = gsm::USSDMessage::ActionNeeded ;
-
-		}else if( m_ussd.Text.contains( "+CUSD: 2" ) ){
-
-			m_ussd.Status = gsm::USSDMessage::Terminated ;
-
-		}else if( m_ussd.Text.contains( "+CUSD: 3" ) ){
-
-			m_ussd.Status = gsm::USSDMessage::AnotherClient ;
-
-		}else if( m_ussd.Text.contains( "+CUSD: 4" ) ){
-
-			m_ussd.Status = gsm::USSDMessage::NotSupported ;
-
-		}else if( m_ussd.Text.contains( "+CUSD: 5" ) ){
-
-			m_ussd.Status = gsm::USSDMessage::Timeout ;
-		}else{
-			m_ussd.Status = gsm::USSDMessage::Unknown ;
-		}
-
 		while( true ){
 
 			if( m_ussd.Text.startsWith( "+CUSD: " ) ){
 
+				switch( m_ussd.Text.at( 7 ) ){
+
+					case '0' : m_ussd.Status = gsm::USSDMessage::NoActionNeeded ; break ;
+					case '1' : m_ussd.Status = gsm::USSDMessage::ActionNeeded   ; break ;
+					case '2' : m_ussd.Status = gsm::USSDMessage::Terminated     ; break ;
+					case '3' : m_ussd.Status = gsm::USSDMessage::AnotherClient  ; break ;
+					case '4' : m_ussd.Status = gsm::USSDMessage::NotSupported   ; break ;
+					case '5' : m_ussd.Status = gsm::USSDMessage::Timeout        ; break ;
+					default  : m_ussd.Status = gsm::USSDMessage::Unknown        ;
+				}
+
 				m_ussd.Text.remove( 0,10 ) ;
+
 				break ;
 			}else{
 				m_ussd.Text.remove( 0,1 ) ;
