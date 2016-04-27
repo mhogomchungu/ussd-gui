@@ -260,10 +260,8 @@ Task::future< bool >& internal::connect()
 				//m_write.write( "AT^SYSCFGEX="030201",3FFFFFFF,1,2,800C5,," ) ;
 				//m_write.write( "AT+CMGF=1;^CURC=0;^USSDMODE=0" ) ;
 
-				/*
-				 * Set the modem to default state.
-				 */
-				m_write.write( "ATZ,15\r" ) ;
+				this->setDeviceToDefaultState() ;
+
 				return true ;
 			}else{
 				m_lastError = QObject::tr( "Failed to open writing channel.Device is in use or does not exist." ).toLatin1() ;
@@ -284,21 +282,18 @@ Task::future< QVector< gsm::SMSText > >& internal::getSMSMessages()
 
 		QVector< gsm::SMSText > r ;
 
-		std::unique_ptr< gsm > e( gsm::instance( { "libgammu" } ) ) ;
+		auto e = gsm::instance( { "libgammu" } ) ;
 
 		if( e->init( false ) && e->connect().get() ){
 
 			r = e->getSMSMessages().get() ;
-
-			e->disconnect() ;
-
-			/*
-			 * Set the modem to default state.
-			 */
-			m_write.write( "ATZ,15\r" ) ;
 		}else{
 			m_lastError = e->lastError() ;
 		}
+
+		delete e ;
+
+		this->setDeviceToDefaultState() ;
 
 		return r ;
 	} ) ;
@@ -307,6 +302,11 @@ Task::future< QVector< gsm::SMSText > >& internal::getSMSMessages()
 QString internal::source()
 {
 	return "internal" ;
+}
+
+void internal::setDeviceToDefaultState()
+{
+	m_write.write( "ATZ\r" ) ;
 }
 
 bool internal::canCheckSms()
