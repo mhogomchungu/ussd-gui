@@ -282,7 +282,12 @@ Task::future< QVector< gsm::SMSText > >& internal::getSMSMessages()
 
 		QVector< gsm::SMSText > r ;
 
-		auto e = gsm::instance( { "libgammu" } ) ;
+		std::unique_ptr< gsm,std::function< void( gsm * ) > > e( gsm::instance( { "libgammu" } ),[ this ]( gsm * e ){
+
+			delete e ;
+
+			this->setDeviceToDefaultState() ;
+		} ) ;
 
 		if( e->init( false ) && e->connect().get() ){
 
@@ -290,10 +295,6 @@ Task::future< QVector< gsm::SMSText > >& internal::getSMSMessages()
 		}else{
 			m_lastError = e->lastError() ;
 		}
-
-		delete e ;
-
-		this->setDeviceToDefaultState() ;
 
 		return r ;
 	} ) ;
