@@ -69,7 +69,7 @@
    </column>
    <column>
     <property name="text">
-     <string>USSD Comment</string>
+     <string>USSD Code Comment</string>
     </property>
     <property name="textAlignment">
      <set>AlignCenter</set>

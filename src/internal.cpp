@@ -88,8 +88,7 @@ void internal::readDevice()
 
 		auto _timeout = [ this ](){
 
-			m_ussd.Status = gsm::USSDMessage::Timeout ;
-			m_function( m_ussd ) ;
+			m_function( { "",gsm::USSDMessage::Timeout } ) ;
 		} ;
 
 		while( true ){
@@ -109,10 +108,7 @@ void internal::readDevice()
 
 				if( tmp.endsWith( "ERROR" ) ){
 
-					m_ussd.Status = gsm::USSDMessage::Unknown ;
-					m_function( m_ussd ) ;
-
-					return ;
+					return m_function( { "",gsm::USSDMessage::Unknown } ) ;
 				}
 			}
 		}
@@ -223,6 +219,16 @@ bool internal::cancelCurrentOperation()
 	}
 }
 
+static QByteArray _error_1()
+{
+	return QObject::tr( "Failed to open writing channel.Device is in use or does not exist." ).toLatin1() ;
+}
+
+static QByteArray _error_2()
+{
+	return QObject::tr( "Failed to open reading channel.Device is in use or does not exist." ).toLatin1() ;
+}
+
 Task::future< bool >& internal::connect()
 {
 	return Task::run< bool >( [ this ](){
@@ -237,18 +243,15 @@ Task::future< bool >& internal::connect()
 
 			if( m_write.isOpen() ){
 
-				//m_write.write( "AT^SYSCFGEX="030201",3FFFFFFF,1,2,800C5,," ) ;
-				//m_write.write( "AT+CMGF=1;^CURC=0;^USSDMODE=0" ) ;
-
 				this->setDeviceToDefaultState() ;
 
 				return true ;
 			}else{
-				m_lastError = QObject::tr( "Failed to open writing channel.Device is in use or does not exist." ).toLatin1() ;
+				m_lastError = _error_1() ;
 				return false ;
 			}
 		}else{
-			m_lastError = QObject::tr( "Failed to open reading channel.Device is in use or does not exist." ).toLatin1() ;
+			m_lastError = _error_2() ;
 			return false ;
 		}
 
@@ -262,7 +265,9 @@ Task::future< QVector< gsm::SMSText > >& internal::getSMSMessages()
 
 		QVector< gsm::SMSText > r ;
 
-		std::unique_ptr< gsm,std::function< void( gsm * ) > > e( gsm::instance( { "libgammu" } ),[ this ]( gsm * e ){
+		using unique_ptr = std::unique_ptr< gsm,std::function< void( gsm * ) > >  ;
+
+		unique_ptr e( gsm::instance( { "libgammu" } ),[ this ]( gsm * e ){
 
 			delete e ;
 
