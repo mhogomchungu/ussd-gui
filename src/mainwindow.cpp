@@ -131,7 +131,7 @@ void MainWindow::aboutToShow()
 {
 	m_menu.clear() ;
 
-	m_menu.addAction( tr( "Edit Favorites USSD Codes" ) ) ;
+	m_menu.addAction( tr( "Edit Favorite USSD Codes" ) ) ;
 	m_menu.addSeparator() ;
 
 	auto k = favorites::readFavorites( m_settings ) ;
@@ -153,7 +153,7 @@ void MainWindow::ussdCodeInfo( QAction * ac )
 
 	e.remove( "&" ) ;
 
-	if( e == tr( "Edit Favorites USSD Codes" ) ){
+	if( e == tr( "Edit Favorite USSD Codes" ) ){
 
 		favorites::instance( this,m_settings ) ;
 	}else{
