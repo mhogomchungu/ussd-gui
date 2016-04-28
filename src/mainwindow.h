@@ -98,7 +98,6 @@ private slots:
 	void aboutToShow() ;
 private:
 	QString topHistory() ;
-	QStringList historyList() ;
 	QString getSetting( const QString& ) ;
 
 	int decodeType() ;
@@ -108,12 +107,9 @@ private:
 
 	void wait( int = 1 ) ;
 	void send( const QString& = QString() ) ;
-	void updateHistory( const QByteArray& ) ;
 	void processResponce( const gsm::USSDMessage& ) ;
 	void closeEvent( QCloseEvent * ) ;
 	void setLocalLanguage() ;
-	void setHistoryMenu( const QStringList& ) ;
-	void setHistoryMenu() ;
 	void setSetting( const QString&,const QString& ) ;
 	void setSetting( const QString&,bool ) ;
 	int  timeOutInterval() ;
@@ -123,8 +119,6 @@ private:
 	int m_timeout ;
 
 	int m_autowaitInterval ;
-
-	QString m_history ;
 
 	QStringList m_autoSend ;
 
@@ -136,8 +130,6 @@ private:
 	std::unique_ptr< gsm > m_gsm ;
 
 	QMenu m_menu ;
-	QMenu m_menuHistory ;
-	QMenu m_menuDescription ;
 
 	Timer m_timer ;
 };

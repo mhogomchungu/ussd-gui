@@ -82,16 +82,13 @@ MainWindow::MainWindow( bool log ) :
 	connect( m_ui->pbConvert,SIGNAL( pressed() ),this,SLOT( pbConvert() ) ) ;
 	connect( m_ui->pbSMS,SIGNAL( pressed() ),this,SLOT( pbSMS() ) ) ;
 
-	connect( &m_menuHistory,SIGNAL( triggered( QAction * ) ),this,SLOT( setHistoryItem( QAction * ) ) ) ;
-	connect( &m_menuDescription,SIGNAL( triggered( QAction * ) ),this,SLOT( ussdCodeInfo( QAction * ) ) ) ;
+	connect( &m_menu,SIGNAL( triggered( QAction * ) ),this,SLOT( ussdCodeInfo( QAction * ) ) ) ;
 
-	connect( &m_menuDescription,SIGNAL( aboutToShow() ),this,SLOT( aboutToShow() ) ) ;
+	connect( &m_menu,SIGNAL( aboutToShow() ),this,SLOT( aboutToShow() ) ) ;
 
-	m_menuHistory.setTitle( tr( "USSD Code History" ) ) ;
-	m_menuDescription.setTitle( tr( "USSD Code Description" ) ) ;
+	m_ui->pbHistory->setMenu( &m_menu ) ;
 
-	m_menu.addMenu( &m_menuHistory ) ;
-	m_menu.addMenu( &m_menuDescription ) ;
+	m_menu.setTitle( tr( "USSD Codes" ) ) ;
 
 	m_ui->pbConvert->setEnabled( false ) ;
 
@@ -108,16 +105,7 @@ MainWindow::MainWindow( bool log ) :
 
 	m_autowaitInterval = this->autowaitInterval() ;
 
-	m_history = this->getSetting( "history" ) ;
-
-	auto l = this->historyList() ;
-
-	if( !l.isEmpty() ){
-
-		m_ui->lineEditUSSD_code->setText( l.first() ) ;
-	}
-
-	this->setHistoryMenu( l ) ;
+	m_ui->lineEditUSSD_code->setText( this->topHistory() ) ;
 
 	if( !m_gsm->init( log ) ){
 
@@ -127,53 +115,50 @@ MainWindow::MainWindow( bool log ) :
 	}
 }
 
+QString MainWindow::topHistory()
+{
+	auto l = favorites::readFavorites( m_settings ) ;
+
+	if( !l.isEmpty() ){
+
+		return utility::split( l.first()," - " ).first() ;
+	}else{
+		return QString() ;
+	}
+}
+
 void MainWindow::aboutToShow()
 {
-	m_menuDescription.clear() ;
+	m_menu.clear() ;
 
-	m_menuDescription.addAction( tr( "Edit Code Description" ) ) ;
-	m_menuDescription.addSeparator() ;
+	m_menu.addAction( tr( "Edit Favorites USSD Codes" ) ) ;
+	m_menu.addSeparator() ;
 
 	auto k = favorites::readFavorites( m_settings ) ;
 
 	if( k.isEmpty() ){
 
-		m_menuDescription.addAction( "Empty" )->setEnabled( false ) ;
+		m_menu.addAction( "Empty" )->setEnabled( false ) ;
 	}else{
 		for( const auto& it : k ){
 
-			m_menuDescription.addAction( it )->setEnabled( false ) ;
+			m_menu.addAction( it ) ;
 		}
 	}
 }
 
-void MainWindow::ussdCodeInfo( QAction * e )
+void MainWindow::ussdCodeInfo( QAction * ac )
 {
-	Q_UNUSED( e ) ;
+	auto e = ac->text() ;
 
-	favorites::instance( this,m_settings ) ;
-}
+	e.remove( "&" ) ;
 
-void MainWindow::setHistoryMenu( const QStringList& l )
-{
-	m_menuHistory.clear() ;
+	if( e == tr( "Edit Favorites USSD Codes" ) ){
 
-	if( l.isEmpty() ){
-
-		m_menuHistory.addAction( tr( "Empty History." ) ) ;
+		favorites::instance( this,m_settings ) ;
 	}else{
-		for( const auto& it : l ){
-
-			m_menuHistory.addAction( it ) ;
-		}
+		m_ui->lineEditUSSD_code->setText( utility::split( e," - " ).first() ) ;
 	}
-
-	m_ui->pbHistory->setMenu( &m_menu ) ;
-}
-
-void MainWindow::setHistoryMenu()
-{
-	this->setHistoryMenu( this->historyList() ) ;
 }
 
 MainWindow::~MainWindow()
@@ -453,23 +438,6 @@ void MainWindow::setHistoryItem( QAction * ac )
 	}
 }
 
-QStringList MainWindow::historyList()
-{
-	return utility::split( m_history ) ;
-}
-
-QString MainWindow::topHistory()
-{
-	auto l = this->historyList() ;
-
-	if( l.isEmpty() ){
-
-		return QString() ;
-	}else{
-		return l.first() ;
-	}
-}
-
 bool MainWindow::Connect()
 {
 	m_timer.start( tr( "Status: Connecting" ) ) ;
@@ -508,49 +476,6 @@ bool MainWindow::Connect()
 	return connected ;
 }
 
-void MainWindow::updateHistory( const QByteArray& e )
-{
-	auto l = this->historyList() ;
-
-	if( l.contains( e ) ){
-
-		l.removeOne( e ) ;
-
-		m_history = e ;
-
-		for( const auto& it : l ){
-
-			m_history += "\n" + it ;
-		}
-	}else{
-		auto q = utility::split( this->getSetting( "no_history" ) ) ;
-
-		for( const auto& it : q ){
-
-			if( e.startsWith( it.toLatin1() ) ){
-
-				return ;
-			}
-		}
-
-		if( l.size() >= 10 ){
-
-			l.removeLast() ;
-
-			l.append( e ) ;
-		}
-
-		m_history = e ;
-
-		for( const auto& it : l ){
-
-			m_history += "\n" + it ;
-		}
-	}
-
-	this->setHistoryMenu() ;
-}
-
 void MainWindow::send( const QString& code )
 {
 	QByteArray ussd ;
@@ -558,13 +483,6 @@ void MainWindow::send( const QString& code )
 	if( code.isEmpty() ){
 
 		ussd = m_ui->lineEditUSSD_code->text().toLatin1() ;
-
-		if( ussd.startsWith( "*" ) ){
-
-			this->updateHistory( ussd ) ;
-
-			this->setSetting( "history",m_history ) ;
-		}
 
 		m_autoSend = utility::split( ussd,' ' ) ;
 
