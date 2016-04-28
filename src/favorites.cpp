@@ -43,24 +43,12 @@ favorites::favorites( QWidget * parent,QSettings& e ) : QDialog( parent ),m_ui( 
 
 	this->setFixedSize( this->size() ) ;
 
-	connect( m_ui->pbFolderAddress,SIGNAL( clicked() ),this,SLOT( folderAddress() ) ) ;
-	connect( m_ui->pbDeviceAddress,SIGNAL( clicked() ),this,SLOT( deviceAddress() ) ) ;
 	connect( m_ui->pbAdd,SIGNAL( clicked() ),this,SLOT( add() ) ) ;
-	connect( m_ui->pbFileAddress,SIGNAL( clicked() ),this,SLOT( fileAddress() ) ) ;
 	connect( m_ui->pbCancel,SIGNAL( clicked() ),this,SLOT( cancel() ) ) ;
 	connect( m_ui->tableWidget,SIGNAL( currentItemChanged( QTableWidgetItem *,QTableWidgetItem * ) ),this,
 		SLOT( currentItemChanged( QTableWidgetItem *,QTableWidgetItem * ) ) ) ;
 	connect( m_ui->tableWidget,SIGNAL( itemClicked( QTableWidgetItem * ) ),this,
 		SLOT( itemClicked( QTableWidgetItem * ) ) ) ;
-	//connect( m_ui->lineEditDeviceAddress,SIGNAL( textChanged( QString ) ),this,SLOT( devicePathTextChange( QString ) ) ) ;
-
-	m_ui->pbFileAddress->setIcon( QIcon( ":/file.png" ) ) ;
-	m_ui->pbDeviceAddress->setIcon( QIcon( ":/partition.png" ) ) ;
-	m_ui->pbFolderAddress->setIcon( QIcon( ":/folder.png" ) ) ;
-
-	m_ui->pbFileAddress->setVisible( false ) ;
-	m_ui->pbDeviceAddress->setVisible( false ) ;
-	m_ui->pbFolderAddress->setVisible( false ) ;
 
 	m_ac = new QAction( this ) ;
 	QList<QKeySequence> keys ;
@@ -81,30 +69,9 @@ bool favorites::eventFilter( QObject * watched,QEvent * event )
 	return utility::eventFilter( this,watched,event,[ this ](){ this->HideUI() ; } ) ;
 }
 
-void favorites::devicePathTextChange( QString txt )
-{
-	if( txt.isEmpty() ){
-
-		m_ui->lineEditMountPath->clear() ; ;
-	}else{
-		auto s = txt.split( "/" ).last() ;
-
-		if( s.isEmpty() ){
-
-			m_ui->lineEditMountPath->setText( txt ) ;
-		}else{
-			m_ui->lineEditMountPath->setText( s ) ;
-		}
-	}
-}
-
 void favorites::shortcutPressed()
 {
 	this->itemClicked( m_ui->tableWidget->currentItem(),false ) ;
-}
-
-void favorites::deviceAddress()
-{
 }
 
 void favorites::ShowUI()
@@ -127,9 +94,9 @@ void favorites::ShowUI()
 		_add_entry( utility::split( it," - " ) ) ;
 	}
 
-	m_ui->lineEditDeviceAddress->clear() ;
-	m_ui->lineEditMountPath->clear() ;
-	m_ui->lineEditDeviceAddress->setFocus() ;
+	m_ui->lineEditUSSD->clear() ;
+	m_ui->lineEditUSSDComment->clear() ;
+	m_ui->lineEditUSSD->setFocus() ;
 
 	this->show() ;
 }
@@ -199,48 +166,28 @@ void favorites::add()
 {
 	DialogMsg msg( this ) ;
 
-	auto dev = m_ui->lineEditDeviceAddress->text() ;
-	auto m_path = m_ui->lineEditMountPath->text() ;
+	auto ussd = m_ui->lineEditUSSD->text() ;
+	auto ussd_comment = m_ui->lineEditUSSDComment->text() ;
 
-	if( dev.isEmpty() ){
+	if( ussd.isEmpty() ){
 
-		return msg.ShowUIOK( tr( "ERROR!" ),tr( "Device address field is empty" ) ) ;
+		return msg.ShowUIOK( tr( "ERROR!" ),tr( "USSD Code Field Is Empty" ) ) ;
 	}
-	if( m_path.isEmpty() ){
+	if( ussd_comment.isEmpty() ){
 
-		return msg.ShowUIOK( tr( "ERROR!" ),tr( "Mount point path field is empty" ) ) ;
+		return msg.ShowUIOK( tr( "ERROR!" ),tr( "USSD Code Comment Field Is Empty" ) ) ;
 	}
 
 	m_ui->tableWidget->setEnabled( false ) ;
 
-	this->addEntries( { dev,m_path } ) ;
+	this->addEntries( { ussd,ussd_comment } ) ;
 
-	this->addToFavorite( dev,m_path ) ;
+	this->addToFavorite( ussd,ussd_comment ) ;
 
-	m_ui->lineEditDeviceAddress->clear() ; ;
-	m_ui->lineEditMountPath->clear() ;
+	m_ui->lineEditUSSD->clear() ; ;
+	m_ui->lineEditUSSDComment->clear() ;
 
 	m_ui->tableWidget->setEnabled( true ) ;
-}
-
-void favorites::folderAddress()
-{
-	auto e = QFileDialog::getExistingDirectory( this,tr( "Path To An Encrypted Volume" ),QDir::homePath(),0 ) ;
-
-	if( !e.isEmpty() ){
-
-		m_ui->lineEditDeviceAddress->setText( e ) ;
-	}
-}
-
-void favorites::fileAddress()
-{
-	auto e = QFileDialog::getOpenFileName( this,tr( "Path To An Encrypted Volume" ),QDir::homePath(),0 ) ;
-
-	if( !e.isEmpty() ){
-
-		m_ui->lineEditDeviceAddress->setText( e ) ;
-	}
 }
 
 favorites::~favorites()
@@ -264,12 +211,8 @@ static QString _ussdInfo()
 	return "ussdInfo" ;
 }
 
-void favorites::addToFavorite( const QString& ussd,const QString& comment )
+static void _update_favorites( QSettings& m,const QStringList& l )
 {
-	auto l = this->readFavorites() ;
-
-	l.append( ussd + " - " + comment ) ;
-
 	QString s ;
 
 	for( const auto& it : l ){
@@ -277,7 +220,25 @@ void favorites::addToFavorite( const QString& ussd,const QString& comment )
 		s += it + "\n" ;
 	}
 
-	m_settings.setValue( _ussdInfo(),s ) ;
+	m.setValue( _ussdInfo(),s ) ;
+}
+
+void favorites::addToFavorite( const QString& ussd,const QString& comment )
+{
+	auto l = this->readFavorites() ;
+
+	l.append( ussd + " - " + comment ) ;
+
+	_update_favorites( m_settings,l ) ;
+}
+
+void favorites::removeFavoriteEntry( const QString& entry )
+{
+	auto l = this->readFavorites() ;
+
+	l.removeOne( entry ) ;
+
+	_update_favorites( m_settings,l ) ;
 }
 
 QStringList favorites::readFavorites()
@@ -295,20 +256,4 @@ QStringList favorites::readFavorites( QSettings& e )
 	}else{
 		return QStringList() ;
 	}
-}
-
-void favorites::removeFavoriteEntry( const QString& entry )
-{
-	auto l = this->readFavorites() ;
-
-	l.removeOne( entry ) ;
-
-	QString s ;
-
-	for( const auto& it : l ){
-
-		s += it + "\n" ;
-	}
-
-	m_settings.setValue( _ussdInfo(),s ) ;
 }

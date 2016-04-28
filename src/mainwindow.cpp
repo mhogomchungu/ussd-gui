@@ -88,7 +88,7 @@ MainWindow::MainWindow( bool log ) :
 	connect( &m_menuDescription,SIGNAL( aboutToShow() ),this,SLOT( aboutToShow() ) ) ;
 
 	m_menuHistory.setTitle( tr( "USSD Code History" ) ) ;
-	m_menuDescription.setTitle( tr( "USSD Code description" ) ) ;
+	m_menuDescription.setTitle( tr( "USSD Code Description" ) ) ;
 
 	m_menu.addMenu( &m_menuHistory ) ;
 	m_menu.addMenu( &m_menuDescription ) ;

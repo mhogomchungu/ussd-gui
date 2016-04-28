@@ -76,7 +76,7 @@
     </property>
    </column>
   </widget>
-  <widget class="QLabel" name="labelName">
+  <widget class="QLabel" name="labelUSSD">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -114,7 +114,7 @@
     <bool>true</bool>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEditMountPath">
+  <widget class="QLineEdit" name="lineEditUSSDComment">
    <property name="geometry">
     <rect>
      <x>170</x>
@@ -124,7 +124,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEditDeviceAddress">
+  <widget class="QLineEdit" name="lineEditUSSD">
    <property name="geometry">
     <rect>
      <x>170</x>
@@ -132,38 +132,6 @@
      <width>301</width>
      <height>31</height>
     </rect>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="pbDeviceAddress">
-   <property name="geometry">
-    <rect>
-     <x>500</x>
-     <y>230</y>
-     <width>31</width>
-     <height>31</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>open partition dialog</string>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="pbFileAddress">
-   <property name="geometry">
-    <rect>
-     <x>470</x>
-     <y>230</y>
-     <width>31</width>
-     <height>31</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>open file dialog</string>
-   </property>
-   <property name="text">
-    <string/>
    </property>
   </widget>
   <widget class="QPushButton" name="pbCancel">
@@ -179,26 +147,11 @@
     <string>&amp;Done</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="pbFolderAddress">
-   <property name="geometry">
-    <rect>
-     <x>530</x>
-     <y>230</y>
-     <width>31</width>
-     <height>31</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
  </widget>
  <tabstops>
   <tabstop>tableWidget</tabstop>
-  <tabstop>lineEditDeviceAddress</tabstop>
-  <tabstop>pbDeviceAddress</tabstop>
-  <tabstop>pbFileAddress</tabstop>
-  <tabstop>lineEditMountPath</tabstop>
+  <tabstop>lineEditUSSD</tabstop>
+  <tabstop>lineEditUSSDComment</tabstop>
   <tabstop>pbAdd</tabstop>
   <tabstop>pbCancel</tabstop>
  </tabstops>

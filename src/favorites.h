@@ -47,24 +47,17 @@ public:
 	}
 	explicit favorites( QWidget * parent,QSettings& e ) ;
 	~favorites() ;
-signals:
-	void ShowPartitionUI( void ) ;
-public slots:
-	void ShowUI( void ) ;
-	void HideUI( void ) ;
 private slots:
 	void removeEntryFromFavoriteList( void ) ;
 	void add( void ) ;
-	void cancel( void ) ;
-	void deviceAddress( void ) ;
-	void fileAddress( void ) ;
-	void folderAddress( void ) ;
+	void cancel( void ) ;	
 	void currentItemChanged( QTableWidgetItem * current,QTableWidgetItem * previous ) ;
 	void itemClicked( QTableWidgetItem * current,bool ) ;
 	void itemClicked( QTableWidgetItem * current ) ;
 	void shortcutPressed( void ) ;
-	void devicePathTextChange( QString ) ;
 private:
+	void HideUI( void ) ;
+	void ShowUI( void ) ;
 	void addToFavorite( const QString& dev,const QString& m_point ) ;
 	QStringList readFavorites( void ) ;
 	void removeFavoriteEntry( const QString& ) ;
