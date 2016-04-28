@@ -46,6 +46,7 @@ public:
 
 	QString source() ;
 private:
+	void decodeString( QByteArray& ) ;
 	void setDeviceToDefaultState() ;
 	void readDevice() ;
 	gsm::USSDMessage m_ussd ;

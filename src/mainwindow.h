@@ -99,7 +99,8 @@ private:
 	QStringList historyList() ;
 	QString getSetting( const QString& ) ;
 
-	bool gsm7Encoded() ;
+	int decodeType() ;
+	void decodeText() ;
 	bool Connect() ;
 	bool getBoolSetting( const QString& ) ;
 

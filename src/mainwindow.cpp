@@ -746,49 +746,66 @@ void MainWindow::serverResponse( QString e )
 	m_ui->textEditResult->setText( e ) ;
 }
 
-/*
- * Different operators seems to return data in different formats and trying to predict data
- * was returned in what format is something i do not want to do and instead,i give the user
- * a button to switch between formats i currently know.
- *
- * currently known formats are:
- * 1. gsm 7 bit encoded string.
- * 2. a string of big endian short values in hex representation. example: "004F004D004700210021"
- */
-void MainWindow::pbConvert()
+static QString _decodeOption()
 {
-	this->setSetting( "gsm7Encoded",!this->gsm7Encoded() ) ;
-	this->displayResult() ;
+	return "decodeType" ;
 }
 
-bool MainWindow::gsm7Encoded()
+void MainWindow::pbConvert()
 {
-	QString opt = "gsm7Encoded" ;
+	QString opt = _decodeOption() ;
 
 	if( m_settings.contains( opt ) ){
 
-		return m_settings.value( opt ).toBool() ;
+		auto e = m_settings.value( opt ).toInt() ;
+
+		if( e == 2 ){
+
+			e = 0 ;
+		}else{
+			e++ ;
+		}
+
+		m_settings.setValue( opt,QString::number( e ) ) ;
 	}else{
-		m_settings.setValue( opt,true ) ;
-		return true ;
+		QString e = "0" ;
+		m_settings.setValue( opt,e ) ;
+	}
+
+	this->decodeText() ;
+}
+
+int MainWindow::decodeType()
+{
+	QString opt = _decodeOption() ;
+
+	if( m_settings.contains( opt ) ){
+
+		return m_settings.value( opt ).toInt() ;
+	}else{
+		QString e = "0" ;
+		m_settings.setValue( opt,e ) ;
+		return 0 ;
+	}
+}
+
+void MainWindow::decodeText()
+{
+	auto e = gsm::decodeUnicodeString( m_ussd.Text ) ;
+
+	switch( this->decodeType() ){
+
+		case 0 : m_ui->textEditResult->setText( m_ussd.Text ) ;
+			 break ;
+		case 1 : m_ui->textEditResult->setText( QGsmCodec::fromGsm7BitEncodedtoUnicode( e ) ) ;
+			 break ;
+		case 2 : m_ui->textEditResult->setText( QGsmCodec::fromUnicodeStringInHexToUnicode( e ) ) ;
 	}
 }
 
 void MainWindow::displayResult()
 {
-	if( m_gsm->source() == "internal" ){
-
-		m_ui->textEditResult->setText( m_ussd.Text ) ;
-	}else{
-		auto e = gsm::decodeUnicodeString( m_ussd.Text ) ;
-
-		if( this->gsm7Encoded() ){
-
-			m_ui->textEditResult->setText( QGsmCodec::fromGsm7BitEncodedtoUnicode( e ) ) ;
-		}else{
-			m_ui->textEditResult->setText( QGsmCodec::fromUnicodeStringInHexToUnicode( e ) ) ;
-		}
-	}
+	this->decodeText() ;
 
 	if( m_autoSend.size() > 0 ){
 

@@ -24,14 +24,6 @@
 
 #include <QDebug>
 
-static void _convert_if_unicode_in_string( QByteArray& text )
-{
-	if( QGsmCodec::stringHex( text ) ){
-
-		text = QGsmCodec::fromUnicodeStringInHexToUnicode( text.constData() ).toLatin1() ;
-	}
-}
-
 internal::internal( const QString& device,const QString& e,std::function< void( const gsm::USSDMessage& ) >&& function ) :
 	m_terminatorSequence( e ),m_function( std::move( function ) )
 {
@@ -90,8 +82,6 @@ void internal::readDevice()
 {
 	Task::exec( [ this ](){
 
-		m_ussd.Text.clear() ;
-
 		QByteArray tmp ;
 
 		QByteArray e ;
@@ -112,20 +102,14 @@ void internal::readDevice()
 			}else{
 				tmp += e ;
 
-				if( tmp.endsWith( "\",15" ) ){
+				if( tmp.endsWith( "+CUSD: " ) ){
 
 					break ;
 				}
 			}
-
 		}
 
-		if( m_log ){
-
-			qDebug() << tmp ;
-		}
-
-		QByteArray end = "\"," + m_terminatorSequence.toLatin1() ;
+		m_ussd.Text = "+CUSD: " ;
 
 		while( true ){
 
@@ -137,47 +121,50 @@ void internal::readDevice()
 			}else{
 				m_ussd.Text += e ;
 
-				if( m_ussd.Text.endsWith( end ) ){
+				if( m_ussd.Text.endsWith( '\r' ) ){
 
 					break ;
 				}
 			}
 		}
 
-		if( m_log ){
+		if( m_log ){			
 
-			qDebug() << m_ussd.Text ;
+			qDebug() << tmp + QByteArray( m_ussd.Text.data() + 7 ) ;
 		}
 
-		while( true ){
+		switch( m_ussd.Text.at( 7 ) ){
 
-			if( m_ussd.Text.startsWith( "+CUSD: " ) ){
-
-				switch( m_ussd.Text.at( 7 ) ){
-
-					case '0' : m_ussd.Status = gsm::USSDMessage::NoActionNeeded ; break ;
-					case '1' : m_ussd.Status = gsm::USSDMessage::ActionNeeded   ; break ;
-					case '2' : m_ussd.Status = gsm::USSDMessage::Terminated     ; break ;
-					case '3' : m_ussd.Status = gsm::USSDMessage::AnotherClient  ; break ;
-					case '4' : m_ussd.Status = gsm::USSDMessage::NotSupported   ; break ;
-					case '5' : m_ussd.Status = gsm::USSDMessage::Timeout        ; break ;
-					default  : m_ussd.Status = gsm::USSDMessage::Unknown        ;
-				}
-
-				m_ussd.Text.remove( 0,10 ) ;
-
-				break ;
-			}else{
-				m_ussd.Text.remove( 0,1 ) ;
-			}
+			case '0' : m_ussd.Status = gsm::USSDMessage::NoActionNeeded ; break ;
+			case '1' : m_ussd.Status = gsm::USSDMessage::ActionNeeded   ; break ;
+			case '2' : m_ussd.Status = gsm::USSDMessage::Terminated     ; break ;
+			case '3' : m_ussd.Status = gsm::USSDMessage::AnotherClient  ; break ;
+			case '4' : m_ussd.Status = gsm::USSDMessage::NotSupported   ; break ;
+			case '5' : m_ussd.Status = gsm::USSDMessage::Timeout        ; break ;
+			default  : m_ussd.Status = gsm::USSDMessage::Unknown        ;
 		}
 
-		m_ussd.Text.remove( m_ussd.Text.size() - 4,4 ) ;
+		m_ussd.Text.remove( 0,10 ) ;
 
-		_convert_if_unicode_in_string( m_ussd.Text ) ;
+		int index = m_ussd.Text.lastIndexOf( '\"' ) ;
+
+		if( index != -1 ){
+
+			m_ussd.Text.truncate( index ) ;
+		}
+
+		this->decodeString( m_ussd.Text ) ;
 
 		m_function( m_ussd ) ;
 	} ) ;
+}
+
+void internal::decodeString( QByteArray& s )
+{
+	if( QGsmCodec::stringHex( s ) ){
+
+		s = QGsmCodec::fromUnicodeStringInHexToUnicode( s.constData() ).toLatin1() ;
+	}
 }
 
 Task::future< bool >& internal::dial( const QByteArray& code )
