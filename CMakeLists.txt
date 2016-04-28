@@ -46,8 +46,8 @@ if( QT5 )
 	include_directories( ${Qt5Widgets_INCLUDE_DIRS} )
 	add_definitions( ${Qt5Widgets_DEFINITIONS} )
 
-	QT5_WRAP_CPP( MOC src/mainwindow.h src/task.h )
-	QT5_WRAP_UI( UI src/mainwindow.ui )
+	QT5_WRAP_CPP( MOC src/mainwindow.h src/task.h src/favorites.h src/dialogmsg.h )
+	QT5_WRAP_UI( UI src/mainwindow.ui src/favorites.ui src/dialogmsg.ui )
 	QT5_ADD_RESOURCES( ICON icons/icons.qrc )
 else()
 	find_package( Qt4 REQUIRED QtCore QtGui )
@@ -58,12 +58,13 @@ else()
 	INCLUDE( ${QT_USE_FILE} )
 	INCLUDE( ${QT_USE_FILE} )
 
-	QT4_WRAP_CPP( MOC src/mainwindow.h src/task.h )
-	QT4_WRAP_UI( UI src/mainwindow.ui )
+	QT4_WRAP_CPP( MOC src/mainwindow.h src/task.h src/favorites.h src/dialogmsg.h)
+	QT4_WRAP_UI( UI src/mainwindow.ui src/favorites.ui src/dialogmsg.ui )
 	QT4_ADD_RESOURCES( ICON icons/icons.qrc )
 endif()
 
-add_executable( ussd-gui src/internal.cpp src/libgammu.cpp src/main.cpp src/gsm.cpp src/mainwindow.cpp 3rd_party/qgsmcodec.cpp ${MOC} ${UI} ${ICON} )
+add_executable( ussd-gui src/utility.cpp src/favorites.cpp src/tablewidget.cpp src/internal.cpp src/libgammu.cpp
+src/main.cpp src/gsm.cpp src/mainwindow.cpp src/dialogmsg.cpp 3rd_party/qgsmcodec.cpp ${MOC} ${UI} ${ICON} )
 
 set_target_properties( ussd-gui PROPERTIES COMPILE_FLAGS "-Wextra -Wall -s -fPIE -pthread  -pedantic" )
 set_target_properties( ussd-gui PROPERTIES LINK_FLAGS "-pie" )

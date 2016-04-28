@@ -106,6 +106,14 @@ void internal::readDevice()
 
 					break ;
 				}
+
+				if( tmp.endsWith( "ERROR" ) ){
+
+					m_ussd.Status = gsm::USSDMessage::Unknown ;
+					m_function( m_ussd ) ;
+
+					return ;
+				}
 			}
 		}
 

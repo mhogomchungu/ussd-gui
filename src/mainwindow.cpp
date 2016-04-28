@@ -32,6 +32,9 @@
 
 #include "../3rd_party/qgsmcodec.h"
 
+#include "favorites.h"
+#include "utility.h"
+
 static QStringList _source( QSettings& settings )
 {
 	auto _option = [ & ]( const QString& key,QString value ){
@@ -79,7 +82,16 @@ MainWindow::MainWindow( bool log ) :
 	connect( m_ui->pbConvert,SIGNAL( pressed() ),this,SLOT( pbConvert() ) ) ;
 	connect( m_ui->pbSMS,SIGNAL( pressed() ),this,SLOT( pbSMS() ) ) ;
 
-	connect( &m_menu,SIGNAL( triggered( QAction * ) ),this,SLOT( setHistoryItem( QAction * ) ) ) ;
+	connect( &m_menuHistory,SIGNAL( triggered( QAction * ) ),this,SLOT( setHistoryItem( QAction * ) ) ) ;
+	connect( &m_menuDescription,SIGNAL( triggered( QAction * ) ),this,SLOT( ussdCodeInfo( QAction * ) ) ) ;
+
+	connect( &m_menuDescription,SIGNAL( aboutToShow() ),this,SLOT( aboutToShow() ) ) ;
+
+	m_menuHistory.setTitle( tr( "USSD Code History" ) ) ;
+	m_menuDescription.setTitle( tr( "USSD Code description" ) ) ;
+
+	m_menu.addMenu( &m_menuHistory ) ;
+	m_menu.addMenu( &m_menuDescription ) ;
 
 	m_ui->pbConvert->setEnabled( false ) ;
 
@@ -115,17 +127,44 @@ MainWindow::MainWindow( bool log ) :
 	}
 }
 
+void MainWindow::aboutToShow()
+{
+	m_menuDescription.clear() ;
+
+	m_menuDescription.addAction( tr( "Edit Code Description" ) ) ;
+	m_menuDescription.addSeparator() ;
+
+	auto k = favorites::readFavorites( m_settings ) ;
+
+	if( k.isEmpty() ){
+
+		m_menuDescription.addAction( "Empty" )->setEnabled( false ) ;
+	}else{
+		for( const auto& it : k ){
+
+			m_menuDescription.addAction( it )->setEnabled( false ) ;
+		}
+	}
+}
+
+void MainWindow::ussdCodeInfo( QAction * e )
+{
+	Q_UNUSED( e ) ;
+
+	favorites::instance( this,m_settings ) ;
+}
+
 void MainWindow::setHistoryMenu( const QStringList& l )
 {
-	m_menu.clear() ;
+	m_menuHistory.clear() ;
 
 	if( l.isEmpty() ){
 
-		m_menu.addAction( tr( "Empty History." ) ) ;
+		m_menuHistory.addAction( tr( "Empty History." ) ) ;
 	}else{
 		for( const auto& it : l ){
 
-			m_menu.addAction( it ) ;
+			m_menuHistory.addAction( it ) ;
 		}
 	}
 
@@ -416,7 +455,7 @@ void MainWindow::setHistoryItem( QAction * ac )
 
 QStringList MainWindow::historyList()
 {
-	return m_history.split( "\n",QString::SkipEmptyParts ) ;
+	return utility::split( m_history ) ;
 }
 
 QString MainWindow::topHistory()
@@ -484,7 +523,7 @@ void MainWindow::updateHistory( const QByteArray& e )
 			m_history += "\n" + it ;
 		}
 	}else{
-		auto q = this->getSetting( "no_history" ).split( "\n",QString::SkipEmptyParts ) ;
+		auto q = utility::split( this->getSetting( "no_history" ) ) ;
 
 		for( const auto& it : q ){
 
@@ -527,7 +566,7 @@ void MainWindow::send( const QString& code )
 			this->setSetting( "history",m_history ) ;
 		}
 
-		m_autoSend = QString( ussd ).split( ' ',QString::SkipEmptyParts ) ;
+		m_autoSend = utility::split( ussd,' ' ) ;
 
 		ussd = m_autoSend.first().toLatin1() ;
 

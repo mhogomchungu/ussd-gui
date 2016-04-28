@@ -92,8 +92,10 @@ private slots:
 	void disableSending() ;
 	void enableSending() ;
 	void setHistoryItem( QAction * ) ;
+	void ussdCodeInfo( QAction * ) ;
 	void updateTitle() ;
 	void displayResult() ;
+	void aboutToShow() ;
 private:
 	QString topHistory() ;
 	QStringList historyList() ;
@@ -134,6 +136,8 @@ private:
 	std::unique_ptr< gsm > m_gsm ;
 
 	QMenu m_menu ;
+	QMenu m_menuHistory ;
+	QMenu m_menuDescription ;
 
 	Timer m_timer ;
 };
