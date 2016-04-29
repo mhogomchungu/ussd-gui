@@ -196,7 +196,7 @@ void MainWindow::pbSMS()
 	}else{
 		QString e = m_gsm->lastError() ;
 
-		if( e == "No error." ){
+		if( e == "No error." || e.isEmpty() ){
 
 			m_ui->textEditResult->setText( tr( "Status: No Text Messages Were Found." ) ) ;
 		}else{
@@ -362,21 +362,20 @@ bool MainWindow::Connect()
 
 void MainWindow::send( const QString& code )
 {
-	m_ui->pbSend->setEnabled( false ) ;
-
-	this->disableSending() ;
-
 	QByteArray ussd ;
 
 	if( code.isEmpty() ){
 
 		ussd = m_ui->lineEditUSSD_code->text().toLatin1() ;
 
-		m_autoSend = utility::split( ussd,' ' ) ;
+		if( !ussd.isEmpty() ){
 
-		ussd = m_autoSend.first().toLatin1() ;
+			m_autoSend = utility::split( ussd,' ' ) ;
 
-		m_autoSend.removeFirst() ;
+			ussd = m_autoSend.first().toLatin1() ;
+
+			m_autoSend.removeFirst() ;
+		}
 	}else{
 		ussd = code.toLatin1() ;
 
@@ -387,8 +386,10 @@ void MainWindow::send( const QString& code )
 
 		m_ui->textEditResult->setText( tr( "Status: ERROR 6: ussd code required." ) ) ;
 
-		return this->enableSending() ;
+		return ;
 	}
+
+	this->disableSending() ;
 
 	m_ui->pbConnect->setEnabled( false ) ;
 
