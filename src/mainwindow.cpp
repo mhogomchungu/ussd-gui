@@ -302,11 +302,13 @@ void MainWindow::pbSMS()
 	m_ui->pbCancel->setEnabled( false ) ;
 	m_ui->pbConvert->setEnabled( false ) ;
 
-	m_ui->textEditResult->setText( tr( "Status: Retrieving Text Messages." ) ) ;
+	m_timer.start( tr( "Status: Retrieving Text Messages" ) ) ;
 
 	this->wait() ;
 
 	auto m = m_gsm->getSMSMessages().await() ;
+
+	m_timer.stop() ;
 
 	auto j = m.size() ;
 
@@ -353,6 +355,12 @@ void MainWindow::pbConnect()
 			m_ui->textEditResult->setText( tr( "Status: Disconnected." ) ) ;
 
 			m_ui->lineEditUSSD_code->setText( this->topHistory() ) ;
+
+			m_ui->pbCancel->setEnabled( false ) ;
+
+			this->wait( 2 ) ;
+
+			m_ui->pbCancel->setEnabled( true ) ;
 		}else{
 			m_ui->textEditResult->setText( tr( "Status: ERROR 6: " ) + m_gsm->lastError() ) ;
 		}

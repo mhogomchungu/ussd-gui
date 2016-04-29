@@ -230,33 +230,41 @@ static QByteArray _error_2()
 	return QObject::tr( "Failed to open reading channel.Device is in use or does not exist." ).toLatin1() ;
 }
 
+bool internal::connect( int e )
+{
+	if( e ){
+
+		sleep( e ) ;
+	}
+
+	m_read.open( QIODevice::ReadOnly | QIODevice::Unbuffered ) ;
+
+	if( m_read.isOpen() ){
+
+		m_write.open( QIODevice::WriteOnly | QIODevice::Unbuffered ) ;
+
+		if( m_write.isOpen() ){
+
+			this->setDeviceToDefaultState() ;
+
+			return true ;
+		}else{
+			m_lastError = _error_1() ;
+			return false ;
+		}
+	}else{
+		m_lastError = _error_2() ;
+		return false ;
+	}
+
+	return m_read.isOpen() && m_write.isOpen() ;
+}
+
 Task::future< bool >& internal::connect()
 {
 	return Task::run< bool >( [ this ](){
 
-		sleep( 2 ) ;
-
-		m_read.open( QIODevice::ReadOnly | QIODevice::Unbuffered ) ;
-
-		if( m_read.isOpen() ){
-
-			m_write.open( QIODevice::WriteOnly | QIODevice::Unbuffered ) ;
-
-			if( m_write.isOpen() ){
-
-				this->setDeviceToDefaultState() ;
-
-				return true ;
-			}else{
-				m_lastError = _error_1() ;
-				return false ;
-			}
-		}else{
-			m_lastError = _error_2() ;
-			return false ;
-		}
-
-		return m_read.isOpen() && m_write.isOpen() ;
+		return this->connect( 2 ) ;
 	} ) ;
 }
 
@@ -276,7 +284,7 @@ Task::future< QVector< gsm::SMSText > >& internal::getSMSMessages()
 
 			this->setDeviceToDefaultState() ;
 
-			this->connect().get() ;
+			this->connect( 0 ) ;
 		} ) ;
 
 		if( e->init( false ) && e->connect().get() ){
