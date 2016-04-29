@@ -60,7 +60,7 @@ MainWindow::MainWindow( bool log ) :
 
 	m_ui->setupUi( this ) ;
 
-	m_timer.setTextEdit( *( m_ui->textEditResult ) ) ;
+	m_timer.setTextEdit( m_ui->textEditResult ) ;
 
 	m_ui->pbConnect->setFocus() ;
 

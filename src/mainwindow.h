@@ -45,19 +45,19 @@ public:
 	{
 		connect( &m_timer,SIGNAL( timeout() ),this,SLOT( event() ) ) ;
 	}
-	void setTextEdit( QTextEdit& e )
-	{
-		m_textEdit = e ;
-	}
 	void start( const QString& e )
 	{
 		m_text = e ;
-		m_textEdit.get().setText( m_text ) ;
+		m_textEdit->setText( m_text ) ;
 		m_timer.start( 1000 * 1 ) ;
+	}
+	void setTextEdit( QTextEdit * e )
+	{
+		m_textEdit = e ;
 	}
 	void stop()
 	{
-		m_textEdit.get().setText( QString() ) ;
+		m_textEdit->setText( QString() ) ;
 
 		m_timer.stop() ;
 	}
@@ -66,12 +66,11 @@ private slots:
 	{
 		m_text += " ...." ;
 
-		m_textEdit.get().setText( m_text ) ;
+		m_textEdit->setText( m_text ) ;
 	}
 private:
 	QString m_text ;
-	QTextEdit m_privateQTextEdit ;
-	std::reference_wrapper< QTextEdit > m_textEdit = m_privateQTextEdit ;
+	QTextEdit * m_textEdit ;
 	QTimer m_timer ;
 };
 
@@ -127,11 +126,12 @@ private:
 	gsm::USSDMessage m_ussd ;
 
 	QSettings m_settings ;
+
+	Timer m_timer ;
+
 	std::unique_ptr< gsm > m_gsm ;
 
 	QMenu m_menu ;
-
-	Timer m_timer ;
 };
 
 #endif // MAINWINDOW_H

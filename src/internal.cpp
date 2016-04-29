@@ -109,6 +109,11 @@ void internal::readDevice()
 
 				if( tmp.endsWith( "ERROR" ) ){
 
+					if( m_log ){
+
+						qDebug() << tmp ;
+					}
+
 					return m_function( { "",gsm::USSDMessage::Unknown } ) ;
 				}
 			}
