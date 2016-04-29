@@ -283,6 +283,8 @@ Task::future< QVector< gsm::SMSText > >& internal::getSMSMessages()
 
 		unique_ptr e( gsm::instance( { "libgammu" } ),[ this ]( gsm * e ){
 
+			m_lastError = e->lastError() ;
+
 			e->disconnect() ;
 
 			delete e ;
@@ -296,8 +298,6 @@ Task::future< QVector< gsm::SMSText > >& internal::getSMSMessages()
 
 			return e->getSMSMessages().get() ;
 		}else{
-			m_lastError = e->lastError() ;
-
 			return QVector< gsm::SMSText >() ;
 		}
 	} ) ;
