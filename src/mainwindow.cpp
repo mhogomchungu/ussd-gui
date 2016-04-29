@@ -362,6 +362,8 @@ bool MainWindow::Connect()
 
 void MainWindow::send( const QString& code )
 {
+	this->disableSending() ;
+
 	QByteArray ussd ;
 
 	if( code.isEmpty() ){
@@ -386,10 +388,8 @@ void MainWindow::send( const QString& code )
 
 		m_ui->textEditResult->setText( tr( "Status: ERROR 6: ussd code required." ) ) ;
 
-		return ;
+		return this->enableSending() ;
 	}
-
-	this->disableSending() ;
 
 	m_ui->pbConnect->setEnabled( false ) ;
 
