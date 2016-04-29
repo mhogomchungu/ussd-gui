@@ -25,7 +25,7 @@
 #include <QDebug>
 
 internal::internal( const QString& device,const QString& e,std::function< void( const gsm::USSDMessage& ) >&& function ) :
-	m_terminatorSequence( e ),m_function( std::move( function ) )
+	m_initCommand( e ),m_function( std::move( function ) )
 {
 	m_read.setFileName( device ) ;
 	m_write.setFileName( device ) ;
@@ -37,7 +37,6 @@ internal::~internal()
 
 bool internal::disconnect()
 {
-	m_write.write( "AT+CUSD=2,,15\r" ) ;
 	m_read.close() ;
 
 	if( m_read.isOpen() ){
@@ -45,6 +44,8 @@ bool internal::disconnect()
 		m_lastError = QObject::tr( "Failed to close reading channel." ).toLatin1() ;
 		return false ;
 	}
+
+	m_write.write( "AT+CUSD=2,,15\r" ) ;
 
 	m_write.close() ;
 
@@ -263,25 +264,29 @@ Task::future< QVector< gsm::SMSText > >& internal::getSMSMessages()
 {
 	return Task::run< QVector< gsm::SMSText > >( [ this ](){
 
-		QVector< gsm::SMSText > r ;
+		this->disconnect() ;
 
 		using unique_ptr = std::unique_ptr< gsm,std::function< void( gsm * ) > >  ;
 
 		unique_ptr e( gsm::instance( { "libgammu" } ),[ this ]( gsm * e ){
 
+			e->disconnect() ;
+
 			delete e ;
 
 			this->setDeviceToDefaultState() ;
+
+			this->connect().get() ;
 		} ) ;
 
 		if( e->init( false ) && e->connect().get() ){
 
-			r = e->getSMSMessages().get() ;
+			return e->getSMSMessages().get() ;
 		}else{
 			m_lastError = e->lastError() ;
-		}
 
-		return r ;
+			return QVector< gsm::SMSText >() ;
+		}
 	} ) ;
 }
 
@@ -293,6 +298,11 @@ QString internal::source()
 void internal::setDeviceToDefaultState()
 {
 	m_write.write( "ATZ\r" ) ;
+
+	if( !m_initCommand.isEmpty() ){
+
+		m_write.write( m_initCommand.toLatin1() + "\r" ) ;
+	}
 }
 
 bool internal::canCheckSms()

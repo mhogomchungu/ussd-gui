@@ -54,7 +54,7 @@ private:
 	QFile m_write ;
 	QByteArray m_lastError ;
 	bool m_log ;
-	QString m_terminatorSequence ;
+	QString m_initCommand ;
 	std::function< void( const gsm::USSDMessage& ussd ) > m_function ;
 } ;
 

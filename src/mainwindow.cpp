@@ -48,7 +48,7 @@ static QStringList _source( QSettings& settings )
 		}
 	} ;
 
-	return { _option( "source","libgammu" ),_option( "device","/dev/ttyACM0" ),_option( "terminatorSequence","15" ) } ;
+	return { _option( "source","libgammu" ),_option( "device","/dev/ttyACM0" ),_option( "initCommand","" ) } ;
 }
 
 MainWindow::MainWindow( bool log ) :
