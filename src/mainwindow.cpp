@@ -165,130 +165,6 @@ MainWindow::~MainWindow()
 {
 }
 
-template< typename T >
-static QString _arrange_sms_in_descending_order( T& m )
-{
-	auto j = m.size() ;
-
-	auto d = m.data() ;
-
-	auto e = QObject::tr( "\nNumber Of Text Messages: %1" ).arg( QString::number( j ) ) ;
-
-	for( decltype( j ) p = 0 ; p < j ; p++ ){
-
-		auto& it = *( d + p ) ;
-
-		for( decltype( j ) q = p + 1 ; q < j ; q++ ){
-
-			auto& xt = *( d + q ) ;
-
-			if( it.date < xt.date ){
-
-				std::swap( it,xt ) ;
-			}
-		}
-
-		auto _r  = []( bool e ){ return e ? QObject::tr( "Read" ) : QObject::tr( "Not Read" ) ; } ;
-
-		auto _l  = []( bool inSimCard,bool inInbox ){
-
-			if( inSimCard ){
-
-				if( inInbox ){
-
-					return QObject::tr( "SIM's Inbox" ) ;
-				}else{
-					return QObject::tr( "SIM's Outbox" ) ;
-				}
-			}else{
-				if( inInbox ){
-
-					return QObject::tr( "Phone's Inbox" ) ;
-				}else{
-					return QObject::tr( "Phone's Outbox" ) ;
-				}
-			}
-		} ;
-
-		auto _d = []( const auto& e ){
-
-			auto f = e.mid( 2 ) ;
-
-			switch( e.mid( 0,2 ).remove( "0" ).toInt() ){
-
-				case 1  : return QObject::tr( "January" )   + f ;
-				case 2  : return QObject::tr( "February" )  + f ;
-				case 3  : return QObject::tr( "March" )     + f ;
-				case 4  : return QObject::tr( "April" )     + f ;
-				case 5  : return QObject::tr( "May" )       + f ;
-				case 6  : return QObject::tr( "June" )      + f ;
-				case 7  : return QObject::tr( "July" )      + f ;
-				case 8  : return QObject::tr( "August" )    + f ;
-				case 9  : return QObject::tr( "September" ) + f ;
-				case 10 : return QObject::tr( "October" )   + f ;
-				case 11 : return QObject::tr( "November" )  + f ;
-				case 12 : return QObject::tr( "December" )  + f ;
-			}
-
-			return e ;
-		} ;
-
-		auto l = "\n------------------------------------------------------------------------------------\n" ;
-
-		auto k = QObject::tr( "Number: %1\nDate: %2\nState: %3\nLocation: %4\n\n%5" ) ;
-
-		auto& n = *( d + p ) ;
-
-		e += l + k.arg( n.phoneNumber,_d( n.date ),_r( n.read ),_l( n.inSIMcard,n.inInbox ),n.message ) ;
-	}
-
-	return e ;
-}
-
-template< typename T >
-static T& _remove_duplicate_sms( T& m )
-{
-	auto j = m.size() ;
-
-	auto d = m.data() ;
-
-	for( decltype( j ) i = 0 ; i < j ; i++ ){
-
-		auto& it = *( d + i ) ;
-
-		if( it.inInbox ){
-
-			decltype( i ) k = i + 1 ;
-
-			while( k < j ){
-
-				/*
-				 * Sometimes,a single text message may be split into multiple parts and we
-				 * seem to get these parts as if they are independent text messages.This routine
-				 * is a cheap attempt and combining these multi part text messages into one by
-				 * assuming consercutive text messages that share the same time stamp are a part
-				 * of the same text message.
-				 */
-
-				const auto& xt = *( d + k ) ;
-
-				if( it.date == xt.date ){
-
-					it.message += xt.message ;
-
-					m.remove( k ) ;
-
-					j-- ;
-				}else{
-					k++ ;
-				}
-			}
-		}
-	}
-
-	return m ;
-}
-
 void MainWindow::pbSMS()
 {
 	m_ui->textEditResult->setText( QString() ) ;
@@ -316,7 +192,7 @@ void MainWindow::pbSMS()
 
 		m_ui->groupBox->setTitle( tr( "SMS messages." ) ) ;
 
-		m_ui->textEditResult->setText( _arrange_sms_in_descending_order( _remove_duplicate_sms( m ) ) ) ;
+		m_ui->textEditResult->setText( utility::arrangeSMSInAscendingOrder( utility::condenseSMS( m ) ) ) ;
 	}else{
 		QString e = m_gsm->lastError() ;
 
@@ -338,9 +214,9 @@ void MainWindow::pbSMS()
 
 void MainWindow::pbConnect()
 {
-	this->disableSending() ;
-
 	m_ui->pbConnect->setEnabled( false ) ;
+
+	this->disableSending() ;
 
 	m_ui->pbConvert->setEnabled( false ) ;
 
@@ -654,7 +530,7 @@ void MainWindow::processResponce( const gsm::USSDMessage& ussd )
 
 		QMetaObject::invokeMethod( this,"displayResult",Qt::QueuedConnection ) ;
 	}else{
-		auto _error = []( const _gsm& ussd ){
+		auto _error = [ this ]( const _gsm& ussd ){
 
 			switch( ussd.Status ){
 
@@ -668,7 +544,7 @@ void MainWindow::processResponce( const gsm::USSDMessage& ussd )
 
 			case _gsm::Terminated:
 
-				return tr( "Status: ERROR 5: Connection Was Terminated." ) ;
+				return tr( "Status: ERROR 5: Connection Was Terminated And The Reason Given Is: \"%1\"" ).arg( m_ussd.Text.data() ) ;
 
 			case _gsm::AnotherClient:
 

@@ -31,11 +31,15 @@
 #include <QDir>
 #include <QSettings>
 
+#include "gsm.h"
+
 namespace utility
 {
 	bool eventFilter( QObject * gui,QObject * watched,QEvent * event,std::function< void() > ) ;
 	QStringList split( const QString&,char token = '\n' ) ;
 	QStringList split( const QString&,const char * ) ;
+	QString arrangeSMSInAscendingOrder( QVector< gsm::SMSText >& ) ;
+	QVector< gsm::SMSText >& condenseSMS( QVector< gsm::SMSText >& ) ;
 }
 
 #endif
