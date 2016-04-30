@@ -61,7 +61,7 @@ private:
 	void updateFavoriteList( void ) ;
 	void HideUI( void ) ;
 	void ShowUI( void ) ;
-	void addToFavorite( const QString& dev,const QString& m_point ) ;
+	void addToFavorite( const QString& ussd,const QString& comment,QStringList&  ) ;
 	QStringList readFavorites( void ) ;
 	void removeFavoriteEntry( const QString& ) ;
 	void closeEvent( QCloseEvent * ) ;

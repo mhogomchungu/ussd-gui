@@ -196,11 +196,23 @@ void favorites::add()
 		return msg.ShowUIOK( tr( "ERROR!" ),tr( "USSD Code Comment Field Is Empty" ) ) ;
 	}
 
+	auto l = this->readFavorites() ;
+
+	for( const auto& it : l ){
+
+		if( it.startsWith( ussd + " " ) ){
+
+			DialogMsg msg( this ) ;
+
+			return msg.ShowUIOK( tr( "ERROR" ),tr( "USSD Code Is Already On The List." ) ) ;
+		}
+	}
+
 	m_ui->tableWidget->setEnabled( false ) ;
 
 	this->addEntries( { ussd,ussd_comment } ) ;
 
-	this->addToFavorite( ussd,ussd_comment ) ;
+	this->addToFavorite( ussd,ussd_comment,l ) ;
 
 	m_ui->lineEditUSSD->clear() ; ;
 	m_ui->lineEditUSSDComment->clear() ;
@@ -257,9 +269,17 @@ void favorites::updateFavoriteList()
 	m_settings.setValue( _ussdInfo(),s ) ;
 }
 
-void favorites::addToFavorite( const QString& ussd,const QString& comment )
+void favorites::addToFavorite( const QString& ussd,const QString& comment,QStringList& l )
 {
-	auto l = this->readFavorites() ;
+	for( const auto& it : l ){
+
+		if( it.startsWith( ussd + " " ) ){
+
+			DialogMsg msg( this ) ;
+
+			return msg.ShowUIOK( tr( "ERROR" ),tr( "USSD Code Is Already On The List." ) ) ;
+		}
+	}
 
 	l.append( ussd + " - " + comment ) ;
 
