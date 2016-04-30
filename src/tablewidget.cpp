@@ -30,7 +30,7 @@ using count_t = decltype( QTableWidget().rowCount() ) ;
 
 using function_t = std::function< void( count_t,count_t ) > ;
 
-static void _for_each_column( QTableWidget * table,count_t row,function_t function )
+static void _for_each_column( QTableWidget * table,count_t row,function_t function,bool s = true )
 {
 	if( row >= 0 && row < table->rowCount() ){
 
@@ -41,7 +41,10 @@ static void _for_each_column( QTableWidget * table,count_t row,function_t functi
 			function( row,i ) ;
 		}
 
-		table->setCurrentCell( row,col - 1 ) ;
+		if( s ){
+
+			table->setCurrentCell( row,col - 1 ) ;
+		}
 	}
 }
 
@@ -233,14 +236,14 @@ QStringList tablewidget::tableColumnEntries( QTableWidget * table,int col )
 	return l ;
 }
 
-QStringList tablewidget::tableRowEntries( QTableWidget * table,int row )
+QStringList tablewidget::tableRowEntries( QTableWidget * table,int row,bool e )
 {
 	QStringList l ;
 
 	_for_each_column( table,row,[ & ]( count_t row,count_t col ){
 
 		l.append( table->item( row,col )->text() ) ;
-	} ) ;
+	},e ) ;
 
 	return l ;
 }
@@ -252,5 +255,35 @@ void tablewidget::clearTable( QTableWidget * table )
 	for( decltype( j ) i = 0 ; i < j ; i++ ){
 
 		table->removeRow( 0 ) ;
+	}
+}
+
+void tablewidget::moveDown( QTableWidget * table,int row )
+{
+	if( row < table->rowCount() - 1 ){
+
+		auto l = tablewidget::tableRowEntries( table,row,false ) ;
+		auto x = tablewidget::tableRowEntries( table,row + 1,false ) ;
+
+		tablewidget::updateRowInTable( table,x,row ) ;
+
+		tablewidget::updateRowInTable( table,l,row + 1 ) ;
+
+		tablewidget::selectRow( table,row + 1 ) ;
+	}
+}
+
+void tablewidget::moveUp( QTableWidget * table,int row )
+{
+	if( row > 0 ){
+
+		auto l = tablewidget::tableRowEntries( table,row,false ) ;
+		auto x = tablewidget::tableRowEntries( table,row - 1,false ) ;
+
+		tablewidget::updateRowInTable( table,x,row ) ;
+
+		tablewidget::updateRowInTable( table,l,row - 1 ) ;
+
+		tablewidget::selectRow( table,row - 1 ) ;
 	}
 }

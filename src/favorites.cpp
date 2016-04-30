@@ -117,11 +117,29 @@ void favorites::itemClicked( QTableWidgetItem * current )
 	this->itemClicked( current,true ) ;
 }
 
+void favorites::moveDown()
+{
+	tablewidget::moveDown( m_ui->tableWidget,m_ui->tableWidget->currentRow() ) ;
+
+	this->updateFavoriteList() ;
+}
+
+void favorites::moveUp()
+{
+	tablewidget::moveUp( m_ui->tableWidget,m_ui->tableWidget->currentRow() ) ;
+
+	this->updateFavoriteList() ;
+}
+
 void favorites::itemClicked( QTableWidgetItem * current,bool clicked )
 {
 	QMenu m ;
+
 	m.setFont( this->font() ) ;
+
 	connect( m.addAction( tr( "Remove Selected Entry" ) ),SIGNAL( triggered() ),this,SLOT( removeEntryFromFavoriteList() ) ) ;
+	connect( m.addAction( tr( "Move Up" ) ),SIGNAL( triggered() ),this,SLOT( moveUp() ) ) ;
+	connect( m.addAction( tr( "Move Down" ) ),SIGNAL( triggered() ),this,SLOT( moveDown() ) ) ;
 
 	m.addSeparator() ;
 	m.addAction( tr( "Cancel" ) ) ;
@@ -221,6 +239,22 @@ static void _update_favorites( QSettings& m,const QStringList& l )
 	}
 
 	m.setValue( _ussdInfo(),s ) ;
+}
+
+void favorites::updateFavoriteList()
+{
+	auto table = m_ui->tableWidget ;
+
+	QString s ;
+
+	for( int i = 0 ; i < table->rowCount() ; i ++ ){
+
+		auto l = tablewidget::tableRowEntries( table,i,false ) ;
+
+		s += l.at( 0 ) + " - " + l.at( 1 ) + "\n" ;
+	}
+
+	m_settings.setValue( _ussdInfo(),s ) ;
 }
 
 void favorites::addToFavorite( const QString& ussd,const QString& comment )

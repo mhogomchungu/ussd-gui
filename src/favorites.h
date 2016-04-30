@@ -48,6 +48,8 @@ public:
 	explicit favorites( QWidget * parent,QSettings& e ) ;
 	~favorites() ;
 private slots:
+	void moveUp( void ) ;
+	void moveDown( void ) ;
 	void removeEntryFromFavoriteList( void ) ;
 	void add( void ) ;
 	void cancel( void ) ;	
@@ -56,6 +58,7 @@ private slots:
 	void itemClicked( QTableWidgetItem * current ) ;
 	void shortcutPressed( void ) ;
 private:
+	void updateFavoriteList( void ) ;
 	void HideUI( void ) ;
 	void ShowUI( void ) ;
 	void addToFavorite( const QString& dev,const QString& m_point ) ;

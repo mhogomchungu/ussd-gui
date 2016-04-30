@@ -31,7 +31,7 @@ namespace tablewidget
 {
 	void selectTableRow( QTableWidgetItem * current,QTableWidgetItem * previous ) ;
 	void addRowToTable( QTableWidget *,const QStringList&,const QFont& = QFont() ) ;
-	void updateRowInTable( QTableWidget *,const QStringList&,int row,const QFont& ) ;
+	void updateRowInTable( QTableWidget *,const QStringList&,int row,const QFont& = QFont() ) ;
 	void setRowFont( QTableWidget *,int row,const QFont& ) ;
 	void deleteRowFromTable( QTableWidget *,int row ) ;
 	void deleteTableRow( QTableWidget *,const QString&,int = 0 ) ;
@@ -42,8 +42,10 @@ namespace tablewidget
 	int addEmptyRow( QTableWidget * ) ;
 	int columnHasEntry( QTableWidget *,const QString&,int = 0 ) ;
 	QStringList tableColumnEntries( QTableWidget * table,int = 0 ) ;
-	QStringList tableRowEntries( QTableWidget * table,int = 0 ) ;
+	QStringList tableRowEntries( QTableWidget * table,int = 0,bool = true ) ;
 	void clearTable( QTableWidget * ) ;
+	void moveDown( QTableWidget *,int row ) ;
+	void moveUp( QTableWidget *,int row ) ;
 }
 
 #endif // TABLEWIDGET_H
