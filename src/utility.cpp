@@ -170,3 +170,42 @@ QVector< gsm::SMSText >& utility::condenseSMS( QVector< gsm::SMSText >& m )
 
 	return m ;
 }
+
+void utility::setWindowDimensions( QSettings& m,const QString& setting,const std::initializer_list<int>& e )
+{
+	QString s ;
+
+	for( const auto& it : e ){
+
+		s += QString::number( it ) + " " ;
+	}
+
+	m.setValue( setting,s ) ;
+}
+
+utility::array_t utility::getWindowDimensions( const QSettings& m,const QString& setting )
+{
+	if( setting == "favorites" ){
+
+		if( m.contains( setting ) ){
+
+			auto l = utility::split( m.value( setting ).toString(),' ' ) ;
+
+			if( l.size() == 6 ){
+
+				auto _opt = [ & ]( int e ){
+
+					return l.at( e ).toInt() ;
+				} ;
+
+				return { _opt( 0 ),_opt( 1 ),_opt( 2 ),_opt( 3 ),_opt( 4 ),_opt( 5 ) } ;
+			}else{
+				return { 362,195,641,357,147,445 } ;
+			}
+		}else{
+			return { 362,195,641,357,147,445 } ;
+		}
+	}else{
+		return { 362,195,641,357,147,445 } ;
+	}
+}

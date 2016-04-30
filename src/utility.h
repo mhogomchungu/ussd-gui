@@ -30,6 +30,7 @@
 #include <functional>
 #include <QDir>
 #include <QSettings>
+#include <QSettings>
 
 #include "gsm.h"
 
@@ -40,6 +41,11 @@ namespace utility
 	QStringList split( const QString&,const char * ) ;
 	QString arrangeSMSInAscendingOrder( QVector< gsm::SMSText >& ) ;
 	QVector< gsm::SMSText >& condenseSMS( QVector< gsm::SMSText >& ) ;
+	void setWindowDimensions( QSettings&,const QString&,const std::initializer_list<int>& ) ;
+
+	using array_t = std::array< int,7 > ;
+
+	array_t getWindowDimensions( const QSettings&,const QString& ) ;
 }
 
 #endif

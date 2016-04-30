@@ -34,14 +34,22 @@
 #include "dialogmsg.h"
 #include "tablewidget.h"
 
-favorites::favorites( QWidget * parent,QSettings& e ) : QDialog( parent ),m_ui( new Ui::favorites ),m_settings( e )
+favorites::favorites( QWidget * parent,QSettings& m ) : QDialog( parent ),m_ui( new Ui::favorites ),m_settings( m )
 {
 	m_ui->setupUi( this ) ;
 
 	this->setWindowFlags( Qt::Window | Qt::Dialog ) ;
 	this->setFont( parent->font() ) ;
 
-	this->setFixedSize( this->size() ) ;
+	m_ui->pbAdd->setMinimumHeight( 31 ) ;
+	m_ui->pbCancel->setMaximumHeight( 31 ) ;
+	m_ui->lineEditUSSD->setMinimumHeight( 31 ) ;
+	m_ui->lineEditUSSDComment->setMinimumHeight( 31 ) ;
+
+	m_ui->pushButton->setVisible( false ) ;
+	m_ui->pushButton_2->setVisible( false ) ;
+
+	//this->setFixedSize( this->size() ) ;
 
 	connect( m_ui->pbAdd,SIGNAL( clicked() ),this,SLOT( add() ) ) ;
 	connect( m_ui->pbCancel,SIGNAL( clicked() ),this,SLOT( cancel() ) ) ;
@@ -61,6 +69,17 @@ favorites::favorites( QWidget * parent,QSettings& e ) : QDialog( parent ),m_ui( 
 
 	this->installEventFilter( this ) ;
 
+	auto f = utility::getWindowDimensions( m_settings,"favorites" ) ;
+
+	auto e = f.begin() ;
+
+	this->window()->setGeometry( *( e + 0 ),*( e + 1 ),*( e + 2 ),*( e + 3 ) ) ;
+
+	auto table = m_ui->tableWidget ;
+
+	table->setColumnWidth( 0,*( e + 4 ) ) ;
+	table->setColumnWidth( 1,*( e + 5 ) ) ;
+
 	this->ShowUI() ;
 }
 
@@ -76,9 +95,6 @@ void favorites::shortcutPressed()
 
 void favorites::ShowUI()
 {
-	m_ui->tableWidget->setColumnWidth( 0,147 ) ;
-	m_ui->tableWidget->setColumnWidth( 1,445 ) ;
-
 	tablewidget::clearTable( m_ui->tableWidget ) ;
 
 	auto _add_entry = [ this ]( const QStringList& l ){
@@ -222,6 +238,17 @@ void favorites::add()
 
 favorites::~favorites()
 {
+	const auto& r = this->window()->geometry() ;
+
+	auto q = m_ui->tableWidget ;
+
+	utility::setWindowDimensions( m_settings,  "favorites",{ r.x(),
+						    r.y(),
+						    r.width(),
+						    r.height(),
+						    q->columnWidth( 0 ),
+						    q->columnWidth( 1 ) } ) ;
+
 	delete m_ui ;
 }
 
