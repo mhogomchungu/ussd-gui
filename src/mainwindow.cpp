@@ -86,8 +86,6 @@ MainWindow::MainWindow( bool log ) :
 	this->setWindowIcon( QIcon( ":/ussd-gui" ) ) ;
 
 #if DYNAMIC_DIMENSIONS
-	m_ui->pushButton->setVisible( false ) ;
-	m_ui->pushButton_2->setVisible( false ) ;	
 
 	auto f = utility::getWindowDimensions( m_settings,"main" ) ;
 
