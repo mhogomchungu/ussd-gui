@@ -39,6 +39,18 @@ include_directories( ${GAMMU_INCLUDE_DIRS} )
 
 include_directories( ${PROJECT_BINARY_DIR} )
 
+if( NOT DEFINED DYNAMIC )
+    set( DYNAMIC "true" )
+endif()
+
+if( DYNAMIC )
+	file( WRITE ${PROJECT_BINARY_DIR}/dimensions.h "\n#define DYNAMIC_DIMENSIONS 1\n" )
+	set( MAINUI "src/mainwindow.ui" )
+else()
+	file( WRITE ${PROJECT_BINARY_DIR}/dimensions.h "\n#define DYNAMIC_DIMENSIONS 0\n" )
+	set( MAINUI "src/mainwindow_1.ui" )
+endif()
+
 if( QT5 )
 	find_package( Qt5Widgets REQUIRED )
 	find_package( Qt5Core REQUIRED )
@@ -47,7 +59,7 @@ if( QT5 )
 	add_definitions( ${Qt5Widgets_DEFINITIONS} )
 
 	QT5_WRAP_CPP( MOC src/mainwindow.h src/task.h src/favorites.h src/dialogmsg.h )
-	QT5_WRAP_UI( UI src/mainwindow.ui src/favorites.ui src/dialogmsg.ui )
+	QT5_WRAP_UI( UI ${MAINUI} src/favorites.ui src/dialogmsg.ui )
 	QT5_ADD_RESOURCES( ICON icons/icons.qrc )
 else()
 	find_package( Qt4 REQUIRED QtCore QtGui )
@@ -59,7 +71,7 @@ else()
 	INCLUDE( ${QT_USE_FILE} )
 
 	QT4_WRAP_CPP( MOC src/mainwindow.h src/task.h src/favorites.h src/dialogmsg.h)
-	QT4_WRAP_UI( UI src/mainwindow.ui src/favorites.ui src/dialogmsg.ui )
+	QT4_WRAP_UI( UI ${MAINUI} src/favorites.ui src/dialogmsg.ui )
 	QT4_ADD_RESOURCES( ICON icons/icons.qrc )
 endif()
 

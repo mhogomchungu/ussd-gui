@@ -205,6 +205,27 @@ utility::array_t utility::getWindowDimensions( const QSettings& m,const QString&
 		}else{
 			return { 362,195,641,357,147,445 } ;
 		}
+
+	}else if( setting == "main" ){
+
+		if( m.contains( setting ) ){
+
+			auto l = utility::split( m.value( setting ).toString(),' ' ) ;
+
+			if( l.size() == 4 ){
+
+				auto _opt = [ & ]( int e ){
+
+					return l.at( e ).toInt() ;
+				} ;
+
+				return { _opt( 0 ),_opt( 1 ),_opt( 2 ),_opt( 3 ) } ;
+			}else{
+				return { 362,195,628,387 } ;
+			}
+		}else{
+			return { 362,195,628,387 } ;
+		}
 	}else{
 		return { 362,195,641,357,147,445 } ;
 	}

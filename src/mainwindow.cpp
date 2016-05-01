@@ -17,8 +17,19 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "dimensions.h"
+
 #include "mainwindow.h"
+
+#if DYNAMIC_DIMENSIONS
+
 #include "ui_mainwindow.h"
+
+#else
+
+#include "ui_mainwindow_1.h"
+
+#endif
 
 #include <QCoreApplication>
 #include <QDir>
@@ -74,8 +85,18 @@ MainWindow::MainWindow( bool log ) :
 
 	this->setWindowIcon( QIcon( ":/ussd-gui" ) ) ;
 
-	this->setFixedSize( this->size() ) ;
+#if DYNAMIC_DIMENSIONS
+	m_ui->pushButton->setVisible( false ) ;
+	m_ui->pushButton_2->setVisible( false ) ;	
 
+	auto f = utility::getWindowDimensions( m_settings,"main" ) ;
+
+	auto r = f.begin() ;
+
+	this->window()->setGeometry( *( r + 0 ),*( r + 1 ),*( r + 2 ),*( r + 3 ) ) ;
+#else
+	this->setFixedSize( this->size() ) ;
+#endif
 	connect( m_ui->pbConnect,SIGNAL( pressed() ),this,SLOT( pbConnect() ) ) ;
 	connect( m_ui->pbCancel,SIGNAL( pressed() ),this,SLOT( pbQuit() ) ) ;
 	connect( m_ui->pbSend,SIGNAL( pressed() ),this,SLOT( pbSend() ) ) ;
@@ -163,6 +184,9 @@ void MainWindow::ussdCodeInfo( QAction * ac )
 
 MainWindow::~MainWindow()
 {
+	const auto& r = this->window()->geometry() ;
+
+	utility::setWindowDimensions( m_settings,"main",{ r.x(),r.y(),r.width(),r.height() } ) ;
 }
 
 void MainWindow::pbSMS()
