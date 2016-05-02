@@ -244,7 +244,7 @@ void MainWindow::pbConnect()
 
 	if( m_gsm->connected() ){
 
-		if( m_gsm->disconnect() ){
+		if( m_gsm->disconnect().await() ){
 
 			m_ui->pbSMS->setEnabled( false ) ;
 
@@ -413,7 +413,7 @@ void MainWindow::send( const QString& code )
 		return this->enableSending() ;
 	}
 
-	m_ui->pbConnect->setEnabled( false ) ;
+	//m_ui->pbConnect->setEnabled( false ) ;
 
 	m_ui->pbCancel->setEnabled( false ) ;
 
@@ -470,7 +470,7 @@ void MainWindow::send( const QString& code )
 		this->enableSending() ;
 	}
 
-	m_ui->pbConnect->setEnabled( true ) ;
+	//m_ui->pbConnect->setEnabled( true ) ;
 
 	m_ui->pbCancel->setEnabled( true ) ;
 }
@@ -657,15 +657,18 @@ int MainWindow::decodeType()
 
 void MainWindow::decodeText()
 {
-	auto e = gsm::decodeUnicodeString( m_ussd.Text ) ;
+	auto _decode = [ this ](){
+
+		return gsm::decodeUnicodeString( m_ussd.Text ) ;
+	} ;
 
 	switch( this->decodeType() ){
 
 		case 0 : m_ui->textEditResult->setText( m_ussd.Text ) ;
 			 break ;
-		case 1 : m_ui->textEditResult->setText( QGsmCodec::fromGsm7BitEncodedtoUnicode( e ) ) ;
+		case 1 : m_ui->textEditResult->setText( _decode() ) ;
 			 break ;
-		case 2 : m_ui->textEditResult->setText( QGsmCodec::fromUnicodeStringInHexToUnicode( e ) ) ;
+		case 2 : m_ui->textEditResult->setText( _decode() ) ;
 	}
 }
 

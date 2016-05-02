@@ -29,7 +29,6 @@ public:
 	~internal() ;
 
 	bool canCheckSms() ;
-	bool disconnect() ;
 	bool connected() ;
 	bool canRead( bool waitForData ) ;
 	bool listenForEvents( bool ) ;
@@ -39,6 +38,8 @@ public:
 	Task::future< bool >& hasData( bool waitForData ) ;
 	Task::future< bool >& dial( const QByteArray& code ) ;
 	Task::future< bool >& connect() ;
+	Task::future< bool >& disconnect() ;
+
 	Task::future< QVector< gsm::SMSText > >& getSMSMessages() ;
 
 	const char * lastError() ;

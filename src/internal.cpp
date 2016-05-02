@@ -35,27 +35,30 @@ internal::~internal()
 {
 }
 
-bool internal::disconnect()
+Task::future< bool >& internal::disconnect()
 {
-	m_read.close() ;
+	return Task::run< bool >( [ this ]{
 
-	if( m_read.isOpen() ){
+		m_read.close() ;
 
-		m_lastError = QObject::tr( "Failed to close reading channel." ).toLatin1() ;
-		return false ;
-	}
+		if( m_read.isOpen() ){
 
-	m_write.write( "AT+CUSD=2,,15\r" ) ;
+			m_lastError = QObject::tr( "Failed to close reading channel." ).toLatin1() ;
+			return false ;
+		}
 
-	m_write.close() ;
+		m_write.write( "AT+CUSD=2,,15\r" ) ;
 
-	if( m_write.isOpen() ){
+		m_write.close() ;
 
-		m_lastError = QObject::tr( "Failed to close writing channel." ).toLatin1() ;
-		return false ;
-	}
+		if( m_write.isOpen() ){
 
-	return true ;
+			m_lastError = QObject::tr( "Failed to close writing channel." ).toLatin1() ;
+			return false ;
+		}
+
+		return true ;
+	} ) ;
 }
 
 bool internal::connected()
@@ -217,9 +220,9 @@ bool internal::init( bool log )
 
 bool internal::cancelCurrentOperation()
 {
-	if( this->disconnect() ){
+	if( this->disconnect().await() ){
 
-		return this->connect().await() ;
+		return Task::await< bool >( [ this ](){ return this->connect( 0 ) ; } ) ;
 	}else{
 		return false ;
 	}

@@ -38,9 +38,19 @@ libgammu::~libgammu()
 	GSM_FreeStateMachine( m_gsm ) ;
 }
 
-bool libgammu::disconnect()
+Task::future< bool >& libgammu::disconnect()
 {
-	return m_status = GSM_TerminateConnection( m_gsm ) ;
+	return Task::run< bool >( [ this ]{
+
+		m_status = GSM_TerminateConnection( m_gsm ) ;
+
+		if( m_status ){
+
+			m_function( { "",gsm::USSDMessage::Timeout } ) ;
+		}
+
+		return m_status ;
+	} ) ;
 }
 
 bool libgammu::connected()

@@ -67,9 +67,9 @@ public:
 	virtual Task::future< bool>& connect() = 0 ;
 	virtual Task::future< bool>& dial( const QByteArray& ) = 0 ;
 	virtual Task::future< bool>& hasData( bool waitForData = false ) = 0 ;
+	virtual Task::future< bool>& disconnect() = 0 ;
 
 	virtual bool canRead( bool waitForData = false ) = 0 ;
-	virtual bool disconnect() = 0 ;
 	virtual bool init( bool = false ) = 0 ;
 	virtual bool connected() = 0 ;
 	virtual bool listenForEvents( bool = true ) = 0 ;
