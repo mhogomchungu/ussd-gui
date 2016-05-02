@@ -534,11 +534,21 @@ void MainWindow::updateTitle()
 	this->enableSending() ;
 }
 
+void MainWindow::invokeMethod( const char * e )
+{
+	QMetaObject::invokeMethod( this,e,Qt::QueuedConnection ) ;
+}
+
+void MainWindow::invokeMethod( const char * e, const QString& f )
+{
+	QMetaObject::invokeMethod( this,e,Qt::QueuedConnection,Q_ARG( QString,f ) ) ;
+}
+
 void MainWindow::processResponce( const gsm::USSDMessage& ussd )
 {
 	m_ussd = ussd ;
 
-	QMetaObject::invokeMethod( this,"updateTitle",Qt::QueuedConnection ) ;
+	this->invokeMethod( "updateTitle" ) ;
 
 	m_waiting = false ;
 
@@ -548,12 +558,12 @@ void MainWindow::processResponce( const gsm::USSDMessage& ussd )
 
 		if( m_ussd.Status == _gsm::ActionNeeded ){
 
-			QMetaObject::invokeMethod( this,"serverResponse",Qt::QueuedConnection,Q_ARG( QString,QString() ) ) ;
+			this->invokeMethod( "serverResponse",QString() ) ;
 		}
 
-		QMetaObject::invokeMethod( this,"enableConvert",Qt::QueuedConnection ) ;
+		this->invokeMethod( "enableConvert" ) ;
 
-		QMetaObject::invokeMethod( this,"displayResult",Qt::QueuedConnection ) ;
+		this->invokeMethod( "displayResult" ) ;
 	}else{
 		auto _error = [ this ]( const _gsm& ussd ){
 
@@ -592,7 +602,7 @@ void MainWindow::processResponce( const gsm::USSDMessage& ussd )
 			}
 		} ;
 
-		QMetaObject::invokeMethod( this,"serverResponse",Qt::QueuedConnection,Q_ARG( QString,_error( m_ussd ) ) ) ;
+		this->invokeMethod( "serverResponse",_error( m_ussd ) ) ;
 	}
 }
 

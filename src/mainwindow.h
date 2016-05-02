@@ -96,6 +96,8 @@ private slots:
 	void displayResult() ;
 	void aboutToShow() ;
 private:
+	void invokeMethod( const char * ) ;
+	void invokeMethod( const char *,const QString& ) ;
 	QString topHistory() ;
 	QString getSetting( const QString& ) ;
 
