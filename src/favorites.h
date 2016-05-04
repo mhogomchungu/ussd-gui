@@ -48,10 +48,11 @@ public:
 	explicit favorites( QWidget * parent,QSettings& e ) ;
 	~favorites() ;
 private slots:
+	void keyDelete( void ) ;
 	void pbMoveUp( void ) ;
 	void pbMoveDown( void ) ;
 	void pbEdit( void ) ;
-	void pbDelete( void ) ;
+	void pbDelete( bool = true ) ;
 	void pbAdd( void ) ;
 	void pbCancel( void ) ;
 	void currentItemChanged( QTableWidgetItem * current,QTableWidgetItem * previous ) ;

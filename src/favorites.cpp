@@ -70,6 +70,13 @@ favorites::favorites( QWidget * parent,QSettings& m ) : QDialog( parent ),m_ui( 
 	connect( ac,SIGNAL( triggered() ),this,SLOT( shortcutPressed() ) ) ;
 	this->addAction( ac ) ;
 
+	ac = new QAction( this ) ;
+	connect( ac,SIGNAL( triggered() ),this,SLOT( keyDelete() ) ) ;
+
+	ac->setShortcut( Qt::Key_Delete ) ;
+
+	this->addAction( ac ) ;
+
 	this->installEventFilter( this ) ;
 
 	auto f = utility::getWindowDimensions( m_settings,"favorites" ) ;
@@ -193,19 +200,19 @@ void favorites::itemClicked( QTableWidgetItem * current,bool clicked )
 	}
 }
 
-void favorites::pbDelete()
+void favorites::keyDelete()
+{
+	this->pbDelete( false ) ;
+	m_ui->tableWidget->setFocus() ;
+}
+
+void favorites::pbDelete( bool confirm )
 {
 	auto table = m_ui->tableWidget ;
 
 	if( table->rowCount() > 0 ){
 
-		table->setEnabled( false ) ;
-
-		DialogMsg msg( this ) ;
-
-		auto m = tr( "Are You Sure You Want To Delete This Entry?" ) ;
-
-		if( msg.ShowUIYesNoDefaultNo( tr( "Warning" ),m ) == QMessageBox::Yes ){
+		auto _delete = [ & ](){
 
 			auto row = table->currentRow() ;
 
@@ -218,6 +225,22 @@ void favorites::pbDelete()
 
 				tablewidget::deleteRowFromTable( table,row ) ;
 			}
+		} ;
+
+		table->setEnabled( false ) ;
+
+		if( confirm ){
+
+			DialogMsg msg( this ) ;
+
+			auto m = tr( "Are You Sure You Want To Delete This Entry?" ) ;
+
+			if( msg.ShowUIYesNoDefaultNo( tr( "Warning" ),m ) == QMessageBox::Yes ){
+
+				_delete() ;
+			}
+		}else{
+			_delete() ;
 		}
 
 		table->setEnabled( true ) ;
