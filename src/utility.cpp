@@ -230,3 +230,16 @@ utility::array_t utility::getWindowDimensions( const QSettings& m,const QString&
 		return { 362,195,641,357,147,445 } ;
 	}
 }
+
+void utility::wait( int interval )
+{
+	QTimer e ;
+
+	QEventLoop s ;
+
+	QObject::connect( &e,SIGNAL( timeout() ),&s,SLOT( quit() ) ) ;
+
+	e.start( 1000 * interval ) ;
+
+	s.exec() ;
+}

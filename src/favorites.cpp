@@ -41,31 +41,34 @@ favorites::favorites( QWidget * parent,QSettings& m ) : QDialog( parent ),m_ui( 
 	this->setWindowFlags( Qt::Window | Qt::Dialog ) ;
 	this->setFont( parent->font() ) ;
 
+	m_ui->pbEdit->setMinimumHeight( 31 ) ;
+	m_ui->pbDelete->setMinimumHeight( 31 ) ;
+	m_ui->pbMoveDown->setMinimumHeight( 31 ) ;
+	m_ui->pbMoveUp->setMinimumHeight( 31 ) ;
 	m_ui->pbAdd->setMinimumHeight( 31 ) ;
 	m_ui->pbCancel->setMaximumHeight( 31 ) ;
 	m_ui->lineEditUSSD->setMinimumHeight( 31 ) ;
 	m_ui->lineEditUSSDComment->setMinimumHeight( 31 ) ;
 
-	m_ui->pushButton->setVisible( false ) ;
-	m_ui->pushButton_2->setVisible( false ) ;
-
-	//this->setFixedSize( this->size() ) ;
-
-	connect( m_ui->pbAdd,SIGNAL( clicked() ),this,SLOT( add() ) ) ;
-	connect( m_ui->pbCancel,SIGNAL( clicked() ),this,SLOT( cancel() ) ) ;
+	connect( m_ui->pbEdit,SIGNAL( clicked() ),this,SLOT( pbEdit() ) ) ;
+	connect( m_ui->pbDelete,SIGNAL( clicked() ),this,SLOT( pbDelete() ) ) ;
+	connect( m_ui->pbMoveDown,SIGNAL( clicked() ),this,SLOT( pbMoveDown() ) ) ;
+	connect( m_ui->pbMoveUp,SIGNAL( clicked() ),this,SLOT( pbMoveUp() ) ) ;
+	connect( m_ui->pbAdd,SIGNAL( clicked() ),this,SLOT( pbAdd() ) ) ;
+	connect( m_ui->pbCancel,SIGNAL( clicked() ),this,SLOT( pbCancel() ) ) ;
 	connect( m_ui->tableWidget,SIGNAL( currentItemChanged( QTableWidgetItem *,QTableWidgetItem * ) ),this,
 		SLOT( currentItemChanged( QTableWidgetItem *,QTableWidgetItem * ) ) ) ;
 	connect( m_ui->tableWidget,SIGNAL( itemClicked( QTableWidgetItem * ) ),this,
 		SLOT( itemClicked( QTableWidgetItem * ) ) ) ;
 
-	m_ac = new QAction( this ) ;
+	auto ac = new QAction( this ) ;
 	QList<QKeySequence> keys ;
 	keys.append( Qt::Key_Enter ) ;
 	keys.append( Qt::Key_Return ) ;
 	keys.append( Qt::Key_Menu ) ;
-	m_ac->setShortcuts( keys ) ;
-	connect( m_ac,SIGNAL( triggered() ),this,SLOT( shortcutPressed() ) ) ;
-	this->addAction( m_ac ) ;
+	ac->setShortcuts( keys ) ;
+	connect( ac,SIGNAL( triggered() ),this,SLOT( shortcutPressed() ) ) ;
+	this->addAction( ac ) ;
 
 	this->installEventFilter( this ) ;
 
@@ -133,29 +136,49 @@ void favorites::itemClicked( QTableWidgetItem * current )
 	this->itemClicked( current,true ) ;
 }
 
-void favorites::moveDown()
+void favorites::pbMoveDown()
 {
 	tablewidget::moveDown( m_ui->tableWidget,m_ui->tableWidget->currentRow() ) ;
 
 	this->updateFavoriteList() ;
 }
 
-void favorites::moveUp()
+void favorites::pbMoveUp()
 {
 	tablewidget::moveUp( m_ui->tableWidget,m_ui->tableWidget->currentRow() ) ;
 
 	this->updateFavoriteList() ;
 }
 
+void favorites::pbEdit()
+{
+	auto table = m_ui->tableWidget ;
+
+	if( table->rowCount() > 0 ){
+
+		auto row = table->currentRow() ;
+
+		auto ussd = table->item( row,0 )->text() ;
+		auto comm = table->item( row,1 )->text() ;
+
+		m_ui->lineEditUSSD->setText( ussd ) ;
+		m_ui->lineEditUSSDComment->setText( comm ) ;
+
+		m_edit = true ;
+	}
+}
+
 void favorites::itemClicked( QTableWidgetItem * current,bool clicked )
 {
+	return ;
+
 	QMenu m ;
 
 	m.setFont( this->font() ) ;
 
-	connect( m.addAction( tr( "Remove Selected Entry" ) ),SIGNAL( triggered() ),this,SLOT( removeEntryFromFavoriteList() ) ) ;
-	connect( m.addAction( tr( "Move Up" ) ),SIGNAL( triggered() ),this,SLOT( moveUp() ) ) ;
-	connect( m.addAction( tr( "Move Down" ) ),SIGNAL( triggered() ),this,SLOT( moveDown() ) ) ;
+	connect( m.addAction( tr( "Delete" ) ),SIGNAL( triggered() ),this,SLOT( pbDelete() ) ) ;
+	connect( m.addAction( tr( "Move Up" ) ),SIGNAL( triggered() ),this,SLOT( pbMoveUp() ) ) ;
+	connect( m.addAction( tr( "Move Down" ) ),SIGNAL( triggered() ),this,SLOT( pbMoveDown() ) ) ;
 
 	m.addSeparator() ;
 	m.addAction( tr( "Cancel" ) ) ;
@@ -170,33 +193,43 @@ void favorites::itemClicked( QTableWidgetItem * current,bool clicked )
 	}
 }
 
-void favorites::removeEntryFromFavoriteList()
+void favorites::pbDelete()
 {
 	auto table = m_ui->tableWidget ;
 
-	table->setEnabled( false ) ;
+	if( table->rowCount() > 0 ){
 
-	auto row = table->currentRow() ;
+		table->setEnabled( false ) ;
 
-	auto p = table->item( row,0 )->text() ;
-	auto q = table->item( row,1 )->text() ;
+		DialogMsg msg( this ) ;
 
-	if( !p.isEmpty() && !q.isEmpty() ){
+		auto m = tr( "Are You Sure You Want To Delete This Entry?" ) ;
 
-		this->removeFavoriteEntry( QString( "%1 - %2" ).arg( p,q ) ) ;
+		if( msg.ShowUIYesNoDefaultNo( tr( "Warning" ),m ) == QMessageBox::Yes ){
 
-		tablewidget::deleteRowFromTable( table,row ) ;
+			auto row = table->currentRow() ;
+
+			auto p = table->item( row,0 )->text() ;
+			auto q = table->item( row,1 )->text() ;
+
+			if( !p.isEmpty() && !q.isEmpty() ){
+
+				this->removeFavoriteEntry( QString( "%1 - %2" ).arg( p,q ) ) ;
+
+				tablewidget::deleteRowFromTable( table,row ) ;
+			}
+		}
+
+		table->setEnabled( true ) ;
 	}
-
-	table->setEnabled( true ) ;
 }
 
-void favorites::cancel()
+void favorites::pbCancel()
 {
 	this->HideUI() ;
 }
 
-void favorites::add()
+void favorites::pbAdd()
 {
 	DialogMsg msg( this ) ;
 
@@ -212,28 +245,48 @@ void favorites::add()
 		return msg.ShowUIOK( tr( "ERROR!" ),tr( "USSD Code Comment Field Is Empty" ) ) ;
 	}
 
+	auto table = m_ui->tableWidget ;
+
 	auto l = this->readFavorites() ;
 
-	for( const auto& it : l ){
+	table->setEnabled( false ) ;
 
-		if( it.startsWith( ussd + " " ) ){
+	auto _add_entry = [ & ]( bool edit,int row ){
 
-			DialogMsg msg( this ) ;
+		if( edit ){
 
-			return msg.ShowUIOK( tr( "ERROR" ),tr( "USSD Code Is Already On The List." ) ) ;
+			tablewidget::updateRowInTable( table,{ ussd,ussd_comment },row ) ;
+
+			this->updateFavoriteList() ;
+
+			m_edit = false ;
+		}else{
+			this->addEntries( { ussd,ussd_comment } ) ;
+			this->addToFavorite( ussd,ussd_comment,l ) ;
+		}
+
+		m_ui->lineEditUSSD->clear() ; ;
+		m_ui->lineEditUSSDComment->clear() ;
+
+		table->setEnabled( true ) ;
+	} ;
+
+	for( int i = 0 ; i < l.size() ; i++ ){
+
+		if( l.at( i ).startsWith( ussd + " " ) ){
+
+			if( m_edit ){
+
+				return _add_entry( true,i ) ;
+			}else{
+				DialogMsg msg( this ) ;
+
+				return msg.ShowUIOK( tr( "ERROR" ),tr( "USSD Code Is Already On The List." ) ) ;
+			}
 		}
 	}
 
-	m_ui->tableWidget->setEnabled( false ) ;
-
-	this->addEntries( { ussd,ussd_comment } ) ;
-
-	this->addToFavorite( ussd,ussd_comment,l ) ;
-
-	m_ui->lineEditUSSD->clear() ; ;
-	m_ui->lineEditUSSDComment->clear() ;
-
-	m_ui->tableWidget->setEnabled( true ) ;
+	_add_entry( false,0 ) ;
 }
 
 favorites::~favorites()

@@ -24,6 +24,8 @@
 #include <QString>
 #include <QStringList>
 #include <QEvent>
+#include <QTimer>
+#include <QEventLoop>
 #include <QMenu>
 #include <QKeyEvent>
 #include <QFile>
@@ -37,15 +39,21 @@
 namespace utility
 {
 	bool eventFilter( QObject * gui,QObject * watched,QEvent * event,std::function< void() > ) ;
+
 	QStringList split( const QString&,char token = '\n' ) ;
 	QStringList split( const QString&,const char * ) ;
+
 	QString arrangeSMSInAscendingOrder( QVector< gsm::SMSText >& ) ;
+
 	QVector< gsm::SMSText >& condenseSMS( QVector< gsm::SMSText >& ) ;
+
 	void setWindowDimensions( QSettings&,const QString&,const std::initializer_list<int>& ) ;
 
 	using array_t = std::array< int,7 > ;
 
 	array_t getWindowDimensions( const QSettings&,const QString& ) ;
+
+	void wait( int interval ) ;
 }
 
 #endif

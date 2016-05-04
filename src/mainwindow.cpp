@@ -477,15 +477,7 @@ void MainWindow::send( const QString& code )
 
 void MainWindow::wait( int interval )
 {
-	QTimer e ;
-
-	QEventLoop s ;
-
-	connect( &e,SIGNAL( timeout() ),&s,SLOT( quit() ) ) ;
-
-	e.start( 1000 * interval ) ;
-
-	s.exec() ;
+	utility::wait( interval ) ;
 }
 
 void MainWindow::pbSend()

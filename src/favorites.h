@@ -48,11 +48,12 @@ public:
 	explicit favorites( QWidget * parent,QSettings& e ) ;
 	~favorites() ;
 private slots:
-	void moveUp( void ) ;
-	void moveDown( void ) ;
-	void removeEntryFromFavoriteList( void ) ;
-	void add( void ) ;
-	void cancel( void ) ;	
+	void pbMoveUp( void ) ;
+	void pbMoveDown( void ) ;
+	void pbEdit( void ) ;
+	void pbDelete( void ) ;
+	void pbAdd( void ) ;
+	void pbCancel( void ) ;
 	void currentItemChanged( QTableWidgetItem * current,QTableWidgetItem * previous ) ;
 	void itemClicked( QTableWidgetItem * current,bool ) ;
 	void itemClicked( QTableWidgetItem * current ) ;
@@ -67,8 +68,9 @@ private:
 	void closeEvent( QCloseEvent * ) ;
 	bool eventFilter( QObject * watched,QEvent * event ) ;
 	void addEntries( const QStringList& ) ;
+
+	bool m_edit = false ;
 	Ui::favorites * m_ui ;
-	QAction * m_ac ;
 	QSettings& m_settings ;
 };
 
