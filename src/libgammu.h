@@ -37,7 +37,7 @@ public:
 	Task::future< bool >& dial( const QByteArray& code ) ;
 	Task::future< bool >& connect() ;
 	Task::future< bool >& disconnect() ;
-	Task::future< QVector< gsm::SMSText > >& getSMSMessages() ;
+	Task::future< QVector< gsm::SMSText > >& getSMSMessages( bool deleteSMS = false ) ;
 
 	const char * lastError() ;
 	void setlocale( const char * ) ;
@@ -46,7 +46,7 @@ public:
 
 	void operator()( GSM_USSDMessage * ) ;
 private:
-	QVector< gsm::SMSText > _getSMSMessages() ;
+	QVector< gsm::SMSText > _getSMSMessages( bool deleteSMS ) ;
 
 	class gsm_error
 	{

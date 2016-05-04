@@ -171,47 +171,47 @@ Task::future< bool >& libgammu::connect()
 	} ) ;
 }
 
-QVector< gsm::SMSText > libgammu::_getSMSMessages()
+static const char * _message( const unsigned char * e,GSM_Coding_Type c ){
+
+	/*
+	 * No idea what to do with these options and ignoring them seems
+	 * to work just fine with my modem.
+	 */
+
+	/*
+	 * DecodeUnicodeString() is provided by libgammu
+	 */
+	switch( c ){
+
+	case SMS_Coding_Unicode_No_Compression:
+
+		return DecodeUnicodeString( e ) ;
+
+	case SMS_Coding_Unicode_Compression:
+
+		return DecodeUnicodeString( e ) ;
+
+	case SMS_Coding_Default_No_Compression:
+
+		return DecodeUnicodeString( e ) ;
+
+	case SMS_Coding_Default_Compression:
+
+		return DecodeUnicodeString( e ) ;
+
+	case SMS_Coding_8bit:
+
+		return DecodeUnicodeString( e ) ;
+	default:
+		return DecodeUnicodeString( e ) ;
+	}
+}
+
+QVector< gsm::SMSText > libgammu::_getSMSMessages( bool deleteSMS )
 {
-	auto _sms = []( QVector< gsm::SMSText >& messages,const GSM_MultiSMSMessage * m ){
+	auto _sms = [ & ]( QVector< gsm::SMSText >& messages,GSM_MultiSMSMessage * m ){
 
-		auto _getSMS = []( const GSM_SMSMessage * m ){
-
-			auto _message = [ m ]( const unsigned char * e ){
-
-				/*
-				 * No idea what to do with these options and ignoring them seems
-				 * to work just fine with my modem.
-				 */
-
-				/*
-				 * DecodeUnicodeString() is provided by libgammu
-				 */
-				switch( m->Coding ){
-
-				case SMS_Coding_Unicode_No_Compression:
-
-					return DecodeUnicodeString( e ) ;
-
-				case SMS_Coding_Unicode_Compression:
-
-					return DecodeUnicodeString( e ) ;
-
-				case SMS_Coding_Default_No_Compression:
-
-					return DecodeUnicodeString( e ) ;
-
-				case SMS_Coding_Default_Compression:
-
-					return DecodeUnicodeString( e ) ;
-
-				case SMS_Coding_8bit:
-
-					return DecodeUnicodeString( e ) ;
-				default:
-					return DecodeUnicodeString( e ) ;
-				}
-			} ;
+		auto _getSMS = [ & ]( GSM_SMSMessage * m ){
 
 			gsm::SMSText sms ;
 
@@ -232,22 +232,29 @@ QVector< gsm::SMSText > libgammu::_getSMSMessages()
 
 			sms.date        = a + " " + b ;
 
-			sms.read        = m->State == SMS_Read ;
-
 			sms.inSIMcard   = m->Memory == MEM_SM ;
 
 			sms.inInbox     = m->PDU == SMS_Deliver ;
 
 			sms.phoneNumber = DecodeUnicodeString( m->Number ) ;
 
-			sms.message     = _message( m->Text ) ;
+			sms.message     = _message( m->Text,m->Coding ) ;
 
 			return sms ;
 		} ;
 
 		for( decltype( m->Number ) i = 0 ; i < m->Number ; i++ ){
 
-			messages.append( _getSMS( &m->SMS[ i ] ) ) ;
+			auto sms = &m->SMS[ i ] ;
+
+			messages.append( _getSMS( sms ) ) ;
+
+			if( deleteSMS ){
+
+				;//GSM_DeleteSMS( m_gsm,sms ) ;
+			}else{
+				;//GSM_GetSMS( m_gsm,m ) ;
+			}
 		}
 	} ;
 
@@ -287,11 +294,11 @@ QVector< gsm::SMSText > libgammu::_getSMSMessages()
 	return messages ;
 }
 
-Task::future< QVector< gsm::SMSText > >& libgammu::getSMSMessages()
+Task::future< QVector< gsm::SMSText > >& libgammu::getSMSMessages( bool deleteSMS )
 {
-	return Task::run< QVector< gsm::SMSText > >( [ this ]{
+	return Task::run< QVector< gsm::SMSText > >( [ = ]{
 
-		return this->_getSMSMessages() ;
+		return this->_getSMSMessages( deleteSMS ) ;
 	} ) ;
 }
 

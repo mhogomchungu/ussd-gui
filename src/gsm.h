@@ -51,7 +51,6 @@ public:
 		QString phoneNumber ;
 		QString date ;
 		QString message ;
-		bool read ;
 		bool inSIMcard ;
 		bool inInbox ;
 	} ;
@@ -62,7 +61,7 @@ public:
 
 	virtual ~gsm() ;
 
-	virtual Task::future< QVector< gsm::SMSText > >& getSMSMessages() = 0 ;
+	virtual Task::future< QVector< gsm::SMSText > >& getSMSMessages( bool deleteSMS = false ) = 0 ;
 
 	virtual Task::future< bool>& connect() = 0 ;
 	virtual Task::future< bool>& dial( const QByteArray& ) = 0 ;

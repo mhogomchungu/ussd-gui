@@ -224,6 +224,8 @@ void favorites::pbDelete( bool confirm )
 				this->removeFavoriteEntry( QString( "%1 - %2" ).arg( p,q ) ) ;
 
 				tablewidget::deleteRowFromTable( table,row ) ;
+
+				tablewidget::selectRow( table,row ) ;
 			}
 		} ;
 
@@ -290,26 +292,41 @@ void favorites::pbAdd()
 
 		m_ui->lineEditUSSD->clear() ; ;
 		m_ui->lineEditUSSDComment->clear() ;
-
-		table->setEnabled( true ) ;
 	} ;
 
-	for( int i = 0 ; i < l.size() ; i++ ){
+	if( m_edit ){
 
-		if( l.at( i ).startsWith( ussd + " " ) ){
+		if( table->rowCount() > 0 ){
 
-			if( m_edit ){
+			_add_entry( true,table->currentRow() ) ;
+		}
 
-				return _add_entry( true,i ) ;
-			}else{
-				DialogMsg msg( this ) ;
+		m_edit = false ;
+	}else{
+		auto _not_on_the_list = [ & ](){
 
-				return msg.ShowUIOK( tr( "ERROR" ),tr( "USSD Code Is Already On The List." ) ) ;
+			for( const auto& it : l ){
+
+				if( it.startsWith( ussd + " " ) ){
+
+					DialogMsg msg( this ) ;
+
+					msg.ShowUIOK( tr( "ERROR" ),tr( "USSD Code Is Already On The List." ) ) ;
+
+					return false ;
+				}
 			}
+
+			return true ;
+		} ;
+
+		if( _not_on_the_list() ){
+
+			_add_entry( false,0 ) ;
 		}
 	}
 
-	_add_entry( false,0 ) ;
+	table->setEnabled( true ) ;
 }
 
 favorites::~favorites()

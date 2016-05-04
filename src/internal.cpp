@@ -245,11 +245,17 @@ bool internal::connect( int e )
 		sleep( e ) ;
 	}
 
-	m_read.open( QIODevice::ReadOnly | QIODevice::Unbuffered ) ;
+	if( !m_read.isOpen() ){
+
+		m_read.open( QIODevice::ReadOnly | QIODevice::Unbuffered ) ;
+	}
 
 	if( m_read.isOpen() ){
 
-		m_write.open( QIODevice::WriteOnly | QIODevice::Unbuffered ) ;
+		if( !m_write.isOpen() ){
+
+			m_write.open( QIODevice::WriteOnly | QIODevice::Unbuffered ) ;
+		}
 
 		if( m_write.isOpen() ){
 
@@ -276,9 +282,9 @@ Task::future< bool >& internal::connect()
 	} ) ;
 }
 
-Task::future< QVector< gsm::SMSText > >& internal::getSMSMessages()
+Task::future< QVector< gsm::SMSText > >& internal::getSMSMessages( bool deleteSMS )
 {
-	return Task::run< QVector< gsm::SMSText > >( [ this ](){
+	return Task::run< QVector< gsm::SMSText > >( [ & ](){
 
 		this->disconnect() ;
 
@@ -292,14 +298,12 @@ Task::future< QVector< gsm::SMSText > >& internal::getSMSMessages()
 
 			delete e ;
 
-			this->setDeviceToDefaultState() ;
-
 			this->connect( 0 ) ;
 		} ) ;
 
 		if( e->init( false ) && e->connect().get() ){
 
-			return e->getSMSMessages().get() ;
+			return e->getSMSMessages( deleteSMS ).get() ;
 		}else{
 			return QVector< gsm::SMSText >() ;
 		}

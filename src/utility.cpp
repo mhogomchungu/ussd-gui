@@ -71,8 +71,6 @@ QString utility::arrangeSMSInAscendingOrder( QVector< gsm::SMSText >& m )
 			}
 		}
 
-		auto _r  = []( bool e ){ return e ? QObject::tr( "Read" ) : QObject::tr( "Not Read" ) ; } ;
-
 		auto _l  = []( bool inSimCard,bool inInbox ){
 
 			if( inSimCard ){
@@ -118,11 +116,11 @@ QString utility::arrangeSMSInAscendingOrder( QVector< gsm::SMSText >& m )
 
 		auto l = "\n------------------------------------------------------------------------------------\n" ;
 
-		auto k = QObject::tr( "Number: %1\nDate: %2\nState: %3\nLocation: %4\n\n%5" ) ;
+		auto k = QObject::tr( "Number: %1\nDate: %2\nLocation: %3\n\n%4" ) ;
 
 		auto& n = *( d + p ) ;
 
-		e += l + k.arg( n.phoneNumber,_d( n.date ),_r( n.read ),_l( n.inSIMcard,n.inInbox ),n.message ) ;
+		e += l + k.arg( n.phoneNumber,_d( n.date ),_l( n.inSIMcard,n.inInbox ),n.message ) ;
 	}
 
 	return e ;

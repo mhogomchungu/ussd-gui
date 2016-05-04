@@ -40,7 +40,7 @@ public:
 	Task::future< bool >& connect() ;
 	Task::future< bool >& disconnect() ;
 
-	Task::future< QVector< gsm::SMSText > >& getSMSMessages() ;
+	Task::future< QVector< gsm::SMSText > >& getSMSMessages( bool deleteSMS = false ) ;
 
 	const char * lastError() ;
 	void setlocale( const char * ) ;
