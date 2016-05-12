@@ -138,11 +138,11 @@ QString MainWindow::topHistory()
 {
 	auto l = favorites::readFavorites( m_settings ) ;
 
-	if( !l.isEmpty() ){
+	if( l.isEmpty() ){
 
-		return utility::split( l.first()," - " ).first() ;
-	}else{
 		return QString() ;
+	}else{
+		return utility::split( l.first()," - " ).first() ;
 	}
 }
 
