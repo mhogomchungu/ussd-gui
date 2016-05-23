@@ -57,7 +57,8 @@ public:
 
 	static const char * decodeUnicodeString( const QByteArray& ) ;
 	static gsm * instance( const QStringList&,
-			       std::function< void( const gsm::USSDMessage& ussd ) >&& = []( const gsm::USSDMessage& ussd ){ Q_UNUSED( ussd ) } ) ;
+			       std::function< void( const gsm::USSDMessage& ussd ) >&&
+			       = []( const gsm::USSDMessage& ussd ){ Q_UNUSED( ussd ) } ) ;
 
 	virtual ~gsm() ;
 

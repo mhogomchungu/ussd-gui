@@ -35,29 +35,34 @@ internal::~internal()
 {
 }
 
+bool internal::_disconnect()
+{
+	m_read.close() ;
+
+	if( m_read.isOpen() ){
+
+		m_lastError = QObject::tr( "Failed to close reading channel." ).toLatin1() ;
+		return false ;
+	}
+
+	m_write.write( "AT+CUSD=2,,15\r" ) ;
+
+	m_write.close() ;
+
+	if( m_write.isOpen() ){
+
+		m_lastError = QObject::tr( "Failed to close writing channel." ).toLatin1() ;
+		return false ;
+	}
+
+	return true ;
+}
+
 Task::future< bool >& internal::disconnect()
 {
 	return Task::run< bool >( [ this ]{
 
-		m_read.close() ;
-
-		if( m_read.isOpen() ){
-
-			m_lastError = QObject::tr( "Failed to close reading channel." ).toLatin1() ;
-			return false ;
-		}
-
-		m_write.write( "AT+CUSD=2,,15\r" ) ;
-
-		m_write.close() ;
-
-		if( m_write.isOpen() ){
-
-			m_lastError = QObject::tr( "Failed to close writing channel." ).toLatin1() ;
-			return false ;
-		}
-
-		return true ;
+		return this->_disconnect() ;
 	} ) ;
 }
 
@@ -286,7 +291,7 @@ Task::future< QVector< gsm::SMSText > >& internal::getSMSMessages( bool deleteSM
 {
 	return Task::run< QVector< gsm::SMSText > >( [ & ](){
 
-		this->disconnect() ;
+		this->_disconnect() ;
 
 		using unique_ptr = std::unique_ptr< gsm,std::function< void( gsm * ) > >  ;
 

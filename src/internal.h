@@ -47,6 +47,7 @@ public:
 
 	QString source() ;
 private:
+	bool _disconnect() ;
 	bool connect( int ) ;
 	void decodeString( QByteArray& ) ;
 	void setDeviceToDefaultState() ;
