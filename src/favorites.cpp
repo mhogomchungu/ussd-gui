@@ -303,27 +303,7 @@ void favorites::pbAdd()
 
 		m_edit = false ;
 	}else{
-		auto _not_on_the_list = [ & ](){
-
-			for( const auto& it : l ){
-
-				if( it.startsWith( ussd + " " ) ){
-
-					DialogMsg msg( this ) ;
-
-					msg.ShowUIOK( tr( "ERROR" ),tr( "USSD Code Is Already On The List." ) ) ;
-
-					return false ;
-				}
-			}
-
-			return true ;
-		} ;
-
-		if( _not_on_the_list() ){
-
-			_add_entry( false,0 ) ;
-		}
+		_add_entry( false,0 ) ;
 	}
 
 	table->setEnabled( true ) ;
@@ -391,16 +371,6 @@ void favorites::updateFavoriteList()
 
 void favorites::addToFavorite( const QString& ussd,const QString& comment,QStringList& l )
 {
-	for( const auto& it : l ){
-
-		if( it.startsWith( ussd + " " ) ){
-
-			DialogMsg msg( this ) ;
-
-			return msg.ShowUIOK( tr( "ERROR" ),tr( "USSD Code Is Already On The List." ) ) ;
-		}
-	}
-
 	l.append( ussd + " - " + comment ) ;
 
 	_update_favorites( m_settings,l ) ;
